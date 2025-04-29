@@ -104,7 +104,7 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
             // Generate different colors for each wind speed
             const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
             // If this is the wind speed being edited, use red
-            const isBeingEdited = windData.windSpeed === parseInt(new URLSearchParams(window.location.search).get('editingWindSpeed'));
+            const isBeingEdited = windData.windSpeed === editingWindSpeed;
             const stroke = isBeingEdited ? '#ff0000' : colors[index % colors.length];
             
             return (
