@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './PolarDataTable.css';
 
-const PolarDataTable = ({ data, onUpdateBoatSpeed, onAddAngleEntry, onDeleteAngleEntry }) => {
+const PolarDataTable = ({ data, windSpeed, onUpdateBoatSpeed, onAddAngleEntry, onDeleteAngleEntry }) => {
   const [newAngle, setNewAngle] = useState('');
   const [newSpeed, setNewSpeed] = useState('');
   const [editingCell, setEditingCell] = useState(null);
@@ -62,7 +62,7 @@ const PolarDataTable = ({ data, onUpdateBoatSpeed, onAddAngleEntry, onDeleteAngl
 
   return (
     <div className="polar-data-table">
-      <h2>Polar Data</h2>
+      <h2>Polar Data (Editing Wind Speed: {data[0]?.windSpeed} knots)</h2>
       
       <table>
         <thead>

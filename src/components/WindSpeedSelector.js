@@ -3,7 +3,7 @@ import './WindSpeedSelector.css';
 
 const WindSpeedSelector = ({ 
   windSpeeds, 
-  selectedWindSpeed, 
+  selectedWindSpeeds, 
   onSelectWindSpeed,
   onAddWindSpeed,
   onDeleteWindSpeed
@@ -32,8 +32,18 @@ const WindSpeedSelector = ({
         {windSpeeds.map(speed => (
           <div key={speed} className="speed-button-container">
             <button
-              className={`speed-button ${selectedWindSpeed === speed ? 'selected' : ''}`}
-              onClick={() => onSelectWindSpeed(speed)}
+              className={`speed-button ${selectedWindSpeeds.includes(speed) ? 'selected' : ''}`}
+              onClick={() => {
+                // Toggle selection
+                if (selectedWindSpeeds.includes(speed)) {
+                  // Don't allow deselecting the last wind speed
+                  if (selectedWindSpeeds.length > 1) {
+                    onSelectWindSpeed(selectedWindSpeeds.filter(s => s !== speed));
+                  }
+                } else {
+                  onSelectWindSpeed([...selectedWindSpeeds, speed]);
+                }
+              }}
             >
               {speed} knots
             </button>
