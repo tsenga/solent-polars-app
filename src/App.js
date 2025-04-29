@@ -29,6 +29,41 @@ const initialPolarData = [
   ]}
 ];
 
+// Helper function to interpolate boat speed
+const interpolateBoatSpeed = (angles, newAngle) => {
+  // Sort angles by angle value
+  const sortedAngles = [...angles].sort((a, b) => a.angle - b.angle);
+  
+  // If no angles, return 0
+  if (sortedAngles.length === 0) return 0;
+  
+  // If only one angle, return its boat speed
+  if (sortedAngles.length === 1) return sortedAngles[0].boatSpeed;
+  
+  // Find the angles before and after the new angle
+  let lowerAngle = null;
+  let upperAngle = null;
+  
+  for (let i = 0; i < sortedAngles.length; i++) {
+    if (sortedAngles[i].angle < newAngle) {
+      lowerAngle = sortedAngles[i];
+    } else if (sortedAngles[i].angle > newAngle) {
+      upperAngle = sortedAngles[i];
+      break;
+    }
+  }
+  
+  // If new angle is less than all existing angles, use the first angle's boat speed
+  if (lowerAngle === null) return sortedAngles[0].boatSpeed;
+  
+  // If new angle is greater than all existing angles, use the last angle's boat speed
+  if (upperAngle === null) return sortedAngles[sortedAngles.length - 1].boatSpeed;
+  
+  // Interpolate between the two closest angles
+  const ratio = (newAngle - lowerAngle.angle) / (upperAngle.angle - lowerAngle.angle);
+  return lowerAngle.boatSpeed + ratio * (upperAngle.boatSpeed - lowerAngle.boatSpeed);
+};
+
 function App() {
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
@@ -64,11 +99,12 @@ function App() {
   const addAngleEntry = (newAngle, newSpeed) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
+        // Check if angle already exists in this wind speed data
+        const angleExists = windData.angles.some(a => a.angle === newAngle);
+        if (angleExists) return windData;
+        
         if (windData.windSpeed === editingWindSpeed) {
-          // Check if angle already exists
-          const angleExists = windData.angles.some(a => a.angle === newAngle);
-          if (angleExists) return windData;
-          
+          // For the wind speed being edited, use the provided boat speed
           return {
             ...windData,
             angles: [...windData.angles, { 
@@ -76,8 +112,18 @@ function App() {
               boatSpeed: parseFloat(newSpeed) 
             }].sort((a, b) => a.angle - b.angle)
           };
+        } else {
+          // For other wind speeds, interpolate the boat speed
+          const interpolatedSpeed = interpolateBoatSpeed(windData.angles, newAngle);
+          
+          return {
+            ...windData,
+            angles: [...windData.angles, { 
+              angle: newAngle, 
+              boatSpeed: interpolatedSpeed
+            }].sort((a, b) => a.angle - b.angle)
+          };
         }
-        return windData;
       });
     });
   };
