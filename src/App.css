@@ -1,0 +1,58 @@
+.App {
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.App-header {
+  margin-bottom: 30px;
+}
+
+.App-header h1 {
+  color: #2c3e50;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  height: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.data-table {
+  margin-top: 30px;
+}
+
+@media (min-width: 768px) {
+  main {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .controls {
+    width: 100%;
+  }
+  
+  .chart-container {
+    flex: 1;
+    min-width: 500px;
+  }
+  
+  .data-table {
+    flex: 1;
+    min-width: 300px;
+    margin-top: 0;
+  }
+}

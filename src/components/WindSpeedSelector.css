@@ -1,0 +1,98 @@
+.wind-speed-selector {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.wind-speed-selector h2 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.speed-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.speed-button-container {
+  display: flex;
+  align-items: center;
+}
+
+.speed-button {
+  padding: 8px 16px;
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px solid #ced4da;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.speed-button:hover {
+  background-color: #dee2e6;
+}
+
+.speed-button.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.delete-button {
+  padding: 8px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+.add-button {
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-button:hover {
+  background-color: #218838;
+}
+
+.add-speed-form {
+  display: flex;
+  gap: 5px;
+}
+
+.add-speed-form input {
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  width: 100px;
+}
+
+.add-speed-form button {
+  padding: 8px 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-speed-form .cancel-button {
+  background-color: #6c757d;
+}
+
+.add-speed-form .cancel-button:hover {
+  background-color: #5a6268;
+}
