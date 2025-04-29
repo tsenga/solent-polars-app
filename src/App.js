@@ -32,15 +32,19 @@ const initialPolarData = [
 function App() {
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
+  const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   
-  // Find the data for the selected wind speeds
-  const selectedData = polarData.find(data => data.windSpeed === selectedWindSpeeds[0]) || polarData[0];
+  // Find the data for the selected wind speeds and the one being edited
+  const selectedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
+                      (selectedWindSpeeds.length > 0 ? 
+                        polarData.find(data => data.windSpeed === selectedWindSpeeds[0]) : 
+                        polarData[0]);
   
   // Update boat speed for a specific angle
   const updateBoatSpeed = (angle, newSpeed) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
-        if (windData.windSpeed === selectedWindSpeeds[0]) {
+        if (windData.windSpeed === editingWindSpeed) {
           return {
             ...windData,
             angles: windData.angles.map(angleData => {
@@ -60,7 +64,7 @@ function App() {
   const addAngleEntry = (newAngle, newSpeed) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
-        if (windData.windSpeed === selectedWindSpeeds[0]) {
+        if (windData.windSpeed === editingWindSpeed) {
           // Check if angle already exists
           const angleExists = windData.angles.some(a => a.angle === newAngle);
           if (angleExists) return windData;
@@ -82,7 +86,7 @@ function App() {
   const deleteAngleEntry = (angle) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
-        if (windData.windSpeed === selectedWindSpeeds[0]) {
+        if (windData.windSpeed === editingWindSpeed) {
           return {
             ...windData,
             angles: windData.angles.filter(a => a.angle !== angle)
@@ -114,6 +118,7 @@ function App() {
     });
     
     setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
+    setEditingWindSpeed(newWindSpeed);
   };
 
   // Delete a wind speed
@@ -131,6 +136,11 @@ function App() {
         // If we removed all selections, select the first available wind speed
         return newSelection.length > 0 ? newSelection : [newData[0].windSpeed];
       });
+      
+      // If we're deleting the wind speed being edited, switch to another one
+      if (windSpeed === editingWindSpeed) {
+        setEditingWindSpeed(newData[0].windSpeed);
+      }
       return newData;
     });
   };
@@ -159,7 +169,9 @@ function App() {
         <div className="data-table">
           <PolarDataTable 
             data={selectedData.angles}
-            windSpeed={selectedWindSpeeds[0]}
+            windSpeed={editingWindSpeed}
+            availableWindSpeeds={polarData.map(data => data.windSpeed)}
+            onChangeWindSpeed={setEditingWindSpeed}
             onUpdateBoatSpeed={updateBoatSpeed}
             onAddAngleEntry={addAngleEntry}
             onDeleteAngleEntry={deleteAngleEntry}

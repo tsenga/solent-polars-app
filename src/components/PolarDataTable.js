@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import './PolarDataTable.css';
 
-const PolarDataTable = ({ data, windSpeed, onUpdateBoatSpeed, onAddAngleEntry, onDeleteAngleEntry }) => {
+const PolarDataTable = ({ 
+  data, 
+  windSpeed, 
+  availableWindSpeeds,
+  onChangeWindSpeed,
+  onUpdateBoatSpeed, 
+  onAddAngleEntry, 
+  onDeleteAngleEntry 
+}) => {
   const [newAngle, setNewAngle] = useState('');
   const [newSpeed, setNewSpeed] = useState('');
   const [editingCell, setEditingCell] = useState(null);
@@ -62,7 +70,21 @@ const PolarDataTable = ({ data, windSpeed, onUpdateBoatSpeed, onAddAngleEntry, o
 
   return (
     <div className="polar-data-table">
-      <h2>Polar Data (Editing Wind Speed: {windSpeed} knots)</h2>
+      <div className="table-header">
+        <h2>Polar Data</h2>
+        <div className="wind-speed-selector">
+          <label htmlFor="edit-wind-speed">Editing Wind Speed: </label>
+          <select 
+            id="edit-wind-speed" 
+            value={windSpeed}
+            onChange={(e) => onChangeWindSpeed(Number(e.target.value))}
+          >
+            {availableWindSpeeds.map(speed => (
+              <option key={speed} value={speed}>{speed} knots</option>
+            ))}
+          </select>
+        </div>
+      </div>
       
       <table>
         <thead>
