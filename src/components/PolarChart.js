@@ -4,7 +4,7 @@ import {
   PolarAngleAxis, 
   PolarRadiusAxis, 
   ResponsiveContainer, 
-  PolarChart as RechartsPolarchart,
+  RadarChart as RechartsPolarchart,
   Radar,
   Tooltip
 } from 'recharts';
