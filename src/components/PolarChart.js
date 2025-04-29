@@ -62,8 +62,8 @@ const PolarChart = ({ data, windSpeed }) => {
             name="Boat Speed"
             dataKey="boatSpeed"
             stroke="#8884d8"
-            fill="#8884d8"
-            fillOpacity={0.6}
+            fill="none"
+            strokeWidth={2}
             data={chartData}
             isAnimationActive={true}
           />
