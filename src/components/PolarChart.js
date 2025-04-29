@@ -41,7 +41,7 @@ const PolarChart = ({ data, windSpeed }) => {
     <div style={{ width: '100%', height: '100%' }}>
       <h2>Polar Chart for {windSpeed} knots Wind Speed</h2>
       <ResponsiveContainer width="100%" height="80%">
-        <RadarChart startAngle={270} endAngle={90}>
+        <RadarChart startAngle={90} endAngle={-90} cx="50%" cy="50%">
           <PolarGrid />
           <PolarAngleAxis
             dataKey="angle"
