@@ -62,7 +62,7 @@ const PolarDataTable = ({ data, windSpeed, onUpdateBoatSpeed, onAddAngleEntry, o
 
   return (
     <div className="polar-data-table">
-      <h2>Polar Data (Editing Wind Speed: {data[0]?.windSpeed} knots)</h2>
+      <h2>Polar Data (Editing Wind Speed: {windSpeed} knots)</h2>
       
       <table>
         <thead>
