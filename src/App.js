@@ -164,6 +164,7 @@ function App() {
           <PolarChart 
             polarData={polarData}
             selectedWindSpeeds={selectedWindSpeeds}
+            editingWindSpeed={editingWindSpeed}
           />
         </div>
         <div className="data-table">

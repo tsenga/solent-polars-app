@@ -9,7 +9,7 @@ import {
   Tooltip
 } from 'recharts';
 
-const CustomTooltip = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
   if (active && payload && payload.length) {
     return (
       <div className="custom-tooltip" style={{
@@ -21,10 +21,14 @@ const CustomTooltip = ({ active, payload }) => {
         <p style={{ fontWeight: 'bold' }}>{`Angle: ${payload[0].payload.angle}°`}</p>
         {payload.map((entry, index) => {
           // Extract wind speed from the dataKey (e.g., "wind10" -> "10")
-          const windSpeed = entry.dataKey.replace('wind', '');
+          const windSpeed = parseInt(entry.dataKey.replace('wind', ''));
+          const isBeingEdited = windSpeed === editingWindSpeed;
           return (
-            <p key={index} style={{ color: entry.color }}>
-              {`${windSpeed} knots: ${entry.value.toFixed(1)} knots`}
+            <p key={index} style={{ 
+              color: entry.color,
+              fontWeight: isBeingEdited ? 'bold' : 'normal',
+            }}>
+              {`${windSpeed} knots${isBeingEdited ? ' (editing)' : ''}: ${entry.value.toFixed(1)} knots`}
             </p>
           );
         })}
@@ -34,7 +38,7 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-const PolarChart = ({ polarData, selectedWindSpeeds }) => {
+const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
   // Find all data for selected wind speeds
   const selectedData = polarData.filter(data => 
     selectedWindSpeeds.includes(data.windSpeed)
@@ -99,22 +103,24 @@ const PolarChart = ({ polarData, selectedWindSpeeds }) => {
           {selectedData.map((windData, index) => {
             // Generate different colors for each wind speed
             const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
-            const colorIndex = index % colors.length;
+            // If this is the wind speed being edited, use red
+            const isBeingEdited = windData.windSpeed === parseInt(new URLSearchParams(window.location.search).get('editingWindSpeed'));
+            const stroke = isBeingEdited ? '#ff0000' : colors[index % colors.length];
             
             return (
               <Radar
                 key={windData.windSpeed}
-                name={`${windData.windSpeed} knots`}
+                name={`${windData.windSpeed} knots${isBeingEdited ? ' (editing)' : ''}`}
                 dataKey={`wind${windData.windSpeed}`}
-                stroke={colors[colorIndex]}
+                stroke={stroke}
                 fill="none"
-                strokeWidth={2}
+                strokeWidth={isBeingEdited ? 3 : 2}
                 data={chartData}
                 isAnimationActive={true}
               />
             );
           })}
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip editingWindSpeed={editingWindSpeed} />} />
         </RadarChart>
       </ResponsiveContainer>
       <div style={{ textAlign: 'center', marginTop: '10px' }}>
