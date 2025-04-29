@@ -4,7 +4,7 @@ import {
   PolarAngleAxis, 
   PolarRadiusAxis, 
   ResponsiveContainer, 
-  PolarChart as RechartsPolarchart,
+  RadarChart,
   Radar,
   Tooltip
 } from 'recharts';
@@ -41,7 +41,7 @@ const PolarChart = ({ data, windSpeed }) => {
     <div style={{ width: '100%', height: '100%' }}>
       <h2>Polar Chart for {windSpeed} knots Wind Speed</h2>
       <ResponsiveContainer width="100%" height="80%">
-        <RechartsPolarchart startAngle={270} endAngle={90}>
+        <RadarChart startAngle={270} endAngle={90}>
           <PolarGrid />
           <PolarAngleAxis
             dataKey="angle"
@@ -68,7 +68,7 @@ const PolarChart = ({ data, windSpeed }) => {
             isAnimationActive={true}
           />
           <Tooltip content={<CustomTooltip />} />
-        </RechartsPolarchart>
+        </RadarChart>
       </ResponsiveContainer>
       <div style={{ textAlign: 'center', marginTop: '10px' }}>
         <p>Angle (degrees) vs Boat Speed (knots)</p>
