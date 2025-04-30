@@ -6,8 +6,7 @@ import {
   ResponsiveContainer, 
   RadarChart,
   Radar,
-  Tooltip,
-  Curve
+  Tooltip
 } from 'recharts';
 
 const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
@@ -118,7 +117,9 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                 strokeWidth={isBeingEdited ? 3 : 2}
                 data={chartData}
                 isAnimationActive={true}
-                shape={<Curve type="cardinal" />}
+                dot={false}
+                activeDot={{ r: 5 }}
+                curve="cardinal"
               />
             );
           })}
