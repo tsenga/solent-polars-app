@@ -119,7 +119,8 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                 isAnimationActive={true}
                 dot={false}
                 activeDot={{ r: 5 }}
-                curve="cardinal"
+                curve="natural"
+                connectNulls={true}
               />
             );
           })}
