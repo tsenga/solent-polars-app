@@ -117,8 +117,38 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                 strokeWidth={isBeingEdited ? 3 : 2}
                 data={chartData}
                 isAnimationActive={true}
-                dot={false}
-                activeDot={{ r: 5 }}
+                dot={(props) => {
+                  // Only show dots for anchor points of the wind speed being edited
+                  const isAnchorPoint = windData.anchorPoints.some(
+                    point => point.angle === props.payload.angle
+                  );
+                  return isAnchorPoint && isBeingEdited ? (
+                    <circle 
+                      cx={props.cx} 
+                      cy={props.cy} 
+                      r={3} 
+                      fill={stroke} 
+                      stroke="white" 
+                      strokeWidth={1} 
+                    />
+                  ) : null;
+                }}
+                activeDot={(props) => {
+                  // Only show active dots for anchor points of the wind speed being edited
+                  const isAnchorPoint = windData.anchorPoints.some(
+                    point => point.angle === props.payload.angle
+                  );
+                  return isAnchorPoint && isBeingEdited ? (
+                    <circle 
+                      cx={props.cx} 
+                      cy={props.cy} 
+                      r={5} 
+                      fill={stroke} 
+                      stroke="white" 
+                      strokeWidth={2} 
+                    />
+                  ) : null;
+                }}
                 curve="natural"
                 connectNulls={true}
               />
