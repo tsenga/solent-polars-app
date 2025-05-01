@@ -85,6 +85,9 @@ const PolarDataTable = ({
           </select>
         </div>
       </div>
+      <p className="anchor-info">
+        Only anchor points are shown. The chart displays a smooth curve through these points.
+      </p>
       
       <table>
         <thead>
@@ -95,8 +98,8 @@ const PolarDataTable = ({
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => (
-            <tr key={item.angle}>
+          {data.filter(item => item.isAnchor).map((item) => (
+            <tr key={item.angle} className="anchor-point">
               <td>{item.angle}°</td>
               <td>
                 {editingCell === item.angle ? (

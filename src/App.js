@@ -4,23 +4,23 @@ import PolarChart from './components/PolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
 
-// Sample initial data
+// Sample initial data with anchor points
 const initialPolarData = [
-  { windSpeed: 5, angles: [
+  { windSpeed: 5, anchorPoints: [
     { angle: 0, boatSpeed: 0 },
     { angle: 45, boatSpeed: 2.5 },
     { angle: 90, boatSpeed: 3.8 },
     { angle: 135, boatSpeed: 3.2 },
     { angle: 180, boatSpeed: 2.0 }
   ]},
-  { windSpeed: 10, angles: [
+  { windSpeed: 10, anchorPoints: [
     { angle: 0, boatSpeed: 0 },
     { angle: 45, boatSpeed: 4.2 },
     { angle: 90, boatSpeed: 6.1 },
     { angle: 135, boatSpeed: 5.0 },
     { angle: 180, boatSpeed: 3.5 }
   ]},
-  { windSpeed: 15, angles: [
+  { windSpeed: 15, anchorPoints: [
     { angle: 0, boatSpeed: 0 },
     { angle: 45, boatSpeed: 5.8 },
     { angle: 90, boatSpeed: 7.5 },
@@ -29,39 +29,73 @@ const initialPolarData = [
   ]}
 ];
 
-// Helper function to interpolate boat speed
-const interpolateBoatSpeed = (angles, newAngle) => {
-  // Sort angles by angle value
-  const sortedAngles = [...angles].sort((a, b) => a.angle - b.angle);
+// Helper function to interpolate boat speed between two anchor points
+const interpolateBoatSpeed = (anchorPoints, newAngle) => {
+  // Sort anchor points by angle value
+  const sortedPoints = [...anchorPoints].sort((a, b) => a.angle - b.angle);
   
-  // If no angles, return 0
-  if (sortedAngles.length === 0) return 0;
+  // If no anchor points, return 0
+  if (sortedPoints.length === 0) return 0;
   
-  // If only one angle, return its boat speed
-  if (sortedAngles.length === 1) return sortedAngles[0].boatSpeed;
+  // If only one anchor point, return its boat speed
+  if (sortedPoints.length === 1) return sortedPoints[0].boatSpeed;
   
-  // Find the angles before and after the new angle
-  let lowerAngle = null;
-  let upperAngle = null;
+  // Find the anchor points before and after the new angle
+  let lowerPoint = null;
+  let upperPoint = null;
   
-  for (let i = 0; i < sortedAngles.length; i++) {
-    if (sortedAngles[i].angle < newAngle) {
-      lowerAngle = sortedAngles[i];
-    } else if (sortedAngles[i].angle > newAngle) {
-      upperAngle = sortedAngles[i];
+  for (let i = 0; i < sortedPoints.length; i++) {
+    if (sortedPoints[i].angle < newAngle) {
+      lowerPoint = sortedPoints[i];
+    } else if (sortedPoints[i].angle > newAngle) {
+      upperPoint = sortedPoints[i];
       break;
     }
   }
   
-  // If new angle is less than all existing angles, use the first angle's boat speed
-  if (lowerAngle === null) return sortedAngles[0].boatSpeed;
+  // If new angle is less than all existing angles, use the first anchor point's boat speed
+  if (lowerPoint === null) return sortedPoints[0].boatSpeed;
   
-  // If new angle is greater than all existing angles, use the last angle's boat speed
-  if (upperAngle === null) return sortedAngles[sortedAngles.length - 1].boatSpeed;
+  // If new angle is greater than all existing angles, use the last anchor point's boat speed
+  if (upperPoint === null) return sortedPoints[sortedPoints.length - 1].boatSpeed;
   
-  // Interpolate between the two closest angles
-  const ratio = (newAngle - lowerAngle.angle) / (upperAngle.angle - lowerAngle.angle);
-  return lowerAngle.boatSpeed + ratio * (upperAngle.boatSpeed - lowerAngle.boatSpeed);
+  // Interpolate between the two closest anchor points
+  const ratio = (newAngle - lowerPoint.angle) / (upperPoint.angle - lowerPoint.angle);
+  return lowerPoint.boatSpeed + ratio * (upperPoint.boatSpeed - lowerPoint.boatSpeed);
+};
+
+// Function to generate all points (1 degree increments) from anchor points
+const generateAllPoints = (anchorPoints) => {
+  if (!anchorPoints || anchorPoints.length === 0) return [];
+  
+  // Sort anchor points by angle
+  const sortedAnchorPoints = [...anchorPoints].sort((a, b) => a.angle - b.angle);
+  
+  // Generate points for every degree from 0 to 180
+  const allPoints = [];
+  for (let angle = 0; angle <= 180; angle++) {
+    // Check if this is an anchor point
+    const existingAnchorPoint = sortedAnchorPoints.find(p => p.angle === angle);
+    
+    if (existingAnchorPoint) {
+      // Use the existing anchor point
+      allPoints.push({
+        angle,
+        boatSpeed: existingAnchorPoint.boatSpeed,
+        isAnchor: true
+      });
+    } else {
+      // Interpolate the boat speed
+      const boatSpeed = interpolateBoatSpeed(sortedAnchorPoints, angle);
+      allPoints.push({
+        angle,
+        boatSpeed,
+        isAnchor: false
+      });
+    }
+  }
+  
+  return allPoints;
 };
 
 function App() {
@@ -70,55 +104,77 @@ function App() {
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   
   // Find the data for the selected wind speeds and the one being edited
-  const selectedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
+  const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
                       (selectedWindSpeeds.length > 0 ? 
                         polarData.find(data => data.windSpeed === selectedWindSpeeds[0]) : 
                         polarData[0]);
+  
+  // Generate all points for the selected wind speed
+  const selectedData = {
+    ...selectedWindSpeedData,
+    angles: generateAllPoints(selectedWindSpeedData.anchorPoints)
+  };
   
   // Update boat speed for a specific angle
   const updateBoatSpeed = (angle, newSpeed) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
         if (windData.windSpeed === editingWindSpeed) {
-          return {
-            ...windData,
-            angles: windData.angles.map(angleData => {
-              if (angleData.angle === angle) {
-                return { ...angleData, boatSpeed: parseFloat(newSpeed) };
-              }
-              return angleData;
-            })
-          };
+          // Find if this angle is already an anchor point
+          const existingAnchorIndex = windData.anchorPoints.findIndex(p => p.angle === angle);
+          
+          if (existingAnchorIndex >= 0) {
+            // Update existing anchor point
+            const updatedAnchorPoints = [...windData.anchorPoints];
+            updatedAnchorPoints[existingAnchorIndex] = {
+              ...updatedAnchorPoints[existingAnchorIndex],
+              boatSpeed: parseFloat(newSpeed)
+            };
+            
+            return {
+              ...windData,
+              anchorPoints: updatedAnchorPoints
+            };
+          } else {
+            // Add a new anchor point
+            return {
+              ...windData,
+              anchorPoints: [
+                ...windData.anchorPoints,
+                { angle, boatSpeed: parseFloat(newSpeed) }
+              ].sort((a, b) => a.angle - b.angle)
+            };
+          }
         }
         return windData;
       });
     });
   };
 
-  // Add a new angle entry
+  // Add a new anchor point
   const addAngleEntry = (newAngle, newSpeed) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
         // Check if angle already exists in this wind speed data
-        const angleExists = windData.angles.some(a => a.angle === newAngle);
+        const angleExists = windData.anchorPoints.some(a => a.angle === newAngle);
         if (angleExists) return windData;
         
         if (windData.windSpeed === editingWindSpeed) {
           // For the wind speed being edited, use the provided boat speed
           return {
             ...windData,
-            angles: [...windData.angles, { 
+            anchorPoints: [...windData.anchorPoints, { 
               angle: newAngle, 
               boatSpeed: parseFloat(newSpeed) 
             }].sort((a, b) => a.angle - b.angle)
           };
         } else {
           // For other wind speeds, interpolate the boat speed
-          const interpolatedSpeed = interpolateBoatSpeed(windData.angles, newAngle);
+          const interpolatedSpeed = interpolateBoatSpeed(windData.anchorPoints, newAngle);
           
           return {
             ...windData,
-            angles: [...windData.angles, { 
+            anchorPoints: [...windData.anchorPoints, { 
               angle: newAngle, 
               boatSpeed: interpolatedSpeed
             }].sort((a, b) => a.angle - b.angle)
@@ -128,14 +184,14 @@ function App() {
     });
   };
 
-  // Delete an angle entry
+  // Delete an anchor point
   const deleteAngleEntry = (angle) => {
     setPolarData(prevData => {
       return prevData.map(windData => {
         if (windData.windSpeed === editingWindSpeed) {
           return {
             ...windData,
-            angles: windData.angles.filter(a => a.angle !== angle)
+            anchorPoints: windData.anchorPoints.filter(a => a.angle !== angle)
           };
         }
         return windData;
@@ -153,7 +209,7 @@ function App() {
     setPolarData(prevData => {
       return [...prevData, {
         windSpeed: newWindSpeed,
-        angles: [
+        anchorPoints: [
           { angle: 0, boatSpeed: 0 },
           { angle: 45, boatSpeed: 0 },
           { angle: 90, boatSpeed: 0 },
@@ -208,7 +264,10 @@ function App() {
         </div>
         <div className="chart-container">
           <PolarChart 
-            polarData={polarData}
+            polarData={polarData.map(windData => ({
+              ...windData,
+              angles: generateAllPoints(windData.anchorPoints)
+            }))}
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}
           />
