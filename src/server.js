@@ -78,12 +78,12 @@ function parsePolarFile(fileContent) {
     const windSpeed = parseFloat(values[0]);
     const anchorPoints = [];
     
-    // Process pairs of boat speed and angle
+    // Process pairs of angle and boat speed
     for (let i = 1; i < values.length; i += 2) {
-      const boatSpeed = parseFloat(values[i]);
-      const angle = parseFloat(values[i + 1]);
+      const angle = parseFloat(values[i]);
+      const boatSpeed = parseFloat(values[i + 1]);
       
-      if (isNaN(boatSpeed) || isNaN(angle)) {
+      if (isNaN(angle) || isNaN(boatSpeed)) {
         throw new Error('Invalid numeric values in polar file');
       }
       
