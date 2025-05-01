@@ -1,4 +1,8 @@
+! Polar data file for Sample Boat
+! Format: Wind Speed, followed by pairs of Boat Speed and Angle
+! Created: 2025-05-01
 5	0	0	2.5	45	3.8	90	3.2	135	2.0	180
 10	0	0	4.2	45	6.1	90	5.0	135	3.5	180
+! Higher wind speeds
 15	0	0	5.8	45	7.5	90	6.3	135	4.2	180
 20	0	0	6.5	45	8.2	90	7.0	135	4.8	180

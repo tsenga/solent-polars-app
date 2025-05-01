@@ -64,6 +64,11 @@ function parsePolarFile(fileContent) {
   const polarData = [];
   
   lines.forEach(line => {
+    // Skip comment lines that start with !
+    if (line.trim().startsWith('!')) {
+      return;
+    }
+    
     const values = line.trim().split(/\s+/); // Split by whitespace (tabs or spaces)
     
     if (values.length < 3 || values.length % 2 === 0) {

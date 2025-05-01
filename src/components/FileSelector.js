@@ -83,6 +83,7 @@ const FileSelector = ({ onFileLoad }) => {
       <p className="file-info">
         Polar files are tab-separated with wind speed in the first column, 
         followed by alternating columns of boat speed and wind angle.
+        Lines starting with ! are treated as comments and ignored.
       </p>
     </div>
   );
