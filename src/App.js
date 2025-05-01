@@ -3,6 +3,7 @@ import './App.css';
 import PolarChart from './components/PolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
+import FileSelector from './components/FileSelector';
 
 // Sample initial data with anchor points
 const initialPolarData = [
@@ -247,12 +248,26 @@ function App() {
     });
   };
 
+  // Handle loading polar data from a file
+  const handleFileLoad = (loadedPolarData) => {
+    if (loadedPolarData && loadedPolarData.length > 0) {
+      setPolarData(loadedPolarData);
+      // Select the first wind speed by default
+      const firstWindSpeed = loadedPolarData[0].windSpeed;
+      setSelectedWindSpeeds([firstWindSpeed]);
+      setEditingWindSpeed(firstWindSpeed);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Interactive Polar Chart</h1>
       </header>
       <main>
+        <div className="file-section">
+          <FileSelector onFileLoad={handleFileLoad} />
+        </div>
         <div className="controls">
           <WindSpeedSelector 
             windSpeeds={polarData.map(data => data.windSpeed)}

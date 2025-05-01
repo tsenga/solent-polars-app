@@ -1,0 +1,59 @@
+.file-selector {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.file-selector h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.file-select-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.file-select-container select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+}
+
+.file-select-container button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.file-select-container button:hover {
+  background-color: #0069d9;
+}
+
+.file-select-container button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-style: italic;
+  color: #6c757d;
+  font-size: 0.9em;
+}
+
+.error {
+  color: #dc3545;
+  font-weight: bold;
+}
