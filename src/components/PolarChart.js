@@ -16,7 +16,12 @@ const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
         backgroundColor: 'white',
         padding: '10px',
         border: '1px solid #ccc',
-        borderRadius: '5px'
+        borderRadius: '5px',
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        zIndex: 1000,
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
       }}>
         <p style={{ fontWeight: 'bold' }}>{`Angle: ${payload[0].payload.angle}°`}</p>
         {payload.map((entry, index) => {
@@ -154,7 +159,12 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
               />
             );
           })}
-          <Tooltip content={<CustomTooltip editingWindSpeed={editingWindSpeed} />} />
+          <Tooltip 
+            content={<CustomTooltip editingWindSpeed={editingWindSpeed} />}
+            position={{ x: 0, y: 0 }}
+            wrapperStyle={{ pointerEvents: 'none' }}
+            cursor={false}
+          />
         </RadarChart>
       </ResponsiveContainer>
       <div style={{ textAlign: 'center', marginTop: '10px' }}>
