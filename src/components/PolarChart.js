@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
         borderRadius: '5px',
         position: 'absolute',
         top: '10px',
-        right: '10px',
+        left: '10px',
         zIndex: 1000,
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
       }}>
