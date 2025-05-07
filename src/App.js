@@ -301,12 +301,54 @@ function App() {
               }))}
               selectedWindSpeeds={selectedWindSpeeds}
               editingWindSpeed={editingWindSpeed}
+              onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                setPolarData(prevData => {
+                  return prevData.map(windData => {
+                    if (windData.windSpeed === windSpeed) {
+                      // Find the anchor point with the old angle
+                      const updatedAnchorPoints = windData.anchorPoints.map(point => {
+                        if (Math.abs(point.angle - oldAngle) < 0.1) { // Small threshold for floating point comparison
+                          return { angle: newAngle, boatSpeed: newSpeed };
+                        }
+                        return point;
+                      });
+                      
+                      return {
+                        ...windData,
+                        anchorPoints: updatedAnchorPoints.sort((a, b) => a.angle - b.angle)
+                      };
+                    }
+                    return windData;
+                  });
+                });
+              }}
             />
           ) : (
             <LinePolarChart 
               polarData={polarData}
               selectedWindSpeeds={selectedWindSpeeds}
               editingWindSpeed={editingWindSpeed}
+              onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                setPolarData(prevData => {
+                  return prevData.map(windData => {
+                    if (windData.windSpeed === windSpeed) {
+                      // Find the anchor point with the old angle
+                      const updatedAnchorPoints = windData.anchorPoints.map(point => {
+                        if (Math.abs(point.angle - oldAngle) < 0.1) { // Small threshold for floating point comparison
+                          return { angle: newAngle, boatSpeed: newSpeed };
+                        }
+                        return point;
+                      });
+                      
+                      return {
+                        ...windData,
+                        anchorPoints: updatedAnchorPoints.sort((a, b) => a.angle - b.angle)
+                      };
+                    }
+                    return windData;
+                  });
+                });
+              }}
             />
           )}
         </div>

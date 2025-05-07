@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import './LinePolarChart.css';
 
-const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
+const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateAnchorPoint }) => {
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
 
@@ -136,8 +136,62 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => 
         .attr('stroke', color)
         .attr('stroke-width', isBeingEdited ? 3 : 2);
       
-      // Add dots for anchor points
+      // Add dots for anchor points with drag functionality
       if (isBeingEdited) {
+        // Create drag behavior
+        const drag = d3.drag()
+          .on('start', function(event, d) {
+            d3.select(this).raise().attr('r', 6);
+            tooltip.style('visibility', 'hidden');
+          })
+          .on('drag', function(event, d) {
+            // Convert mouse position to polar coordinates
+            const [x, y] = [event.x, event.y];
+            const centerX = 0;
+            const centerY = 0;
+            
+            // Calculate angle and radius from mouse position
+            let angle = Math.atan2(x - centerX, -(y - centerY)) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
+            angle = Math.min(180, Math.max(0, angle)); // Constrain to 0-180
+            
+            // Calculate distance from center (radius)
+            const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+            const boatSpeed = Math.max(0, rScale.invert(distance)); // Prevent negative values
+            
+            // Update the point's position
+            d3.select(this)
+              .attr('cx', rScale(boatSpeed) * Math.sin(angleScale(angle)))
+              .attr('cy', -rScale(boatSpeed) * Math.cos(angleScale(angle)));
+            
+            // Update the data point
+            d.angle = angle;
+            d.boatSpeed = boatSpeed;
+            
+            // Show tooltip with updated values
+            tooltip
+              .style('visibility', 'visible')
+              .html(`<strong>Angle:</strong> ${angle.toFixed(2)}°<br>
+                     <strong>Boat Speed:</strong> ${boatSpeed.toFixed(2)} knots<br>
+                     <strong>Wind Speed:</strong> ${windData.windSpeed} knots (editing)`)
+              .style('left', `${event.sourceEvent.pageX + 10}px`)
+              .style('top', `${event.sourceEvent.pageY - 28}px`);
+          })
+          .on('end', function(event, d) {
+            d3.select(this).attr('r', 4);
+            tooltip.style('visibility', 'hidden');
+            
+            // Round angle to 2 decimal places for consistency
+            const finalAngle = parseFloat(d.angle.toFixed(2));
+            const finalSpeed = parseFloat(d.boatSpeed.toFixed(2));
+            
+            // Call the update function from parent component
+            // We need to pass this function as a prop
+            if (onUpdateAnchorPoint) {
+              onUpdateAnchorPoint(windData.windSpeed, d.angle, finalAngle, finalSpeed);
+            }
+          });
+        
         svg.selectAll(`.dot-${windData.windSpeed}`)
           .data(sortedPoints)
           .enter()
@@ -149,24 +203,26 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => 
           .attr('fill', color)
           .attr('stroke', 'white')
           .attr('stroke-width', 1)
+          .attr('cursor', 'move')
+          .call(drag)
           .on('mouseover', function(event, d) {
-            d3.select(this)
-              .attr('r', 6);
-            
-            tooltip
-              .style('visibility', 'visible')
-              .html(`<strong>Angle:</strong> ${d.angle.toFixed(2)}°<br>
-                     <strong>Boat Speed:</strong> ${d.boatSpeed.toFixed(2)} knots<br>
-                     <strong>Wind Speed:</strong> ${windData.windSpeed} knots (editing)`)
-              .style('left', `${event.pageX + 10}px`)
-              .style('top', `${event.pageY - 28}px`);
+            if (!d3.active(this)) { // Only show tooltip if not dragging
+              d3.select(this).attr('r', 6);
+              
+              tooltip
+                .style('visibility', 'visible')
+                .html(`<strong>Angle:</strong> ${d.angle.toFixed(2)}°<br>
+                       <strong>Boat Speed:</strong> ${d.boatSpeed.toFixed(2)} knots<br>
+                       <strong>Wind Speed:</strong> ${windData.windSpeed} knots (editing)`)
+                .style('left', `${event.pageX + 10}px`)
+                .style('top', `${event.pageY - 28}px`);
+            }
           })
           .on('mouseout', function() {
-            d3.select(this)
-              .attr('r', 4);
-            
-            tooltip
-              .style('visibility', 'hidden');
+            if (!d3.active(this)) { // Only hide tooltip if not dragging
+              d3.select(this).attr('r', 4);
+              tooltip.style('visibility', 'hidden');
+            }
           });
       }
       

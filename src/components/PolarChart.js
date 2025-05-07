@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { 
   PolarGrid, 
   PolarAngleAxis, 
@@ -43,7 +43,8 @@ const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
   return null;
 };
 
-const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
+const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateAnchorPoint }) => {
+  const chartRef = useRef(null);
   // Find all data for selected wind speeds
   const selectedData = polarData.filter(data => 
     selectedWindSpeeds.includes(data.windSpeed)
@@ -92,8 +93,120 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
   const maxBoatSpeed = Math.max(...allBoatSpeeds) || 10;
   const domain = [0, Math.ceil(maxBoatSpeed * 1.2)]; // Add 20% margin
   
+  // Add drag functionality
+  useEffect(() => {
+    if (!chartRef.current) return;
+    
+    const chartContainer = chartRef.current;
+    
+    // Find all draggable anchor points
+    const anchorPoints = chartContainer.querySelectorAll('.draggable-anchor');
+    
+    let isDragging = false;
+    let currentPoint = null;
+    let originalAngle = 0;
+    let originalBoatSpeed = 0;
+    let windSpeed = 0;
+    
+    // Calculate polar coordinates from mouse position
+    const calculatePolarCoordinates = (event) => {
+      const chartRect = chartContainer.getBoundingClientRect();
+      const centerX = chartRect.width / 2;
+      const centerY = chartRect.height / 2;
+      
+      const x = event.clientX - chartRect.left;
+      const y = event.clientY - chartRect.top;
+      
+      // Calculate angle (0 at top, clockwise)
+      let angle = Math.atan2(x - centerX, -(y - centerY)) * (180 / Math.PI);
+      if (angle < 0) angle += 360;
+      
+      // Constrain to 0-180 degrees (right half)
+      angle = Math.min(180, Math.max(0, angle));
+      
+      // Calculate distance from center
+      const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+      
+      // Convert distance to boat speed (approximate)
+      // This is an approximation as we don't have direct access to the chart's scaling
+      const maxRadius = Math.min(chartRect.width, chartRect.height) / 2;
+      const maxBoatSpeed = Math.max(...selectedData.flatMap(d => d.angles.map(a => a.boatSpeed)));
+      const boatSpeed = Math.max(0, (distance / maxRadius) * maxBoatSpeed * 1.2);
+      
+      return { angle, boatSpeed };
+    };
+    
+    // Add event listeners to each anchor point
+    anchorPoints.forEach(point => {
+      point.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        currentPoint = point;
+        originalAngle = parseFloat(point.getAttribute('data-angle'));
+        originalBoatSpeed = parseFloat(point.getAttribute('data-boat-speed'));
+        windSpeed = parseFloat(point.getAttribute('data-wind-speed'));
+        
+        document.body.style.cursor = 'move';
+      });
+    });
+    
+    // Add document-level event listeners for drag and release
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging || !currentPoint) return;
+      
+      const { angle, boatSpeed } = calculatePolarCoordinates(e);
+      
+      // Update tooltip to show current position
+      const tooltip = chartContainer.querySelector('.custom-tooltip');
+      if (tooltip) {
+        tooltip.style.visibility = 'visible';
+        tooltip.style.left = `${e.clientX + 10}px`;
+        tooltip.style.top = `${e.clientY - 28}px`;
+        tooltip.innerHTML = `
+          <p style="font-weight: bold">Angle: ${angle.toFixed(2)}°</p>
+          <p style="color: ${currentPoint.getAttribute('stroke')}">
+            ${windSpeed} knots (editing): ${boatSpeed.toFixed(2)} knots
+          </p>
+        `;
+      }
+    });
+    
+    document.addEventListener('mouseup', (e) => {
+      if (!isDragging || !currentPoint) return;
+      
+      const { angle, boatSpeed } = calculatePolarCoordinates(e);
+      
+      // Call the update function
+      if (onUpdateAnchorPoint) {
+        onUpdateAnchorPoint(
+          windSpeed,
+          originalAngle,
+          parseFloat(angle.toFixed(2)),
+          parseFloat(boatSpeed.toFixed(2))
+        );
+      }
+      
+      // Reset state
+      isDragging = false;
+      currentPoint = null;
+      document.body.style.cursor = 'default';
+      
+      // Hide tooltip
+      const tooltip = chartContainer.querySelector('.custom-tooltip');
+      if (tooltip) {
+        tooltip.style.visibility = 'hidden';
+      }
+    });
+    
+    // Clean up event listeners
+    return () => {
+      document.removeEventListener('mousemove', null);
+      document.removeEventListener('mouseup', null);
+    };
+  }, [selectedData, editingWindSpeed, onUpdateAnchorPoint]);
+
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: '100%', height: '100%' }} ref={chartRef}>
       <h2>Polar Chart for Selected Wind Speeds</h2>
       <ResponsiveContainer width="100%" height="80%">
         <RadarChart startAngle={90} endAngle={-90} cx="50%" cy="50%">
@@ -158,7 +271,12 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                       r={3} 
                       fill={stroke} 
                       stroke="white" 
-                      strokeWidth={1} 
+                      strokeWidth={1}
+                      style={{ cursor: 'move' }}
+                      className="draggable-anchor"
+                      data-angle={angle}
+                      data-wind-speed={windData.windSpeed}
+                      data-boat-speed={props.payload[`wind${windData.windSpeed}`]}
                     />
                   ) : null;
                 }}
@@ -174,7 +292,12 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                       r={5} 
                       fill={stroke} 
                       stroke="white" 
-                      strokeWidth={2} 
+                      strokeWidth={2}
+                      style={{ cursor: 'move' }}
+                      className="draggable-anchor"
+                      data-angle={angle}
+                      data-wind-speed={windData.windSpeed}
+                      data-boat-speed={props.payload[`wind${windData.windSpeed}`]}
                     />
                   ) : null;
                 }}
