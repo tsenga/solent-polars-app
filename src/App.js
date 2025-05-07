@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import PolarChart from './components/PolarChart';
+import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
@@ -103,6 +104,7 @@ function App() {
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
+  const [chartType, setChartType] = useState('recharts'); // 'recharts' or 'd3'
   
   // Find the data for the selected wind speeds and the one being edited
   const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
@@ -268,6 +270,17 @@ function App() {
         <div className="file-section">
           <FileSelector onFileLoad={handleFileLoad} />
         </div>
+        <div className="chart-type-selector">
+          <label htmlFor="chart-type">Chart Type: </label>
+          <select 
+            id="chart-type" 
+            value={chartType}
+            onChange={(e) => setChartType(e.target.value)}
+          >
+            <option value="recharts">Recharts Radar Chart</option>
+            <option value="d3">D3.js Polar Chart</option>
+          </select>
+        </div>
         <div className="controls">
           <WindSpeedSelector 
             windSpeeds={polarData.map(data => data.windSpeed)}
@@ -278,16 +291,24 @@ function App() {
           />
         </div>
         <div className="chart-container">
-          <PolarChart 
-            polarData={polarData.map(windData => ({
-              ...windData,
-              angles: generateAllPoints(windData.anchorPoints),
-              // Ensure anchorPoints is included in the data passed to PolarChart
-              anchorPoints: windData.anchorPoints
-            }))}
-            selectedWindSpeeds={selectedWindSpeeds}
-            editingWindSpeed={editingWindSpeed}
-          />
+          {chartType === 'recharts' ? (
+            <PolarChart 
+              polarData={polarData.map(windData => ({
+                ...windData,
+                angles: generateAllPoints(windData.anchorPoints),
+                // Ensure anchorPoints is included in the data passed to PolarChart
+                anchorPoints: windData.anchorPoints
+              }))}
+              selectedWindSpeeds={selectedWindSpeeds}
+              editingWindSpeed={editingWindSpeed}
+            />
+          ) : (
+            <LinePolarChart 
+              polarData={polarData}
+              selectedWindSpeeds={selectedWindSpeeds}
+              editingWindSpeed={editingWindSpeed}
+            />
+          )}
         </div>
         <div className="data-table">
           <PolarDataTable 
