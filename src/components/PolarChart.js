@@ -120,6 +120,14 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
             const isBeingEdited = windData.windSpeed === editingWindSpeed;
             const stroke = isBeingEdited ? '#ff0000' : colors[index % colors.length];
             
+            // Debug: Log radar component inputs
+            console.log(`Radar for wind speed ${windData.windSpeed}:`, {
+              isBeingEdited,
+              anchorPoints: windData.anchorPoints,
+              chartDataLength: chartData.length,
+              chartDataSample: chartData.slice(0, 3)
+            });
+            
             return (
               <Radar
                 key={windData.windSpeed}
