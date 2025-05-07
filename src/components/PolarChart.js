@@ -136,11 +136,7 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                     point => point.angle === props.payload.angle
                   );
                   
-                  // Debug to console
-                  if (isBeingEdited && props.payload.angle % 45 === 0) {
-                    console.log(`Checking dot for angle ${props.payload.angle}, isAnchor: ${isAnchorPoint}`);
-                    console.log('Available anchor points:', windData.anchorPoints.map(p => p.angle));
-                  }
+                  // Remove debug logs
                   
                   return isAnchorPoint && isBeingEdited ? (
                     <circle 

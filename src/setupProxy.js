@@ -9,3 +9,7 @@ module.exports = function(app) {
     })
   );
 };
+
+// Note: The webpack dev server deprecation warnings about 'onAfterSetupMiddleware' and 
+// 'onBeforeSetupMiddleware' are coming from react-scripts, not our code.
+// These would require updating react-scripts, which might break compatibility.
