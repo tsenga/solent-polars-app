@@ -45,7 +45,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => 
     // Scale for angles (0 at top, 180 at bottom, only right half)
     const angleScale = d3.scaleLinear()
       .domain([0, 180])
-      .range([Math.PI * 1.5, Math.PI * 0.5]); // Start at top (270°), end at bottom (90°)
+      .range([Math.PI * 0, Math.PI * 1]); // Start at top (0°), end at bottom (180°) - right side only
     
     // Create grid circles
     const gridCircles = [0, 0.25, 0.5, 0.75, 1];
@@ -81,8 +81,8 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => 
       .attr('class', 'angle-label')
       .attr('x', d => (radius + 15) * Math.cos(angleScale(d)))
       .attr('y', d => (radius + 15) * Math.sin(angleScale(d)))
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
+      .attr('text-anchor', d => d < 90 ? 'start' : (d > 90 ? 'end' : 'middle'))
+      .attr('dominant-baseline', d => d === 0 ? 'text-before-edge' : (d === 180 ? 'text-after-edge' : 'middle'))
       .attr('font-size', '12px')
       .text(d => `${d}°`);
     
@@ -93,8 +93,8 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => 
       .enter()
       .append('text')
       .attr('class', 'radius-label')
-      .attr('x', 5)
-      .attr('y', d => -rScale(d))
+      .attr('x', d => rScale(d) * 0.05) // Position slightly to the right of center
+      .attr('y', d => -rScale(d) * 0.05) // Position slightly above center
       .attr('text-anchor', 'start')
       .attr('dominant-baseline', 'middle')
       .attr('font-size', '10px')
