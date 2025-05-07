@@ -2,7 +2,6 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-// Use Object.assign instead of util._extend
 
 const app = express();
 const PORT = process.env.PORT || 3001;
