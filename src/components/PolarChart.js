@@ -136,8 +136,6 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                     point => point.angle === props.payload.angle
                   );
                   
-                  // Remove debug logs
-                  
                   return isAnchorPoint && isBeingEdited ? (
                     <circle 
                       cx={props.cx} 
