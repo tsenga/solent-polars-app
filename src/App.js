@@ -281,7 +281,9 @@ function App() {
           <PolarChart 
             polarData={polarData.map(windData => ({
               ...windData,
-              angles: generateAllPoints(windData.anchorPoints)
+              angles: generateAllPoints(windData.anchorPoints),
+              // Ensure anchorPoints is included in the data passed to PolarChart
+              anchorPoints: windData.anchorPoints
             }))}
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}

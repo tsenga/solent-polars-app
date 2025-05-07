@@ -55,9 +55,17 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
   // Get all unique angles across all selected wind speeds
   const allAngles = new Set();
   selectedData.forEach(windData => {
+    // Make sure to include all angles from the data
     windData.angles.forEach(angleData => {
       allAngles.add(angleData.angle);
     });
+    
+    // Also explicitly add all anchor points to ensure they're included
+    if (windData.anchorPoints) {
+      windData.anchorPoints.forEach(point => {
+        allAngles.add(point.angle);
+      });
+    }
   });
   
   // Create chart data with all angles
@@ -127,6 +135,13 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                   const isAnchorPoint = windData.anchorPoints.some(
                     point => point.angle === props.payload.angle
                   );
+                  
+                  // Debug to console
+                  if (isBeingEdited && props.payload.angle % 45 === 0) {
+                    console.log(`Checking dot for angle ${props.payload.angle}, isAnchor: ${isAnchorPoint}`);
+                    console.log('Available anchor points:', windData.anchorPoints.map(p => p.angle));
+                  }
+                  
                   return isAnchorPoint && isBeingEdited ? (
                     <circle 
                       cx={props.cx} 
