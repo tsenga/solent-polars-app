@@ -123,9 +123,10 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
             // Debug: Log radar component inputs
             console.log(`Radar for wind speed ${windData.windSpeed}:`, {
               isBeingEdited,
-              anchorPoints: windData.anchorPoints,
+              anchorPoints: windData.anchorPoints.map(p => p.angle),
               chartDataLength: chartData.length,
-              chartDataSample: chartData.slice(0, 3)
+              chartDataSample: chartData.slice(0, 3),
+              chartDataAngles: chartData.filter(d => d.angle % 45 === 0).map(d => d.angle)
             });
             
             return (
@@ -140,10 +141,14 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                 isAnimationActive={true}
                 dot={(props) => {
                   // Only show dots for anchor points of the wind speed being edited
+                  // The angle in the payload is the actual angle value (0-180)
+                  const angle = props.payload.angle;
                   const isAnchorPoint = windData.anchorPoints.some(
-                    point => point.angle === props.payload.angle
+                    point => point.angle === angle
                   );
-
+                  
+                  console.log(`Checking dot for angle ${angle}, isAnchor: ${isAnchorPoint}`);
+                  
                   return isAnchorPoint && isBeingEdited ? (
                     <circle 
                       cx={props.cx} 
@@ -157,12 +162,13 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed }) => {
                 }}
                 activeDot={(props) => {
                   // Only show active dots for anchor points of the wind speed being edited
+                  const angle = props.payload.angle;
                   const isAnchorPoint = windData.anchorPoints.some(
-                    point => point.angle === props.payload.angle
+                    point => point.angle === angle
                   );
 
                   if (isAnchorPoint && isBeingEdited) {
-                    console.log(`activeDot: angle: ${props.payload.angle}`)
+                    console.log(`activeDot: angle: ${angle}, isAnchor: ${isAnchorPoint}`);
                   }
                   return isAnchorPoint && isBeingEdited ? (
                     <circle 
