@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box } from '@mui/material';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
@@ -105,6 +106,25 @@ const generateAllPoints = (anchorPoints) => {
   
   return allPoints;
 };
+
+// Create a theme instance
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#007bff',
+      lighter: 'rgba(0, 123, 255, 0.1)',
+    },
+    secondary: {
+      main: '#6c757d',
+    },
+    success: {
+      main: '#28a745',
+    },
+    error: {
+      main: '#dc3545',
+    },
+  },
+});
 
 function App() {
   const [polarData, setPolarData] = useState(initialPolarData);
@@ -267,11 +287,15 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Interactive Polar Chart</h1>
-      </header>
-      <main>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box component="header" sx={{ mb: 4, textAlign: 'center' }}>
+          <Typography variant="h3" component="h1" gutterBottom>
+            Interactive Polar Chart
+          </Typography>
+        </Box>
+        <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
         <div className="file-section">
           <FileSelector 
             onFileLoad={handleFileLoad} 
@@ -356,8 +380,9 @@ function App() {
             onDeleteAngleEntry={deleteAngleEntry}
           />
         </div>
-      </main>
-    </div>
+        </Box>
+      </Container>
+    </ThemeProvider>
   );
 }
 

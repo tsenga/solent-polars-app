@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './FileSelector.css';
+import { 
+  Paper, Typography, Select, MenuItem, Button, 
+  FormControl, InputLabel, Box, CircularProgress,
+  Alert, Collapse, IconButton, Divider
+} from '@mui/material';
+import { ExpandMore, ExpandLess, CloudUpload } from '@mui/icons-material';
 
 const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
   const [files, setFiles] = useState([]);
@@ -176,58 +182,98 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
   };
 
   return (
-    <div className="file-selector">
-      <div className="file-selector-header" onClick={toggleDrawer}>
-        <h2>Polar Data Files</h2>
-        <span className={`drawer-icon ${isDrawerOpen ? 'open' : 'closed'}`}>
-          {isDrawerOpen ? '▼' : '▶'}
-        </span>
-      </div>
+    <Paper elevation={2} sx={{ mb: 3, overflow: 'hidden' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          p: 2,
+          cursor: 'pointer',
+          bgcolor: 'background.paper',
+          borderBottom: isDrawerOpen ? 1 : 0,
+          borderColor: 'divider'
+        }}
+        onClick={toggleDrawer}
+      >
+        <Typography variant="h6" component="h2">Polar Data Files</Typography>
+        <IconButton size="small">
+          {isDrawerOpen ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
+      </Box>
       
-      {isDrawerOpen && (
-        <div className="file-selector-content">
-          {loading && <p>Loading...</p>}
-          {error && <p className="error">Error: {error}</p>}
+      <Collapse in={isDrawerOpen}>
+        <Box sx={{ p: 2 }}>
+          {loading && <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 2 }} />}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>Error: {error}</Alert>}
           
-          <div className="file-select-container">
-            <select 
-              value={selectedFile} 
-              onChange={handleFileSelect}
-              disabled={loading || files.length === 0}
-            >
-              <option value="">Select a file...</option>
-              {files.map(file => (
-                <option key={file} value={file}>{file}</option>
-              ))}
-            </select>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="file-select-label">Select a file</InputLabel>
+              <Select
+                labelId="file-select-label"
+                value={selectedFile}
+                label="Select a file"
+                onChange={handleFileSelect}
+                disabled={loading || files.length === 0}
+              >
+                <MenuItem value="">
+                  <em>Select a file...</em>
+                </MenuItem>
+                {files.map(file => (
+                  <MenuItem key={file} value={file}>{file}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             
-            <button 
+            <Button 
+              variant="contained"
               onClick={handleLoadFile}
               disabled={!selectedFile || loading}
+              sx={{ minWidth: '100px' }}
             >
-              Load File
-            </button>
+              Load
+            </Button>
             
-            <button 
+            <Button 
+              variant="contained"
+              color="success"
               onClick={() => onDownloadPolarFile()}
-              className="download-button"
               title="Download current data as a polar file"
+              sx={{ minWidth: '100px' }}
             >
               Download
-            </button>
-          </div>
+            </Button>
+          </Box>
           
-          <div 
-            className={`drop-zone ${isDragging ? 'active' : ''}`}
+          <Box 
+            sx={{ 
+              border: '2px dashed',
+              borderColor: isDragging ? 'primary.main' : 'divider',
+              borderRadius: 2,
+              p: 3,
+              textAlign: 'center',
+              bgcolor: isDragging ? 'primary.lighter' : 'background.paper',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              mb: 2
+            }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={handleBrowseClick}
           >
-            <div className="drop-zone-content">
-              <p>Drag & drop a polar file here</p>
-              <p>or</p>
-              <button className="browse-button">Browse Files</button>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <CloudUpload sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+              <Typography variant="body1" color="text.secondary">
+                Drag & drop a polar file here
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                or
+              </Typography>
+              <Button variant="contained" component="span">
+                Browse Files
+              </Button>
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -235,17 +281,19 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
                 accept=".pol,.txt"
                 style={{ display: 'none' }}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
           
-          <p className="file-info">
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
             Polar files are tab-separated with wind speed in the first column, 
             followed by alternating columns of wind angle and boat speed.
             Lines starting with ! are treated as comments and ignored.
-          </p>
-        </div>
-      )}
-    </div>
+          </Typography>
+        </Box>
+      </Collapse>
+    </Paper>
   );
 };
 
