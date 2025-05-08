@@ -23,7 +23,8 @@
     "test": "NODE_OPTIONS='--openssl-legacy-provider' react-scripts test",
     "eject": "NODE_OPTIONS='--openssl-legacy-provider' react-scripts eject",
     "server": "node src/server.js",
-    "dev": "concurrently \"npm run server\" \"npm run start\""
+    "dev": "concurrently \"npm run server\" \"npm run start\"",
+    "package": "npm run build && docker build -t polar-chart-app ."
   },
   "eslintConfig": {
     "extends": [
