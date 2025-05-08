@@ -74,18 +74,22 @@ const generateAllPoints = (anchorPoints) => {
   
   // Generate points for every degree from 0 to 180
   const allPoints = [];
+  
+  // First add all anchor points (including non-integer angles)
+  sortedAnchorPoints.forEach(point => {
+    allPoints.push({
+      angle: point.angle,
+      boatSpeed: point.boatSpeed,
+      isAnchor: true
+    });
+  });
+  
+  // Then add integer degree points (if they're not already anchor points)
   for (let angle = 0; angle <= 180; angle++) {
-    // Check if this is an anchor point
-    const existingAnchorPoint = sortedAnchorPoints.find(p => p.angle === angle);
+    // Check if this integer angle already exists in our points (either as an anchor or already added)
+    const existingPoint = allPoints.find(p => Math.abs(p.angle - angle) < 0.001);
     
-    if (existingAnchorPoint) {
-      // Use the existing anchor point
-      allPoints.push({
-        angle,
-        boatSpeed: existingAnchorPoint.boatSpeed,
-        isAnchor: true
-      });
-    } else {
+    if (!existingPoint) {
       // Interpolate the boat speed
       const boatSpeed = interpolateBoatSpeed(sortedAnchorPoints, angle);
       allPoints.push({
@@ -95,6 +99,9 @@ const generateAllPoints = (anchorPoints) => {
       });
     }
   }
+  
+  // Sort all points by angle
+  allPoints.sort((a, b) => a.angle - b.angle);
   
   return allPoints;
 };
