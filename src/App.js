@@ -116,16 +116,12 @@ function App() {
                       (selectedWindSpeeds.length > 0 ? 
                         polarData.find(data => data.windSpeed === selectedWindSpeeds[0]) : 
                         polarData[0]);
-
-  console.log(selectedWindSpeedData);
   
   // Generate all points for the selected wind speed
   const selectedData = {
     ...selectedWindSpeedData,
     angles: generateAllPoints(selectedWindSpeedData.anchorPoints)
   };
-
-  console.log(selectedData.angles.filter(data => data.isAnchor));
   
   // Update boat speed for a specific angle
   const updateBoatSpeed = (angle, newSpeed) => {
@@ -294,7 +290,6 @@ function App() {
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}
             onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
-              console.log(`onUpdateAnchorPoint ${windSpeed}, ${oldAngle}, ${newAngle}, ${newSpeed}`)
               setPolarData(prevData => {
                 return prevData.map(windData => {
                   if (windData.windSpeed === windSpeed) {
