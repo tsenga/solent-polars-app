@@ -329,6 +329,7 @@ function App() {
               selectedWindSpeeds={selectedWindSpeeds}
               editingWindSpeed={editingWindSpeed}
               onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                console.log(`onUpdateAnchorPoint ${windSpeed}, ${oldAngle}, ${newAngle}, ${newSpeed}`)
                 setPolarData(prevData => {
                   return prevData.map(windData => {
                     if (windData.windSpeed === windSpeed) {

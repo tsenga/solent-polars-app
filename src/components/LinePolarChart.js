@@ -187,9 +187,13 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
             
             // Call the update function from parent component
             // We need to pass this function as a prop
-            if (onUpdateAnchorPoint) {
-              onUpdateAnchorPoint(windData.windSpeed, d.angle, finalAngle, finalSpeed);
-            }
+            if (onUpdateAnchorPoint) {                                                                                           
+              const originalAngle = d.angle;                                                                                     
+                               
+              console.log(`LinePolarChart ${originalAngle}. ${finalAngle}, ${d.boatSpeed}, ${finalSpeed}`)
+                                                     
+              onUpdateAnchorPoint(windData.windSpeed, originalAngle, finalAngle, finalSpeed);                                                                                                                                                    
+            }     
           });
         
         svg.selectAll(`.dot-${windData.windSpeed}`)
