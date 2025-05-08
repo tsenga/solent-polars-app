@@ -1,15 +1,36 @@
 .file-selector {
   margin-bottom: 20px;
-  padding: 15px;
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.file-selector h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
+.file-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.file-selector-header:hover {
+  background-color: #e9ecef;
+}
+
+.file-selector-header h2 {
+  margin: 0;
   color: #2c3e50;
+}
+
+.drawer-icon {
+  font-size: 16px;
+  color: #6c757d;
+  transition: transform 0.3s ease;
+}
+
+.file-selector-content {
+  padding: 15px;
 }
 
 .file-select-container {

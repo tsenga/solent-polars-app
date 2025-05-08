@@ -7,6 +7,7 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const fileInputRef = useRef(null);
 
   // Fetch available files from the data directory
@@ -49,6 +50,8 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
       const data = await response.json();
       onFileLoad(data.polarData);
       setLoading(false);
+      // Close the drawer after successful file load
+      setIsDrawerOpen(false);
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -75,6 +78,8 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
         const parsedData = parsePolarFile(fileContent);
         onFileLoad(parsedData);
         setLoading(false);
+        // Close the drawer after successful file load
+        setIsDrawerOpen(false);
       } catch (err) {
         setError(`Failed to parse file: ${err.message}`);
         setLoading(false);
@@ -165,14 +170,26 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
     fileInputRef.current.click();
   };
 
+  // Toggle drawer open/closed
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
   return (
     <div className="file-selector">
-      <h2>Polar Data Files</h2>
+      <div className="file-selector-header" onClick={toggleDrawer}>
+        <h2>Polar Data Files</h2>
+        <span className={`drawer-icon ${isDrawerOpen ? 'open' : 'closed'}`}>
+          {isDrawerOpen ? '▼' : '▶'}
+        </span>
+      </div>
       
-      {loading && <p>Loading...</p>}
-      {error && <p className="error">Error: {error}</p>}
-      
-      <div className="file-select-container">
+      {isDrawerOpen && (
+        <div className="file-selector-content">
+          {loading && <p>Loading...</p>}
+          {error && <p className="error">Error: {error}</p>}
+          
+          <div className="file-select-container">
         <select 
           value={selectedFile} 
           onChange={handleFileSelect}
@@ -198,34 +215,36 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
         >
           Download
         </button>
-      </div>
-      
-      <div 
-        className={`drop-zone ${isDragging ? 'active' : ''}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={handleBrowseClick}
-      >
-        <div className="drop-zone-content">
-          <p>Drag & drop a polar file here</p>
-          <p>or</p>
-          <button className="browse-button">Browse Files</button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileInputChange} 
-            accept=".pol,.txt"
-            style={{ display: 'none' }}
-          />
+          </div>
+          
+          <div 
+            className={`drop-zone ${isDragging ? 'active' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={handleBrowseClick}
+          >
+            <div className="drop-zone-content">
+              <p>Drag & drop a polar file here</p>
+              <p>or</p>
+              <button className="browse-button">Browse Files</button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileInputChange} 
+                accept=".pol,.txt"
+                style={{ display: 'none' }}
+              />
+            </div>
+          </div>
+          
+          <p className="file-info">
+            Polar files are tab-separated with wind speed in the first column, 
+            followed by alternating columns of wind angle and boat speed.
+            Lines starting with ! are treated as comments and ignored.
+          </p>
         </div>
-      </div>
-      
-      <p className="file-info">
-        Polar files are tab-separated with wind speed in the first column, 
-        followed by alternating columns of wind angle and boat speed.
-        Lines starting with ! are treated as comments and ignored.
-      </p>
+      )}
     </div>
   );
 };
