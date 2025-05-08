@@ -46,6 +46,14 @@
   cursor: not-allowed;
 }
 
+.file-select-container .download-button {
+  background-color: #28a745;
+}
+
+.file-select-container .download-button:hover {
+  background-color: #218838;
+}
+
 .file-info {
   margin-top: 10px;
   font-style: italic;

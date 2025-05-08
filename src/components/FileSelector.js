@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FileSelector.css';
 
-const FileSelector = ({ onFileLoad }) => {
+const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState('');
   const [loading, setLoading] = useState(false);
@@ -77,6 +77,14 @@ const FileSelector = ({ onFileLoad }) => {
           disabled={!selectedFile || loading}
         >
           Load File
+        </button>
+        
+        <button 
+          onClick={() => onDownloadPolarFile()}
+          className="download-button"
+          title="Download current data as a polar file"
+        >
+          Download
         </button>
       </div>
       
