@@ -11,6 +11,7 @@ services:
     restart: unless-stopped
 
   backend:
+    image: polar-chart-backend
     build:
       context: .
       dockerfile: Dockerfile.server
