@@ -190,31 +190,31 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
           {error && <p className="error">Error: {error}</p>}
           
           <div className="file-select-container">
-        <select 
-          value={selectedFile} 
-          onChange={handleFileSelect}
-          disabled={loading || files.length === 0}
-        >
-          <option value="">Select a file...</option>
-          {files.map(file => (
-            <option key={file} value={file}>{file}</option>
-          ))}
-        </select>
-        
-        <button 
-          onClick={handleLoadFile}
-          disabled={!selectedFile || loading}
-        >
-          Load File
-        </button>
-        
-        <button 
-          onClick={() => onDownloadPolarFile()}
-          className="download-button"
-          title="Download current data as a polar file"
-        >
-          Download
-        </button>
+            <select 
+              value={selectedFile} 
+              onChange={handleFileSelect}
+              disabled={loading || files.length === 0}
+            >
+              <option value="">Select a file...</option>
+              {files.map(file => (
+                <option key={file} value={file}>{file}</option>
+              ))}
+            </select>
+            
+            <button 
+              onClick={handleLoadFile}
+              disabled={!selectedFile || loading}
+            >
+              Load File
+            </button>
+            
+            <button 
+              onClick={() => onDownloadPolarFile()}
+              className="download-button"
+              title="Download current data as a polar file"
+            >
+              Download
+            </button>
           </div>
           
           <div 

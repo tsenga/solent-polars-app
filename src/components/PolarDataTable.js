@@ -121,17 +121,29 @@ const PolarDataTable = ({
               <td>
                 {editingCell === item.angle ? (
                   <>
-                    <button onClick={saveEdit}>Save</button>
-                    <button onClick={cancelEdit}>Cancel</button>
+                    <button onClick={saveEdit} title="Save">
+                      <span role="img" aria-label="Save">✓</span>
+                    </button>
+                    <button onClick={cancelEdit} title="Cancel">
+                      <span role="img" aria-label="Cancel">✕</span>
+                    </button>
                   </>
                 ) : (
                   <>
-                    <button onClick={() => startEditing(item.angle, item.boatSpeed)}>Edit</button>
+                    <button 
+                      onClick={() => startEditing(item.angle, item.boatSpeed)}
+                      title="Edit"
+                      className="icon-button edit-button"
+                    >
+                      <span role="img" aria-label="Edit">✏️</span>
+                    </button>
                     <button 
                       onClick={() => onDeleteAngleEntry(item.angle)}
                       disabled={item.angle === 0 || item.angle === 180}
+                      title="Delete"
+                      className="icon-button delete-button"
                     >
-                      Delete
+                      <span role="img" aria-label="Delete">🗑️</span>
                     </button>
                   </>
                 )}
