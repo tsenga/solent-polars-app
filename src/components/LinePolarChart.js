@@ -2,6 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import './LinePolarChart.css';
 
+// Define colors array outside the component for consistency
+const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
+
 const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateAnchorPoint }) => {
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -118,7 +121,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       .style('z-index', '1000');
     
     // Draw lines for each wind speed
-    const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
+    // Using the colors array defined at the top of the component
     
     selectedData.forEach((windData, index) => {
       const isBeingEdited = windData.windSpeed === editingWindSpeed;
@@ -230,19 +233,37 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
           });
       }
       
-      // Add wind speed label
-      svg.append('text')
-        .attr('x', rScale(sortedPoints[sortedPoints.length - 1].boatSpeed) * Math.cos(angleScale(sortedPoints[sortedPoints.length - 1].angle)) + 10)
-        .attr('y', rScale(sortedPoints[sortedPoints.length - 1].boatSpeed) * Math.sin(angleScale(sortedPoints[sortedPoints.length - 1].angle)))
-        .attr('text-anchor', 'start')
-        .attr('dominant-baseline', 'middle')
-        .attr('font-size', '12px')
-        .attr('font-weight', isBeingEdited ? 'bold' : 'normal')
-        .attr('fill', color)
-        .text(`${windData.windSpeed} knots${isBeingEdited ? ' (editing)' : ''}`);
+      // We'll create a legend instead of adding labels directly to the chart
     });
     
   }, [selectedData, editingWindSpeed]);
+
+  // Create a legend for the wind speeds
+  const renderLegend = () => {
+    return (
+      <div className="chart-legend">
+        {selectedData.map((windData, index) => {
+          const isBeingEdited = windData.windSpeed === editingWindSpeed;
+          const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
+          
+          return (
+            <div key={windData.windSpeed} className="legend-item">
+              <span 
+                className="legend-color" 
+                style={{ backgroundColor: color }}
+              ></span>
+              <span 
+                className="legend-label"
+                style={{ fontWeight: isBeingEdited ? 'bold' : 'normal' }}
+              >
+                {windData.windSpeed} knots{isBeingEdited ? ' (editing)' : ''}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="line-polar-chart">
@@ -251,6 +272,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
         <svg ref={svgRef} width="100%" height="100%"></svg>
         <div ref={tooltipRef} className="tooltip"></div>
       </div>
+      {renderLegend()}
       <div className="chart-footer">
         <p>Angle (degrees) vs Boat Speed (knots)</p>
       </div>

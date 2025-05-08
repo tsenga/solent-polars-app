@@ -16,6 +16,34 @@
   min-height: 400px;
 }
 
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 15px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-label {
+  font-size: 12px;
+}
+
 .chart-footer {
   text-align: center;
   margin-top: 10px;
