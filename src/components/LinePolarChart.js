@@ -246,7 +246,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
 
   return (
     <div className="line-polar-chart">
-      <h2>D3 Polar Chart for Selected Wind Speeds</h2>
+      <h2>Polar Chart for Selected Wind Speeds</h2>
       <div className="chart-container">
         <svg ref={svgRef} width="100%" height="100%"></svg>
         <div ref={tooltipRef} className="tooltip"></div>
