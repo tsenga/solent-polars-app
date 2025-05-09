@@ -29,7 +29,7 @@
     "server": "node src/server.js",
     "dev": "concurrently \"npm run server\" \"npm run start\"",
     "package": "npm run build && docker build -t polar-chart-app . && docker build -f Dockerfile.server -t polar-chart-backend . ",
-    "deploy": "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 057461649399.dkr.ecr.eu-west-2.amazonaws.com && docker tag polar-chart-app:latest 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-app && docker push 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-app:latest"
+    "deploy": "export VERSION=$(date +%Y%m%d-%H%M%S) && aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 057461649399.dkr.ecr.eu-west-2.amazonaws.com && docker tag polar-chart-app:latest 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-app:$VERSION && docker tag polar-chart-app:latest 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-app:latest && docker tag polar-chart-backend:latest 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-backend:$VERSION && docker tag polar-chart-backend:latest 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-backend:latest && docker push 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-app:$VERSION && docker push 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-app:latest && docker push 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-backend:$VERSION && docker push 057461649399.dkr.ecr.eu-west-2.amazonaws.com/solent/polar-chart-backend:latest"
   },
   "eslintConfig": {
     "extends": [
