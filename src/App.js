@@ -332,9 +332,14 @@ function App() {
   // Filter parquet data for the currently editing wind speed band
   const filterParquetDataForEditingWindSpeed = (data, windSpeed, twsBands) => {
     if (!data || data.length === 0) {
+      console.log(`No parquet data to filter for wind speed ${windSpeed}`);
       setDisplayedParquetData([]);
       return;
     }
+
+    console.log(`Filtering parquet data for editing wind speed: ${windSpeed}`);
+    console.log(`Available TWS bands: [${twsBands.join(', ')}]`);
+    console.log(`Total parquet points to filter: ${data.length}`);
 
     // Find the closest TWS band to the editing wind speed
     const filtered = data.filter(point => {
@@ -347,6 +352,13 @@ function App() {
       return closestBand === windSpeed;
     });
 
+    console.log(`Filtered parquet points for TWS ${windSpeed}: ${filtered.length}`);
+    console.log('Sample filtered points:', filtered.slice(0, 5).map(p => ({
+      twa: p.twa,
+      bsp: p.bsp,
+      tws: p.tws
+    })));
+
     setDisplayedParquetData(filtered);
   };
 
@@ -358,6 +370,7 @@ function App() {
   // Update filtered parquet data when editing wind speed changes
   useEffect(() => {
     if (parquetData.length > 0) {
+      console.log(`Wind speed selection changed to: ${editingWindSpeed}`);
       const twsBands = polarData.map(data => data.windSpeed);
       filterParquetDataForEditingWindSpeed(parquetData, editingWindSpeed, twsBands);
     }
