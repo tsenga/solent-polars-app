@@ -12,9 +12,11 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
   // Find max boat speed for setting the domain
   const allBoatSpeeds = [];
   selectedData.forEach(windData => {
-    windData.angles.forEach(angleData => {
-      allBoatSpeeds.push(angleData.boatSpeed);
-    });
+    if (windData.anchorPoints) {
+      windData.anchorPoints.forEach(anchorPoint => {
+        allBoatSpeeds.push(anchorPoint.boatSpeed);
+      });
+    }
   });
   
   const maxBoatSpeed = Math.max(...allBoatSpeeds) || 10;
@@ -48,10 +50,10 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
   
   // Generate path for a wind speed curve
   const generatePath = (windData) => {
-    const points = windData.angles
-      .filter(angleData => angleData.angle >= 0 && angleData.angle <= 180)
+    const points = windData.anchorPoints
+      .filter(anchorPoint => anchorPoint.angle >= 0 && anchorPoint.angle <= 180)
       .sort((a, b) => a.angle - b.angle)
-      .map(angleData => polarToSVG(angleData.angle, angleData.boatSpeed));
+      .map(anchorPoint => polarToSVG(anchorPoint.angle, anchorPoint.boatSpeed));
     
     if (points.length === 0) return '';
     
