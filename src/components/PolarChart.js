@@ -43,7 +43,7 @@ const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
   return null;
 };
 
-const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateAnchorPoint }) => {
+const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetData = [], onUpdateAnchorPoint }) => {
   const chartRef = useRef(null);
   // Find all data for selected wind speeds
   const selectedData = polarData.filter(data => 
@@ -68,6 +68,14 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateA
       });
     }
   });
+
+  // Prepare parquet data for scatter plot
+  const scatterData = parquetData.map(point => ({
+    angle: point.twa,
+    boatSpeed: point.bsp,
+    tws: point.tws,
+    timestamp: point.timestamp
+  }));
   
   // Create chart data with all angles
   Array.from(allAngles).sort((a, b) => a - b).forEach(angle => {
@@ -208,6 +216,11 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateA
   return (
     <div style={{ width: '100%', height: '100%' }} ref={chartRef}>
       <h2>Polar Chart for Selected Wind Speeds</h2>
+      {parquetData.length > 0 && (
+        <div style={{ marginBottom: '10px', fontSize: '14px', color: '#666' }}>
+          Showing {parquetData.length} data points for TWS band {editingWindSpeed} knots
+        </div>
+      )}
       <ResponsiveContainer width="100%" height="80%">
         <RadarChart startAngle={90} endAngle={-90} cx="50%" cy="50%">
           <PolarGrid />
@@ -226,6 +239,29 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateA
             tick={{ fontSize: 12 }}
             tickFormatter={(value) => `${value}`}
           />
+          
+          {/* Scatter plot for parquet data */}
+          {scatterData.length > 0 && (
+            <Radar
+              name="Actual Data"
+              dataKey="boatSpeed"
+              stroke="rgba(255, 0, 0, 0.6)"
+              fill="none"
+              strokeWidth={0}
+              data={scatterData}
+              dot={(props) => (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={1.5} 
+                  fill="rgba(255, 0, 0, 0.6)" 
+                  stroke="none"
+                />
+              )}
+              line={false}
+              isAnimationActive={false}
+            />
+          )}
           {selectedData.map((windData, index) => {
             // Generate different colors for each wind speed
             const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];

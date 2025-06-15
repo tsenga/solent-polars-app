@@ -2,6 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const AWS = require('aws-sdk');
+const parquet = require('parquetjs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,6 +13,13 @@ app.use(cors());
 
 // Middleware to parse JSON
 app.use(express.json());
+
+// Configure AWS SDK
+AWS.config.update({
+  region: 'us-east-1' // Update this to match your S3 bucket region
+});
+
+const s3 = new AWS.S3();
 
 // API endpoint to get list of files in the data directory
 app.get('/api/files', (req, res) => {
@@ -56,6 +65,84 @@ app.get('/api/files/:filename', (req, res) => {
       res.status(400).json({ error: `Failed to parse file: ${parseErr.message}` });
     }
   });
+});
+
+// API endpoint to get parquet data with filtering
+app.post('/api/parquet-data', async (req, res) => {
+  try {
+    const { startTime, endTime, twsBands } = req.body;
+    
+    console.log('Fetching parquet data with filters:', { startTime, endTime, twsBands });
+    
+    // Download parquet file from S3
+    const params = {
+      Bucket: 'sailing-tseng',
+      Key: 'quailo/exp_logs.parquet'
+    };
+    
+    const s3Object = await s3.getObject(params).promise();
+    
+    // Write to temporary file
+    const tempFilePath = path.join(__dirname, 'temp_data.parquet');
+    fs.writeFileSync(tempFilePath, s3Object.Body);
+    
+    // Read parquet file
+    const reader = await parquet.ParquetReader.openFile(tempFilePath);
+    const cursor = reader.getCursor();
+    
+    const filteredData = [];
+    let record = null;
+    
+    while (record = await cursor.next()) {
+      // Extract required fields
+      const { bsp, twa, tws, timestamp } = record;
+      
+      // Skip records with missing required data
+      if (bsp == null || twa == null || tws == null) continue;
+      
+      // Apply time filter if provided
+      if (startTime && endTime) {
+        const recordTime = new Date(timestamp);
+        if (recordTime < new Date(startTime) || recordTime > new Date(endTime)) {
+          continue;
+        }
+      }
+      
+      // Apply TWS band filter if provided
+      if (twsBands && twsBands.length > 0) {
+        // Find the closest TWS band
+        const closestBand = twsBands.reduce((closest, band) => {
+          const currentDiff = Math.abs(tws - band);
+          const closestDiff = Math.abs(tws - closest);
+          return currentDiff < closestDiff ? band : closest;
+        });
+        
+        // Only include if within reasonable range of the band (±2.5 knots)
+        if (Math.abs(tws - closestBand) > 2.5) {
+          continue;
+        }
+      }
+      
+      filteredData.push({
+        bsp: parseFloat(bsp),
+        twa: parseFloat(twa),
+        tws: parseFloat(tws),
+        timestamp: timestamp
+      });
+    }
+    
+    await reader.close();
+    
+    // Clean up temp file
+    fs.unlinkSync(tempFilePath);
+    
+    console.log(`Returning ${filteredData.length} filtered records`);
+    res.json({ data: filteredData });
+    
+  } catch (error) {
+    console.error('Error fetching parquet data:', error);
+    res.status(500).json({ error: 'Failed to fetch parquet data: ' + error.message });
+  }
 });
 
 // Function to parse polar file content

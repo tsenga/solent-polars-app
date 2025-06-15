@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box } from '@mui/material';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
+import DataFilter from './components/DataFilter';
 
 // Sample initial data with anchor points
 const initialPolarData = [
@@ -130,6 +131,10 @@ function App() {
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
+  const [parquetData, setParquetData] = useState([]);
+  const [filteredParquetData, setFilteredParquetData] = useState([]);
+  const [dataFilter, setDataFilter] = useState(null);
+  const [loadingParquetData, setLoadingParquetData] = useState(false);
   
   // Find the data for the selected wind speeds and the one being edited
   const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
@@ -286,6 +291,82 @@ function App() {
     }
   };
 
+  // Fetch parquet data based on current filters and TWS bands
+  const fetchParquetData = async (filter = null) => {
+    setLoadingParquetData(true);
+    try {
+      const twsBands = polarData.map(data => data.windSpeed);
+      
+      const response = await fetch('/api/parquet-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startTime: filter?.startTime,
+          endTime: filter?.endTime,
+          twsBands: twsBands
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch parquet data');
+      }
+
+      const result = await response.json();
+      setParquetData(result.data);
+      
+      // Filter data for the currently editing wind speed
+      filterParquetDataForEditingWindSpeed(result.data, editingWindSpeed, twsBands);
+      
+    } catch (error) {
+      console.error('Error fetching parquet data:', error);
+      alert('Failed to load parquet data: ' + error.message);
+    } finally {
+      setLoadingParquetData(false);
+    }
+  };
+
+  // Filter parquet data for the currently editing wind speed band
+  const filterParquetDataForEditingWindSpeed = (data, windSpeed, twsBands) => {
+    if (!data || data.length === 0) {
+      setFilteredParquetData([]);
+      return;
+    }
+
+    // Find the closest TWS band to the editing wind speed
+    const filtered = data.filter(point => {
+      const closestBand = twsBands.reduce((closest, band) => {
+        const currentDiff = Math.abs(point.tws - band);
+        const closestDiff = Math.abs(point.tws - closest);
+        return currentDiff < closestDiff ? band : closest;
+      });
+      
+      return closestBand === windSpeed;
+    });
+
+    setFilteredParquetData(filtered);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (filter) => {
+    setDataFilter(filter);
+    fetchParquetData(filter);
+  };
+
+  // Update filtered parquet data when editing wind speed changes
+  useEffect(() => {
+    if (parquetData.length > 0) {
+      const twsBands = polarData.map(data => data.windSpeed);
+      filterParquetDataForEditingWindSpeed(parquetData, editingWindSpeed, twsBands);
+    }
+  }, [editingWindSpeed, parquetData, polarData]);
+
+  // Initial load of parquet data
+  useEffect(() => {
+    fetchParquetData();
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -346,6 +427,7 @@ function App() {
             polarData={polarData}
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}
+            parquetData={filteredParquetData}
             onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
               setPolarData(prevData => {
                 return prevData.map(windData => {
