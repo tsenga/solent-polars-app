@@ -235,7 +235,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
           <PolarRadiusAxis
             angle={0}
             domain={domain}
-            tickCount={domain[1] + 1}
+            ticks={Array.from({ length: domain[1] + 1 }, (_, i) => i)}
             tick={{ fontSize: 12 }}
             tickFormatter={(value) => `${value}`}
           />
