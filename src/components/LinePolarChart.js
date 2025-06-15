@@ -192,9 +192,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
             // We need to pass this function as a prop
             if (onUpdateAnchorPoint) {                                                                                           
               const originalAngle = d.angle;                                                                                     
-                               
-              console.log(`LinePolarChart ${originalAngle}. ${finalAngle}, ${d.boatSpeed}, ${finalSpeed}`)
-                                                     
+                                                                                    
               onUpdateAnchorPoint(windData.windSpeed, originalAngle, finalAngle, finalSpeed);                                                                                                                                                    
             }     
           });
@@ -236,7 +234,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       // We'll create a legend instead of adding labels directly to the chart
     });
     
-  }, [selectedData, editingWindSpeed]);
+  }, [selectedData, editingWindSpeed, onUpdateAnchorPoint]);
 
   // Create a legend for the wind speeds
   const renderLegend = () => {
