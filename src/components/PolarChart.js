@@ -77,17 +77,20 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
           {/* Grid circles */}
-          {gridCircles.map(radius => (
-            <circle
-              key={radius}
-              cx={centerX}
-              cy={centerY}
-              r={(radius / maxRadius) * chartRadius}
-              fill="none"
-              stroke="#e0e0e0"
-              strokeWidth={1}
-            />
-          ))}
+          {gridCircles.map(radius => {
+            const circleRadius = (radius / maxRadius) * chartRadius;
+            return (
+              <circle
+                key={radius}
+                cx={centerX}
+                cy={centerY}
+                r={circleRadius}
+                fill="none"
+                stroke={radius === 0 ? "none" : "#e0e0e0"}
+                strokeWidth={1}
+              />
+            );
+          })}
           
           {/* Radial lines for angles */}
           {[0, 30, 45, 60, 90, 120, 135, 150, 180].map(angle => {
@@ -124,7 +127,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
           })}
           
           {/* Radius labels */}
-          {gridCircles.slice(1).map(radius => (
+          {gridCircles.filter(radius => radius > 0).map(radius => (
             <text
               key={radius}
               x={centerX + 5}
