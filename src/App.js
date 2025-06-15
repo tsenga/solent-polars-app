@@ -133,7 +133,6 @@ function App() {
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   const [parquetData, setParquetData] = useState([]);
   const [filteredParquetData, setFilteredParquetData] = useState([]);
-  const [dataFilter, setDataFilter] = useState(null);
   const [loadingParquetData, setLoadingParquetData] = useState(false);
   
   // Find the data for the selected wind speeds and the one being edited
@@ -350,7 +349,6 @@ function App() {
 
   // Handle filter changes
   const handleFilterChange = (filter) => {
-    setDataFilter(filter);
     fetchParquetData(filter);
   };
 
@@ -365,6 +363,7 @@ function App() {
   // Initial load of parquet data
   useEffect(() => {
     fetchParquetData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

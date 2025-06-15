@@ -43,7 +43,7 @@ const CustomTooltip = ({ active, payload, editingWindSpeed }) => {
   return null;
 };
 
-const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetData = [], onUpdateAnchorPoint }) => {
+const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetData = [], onUpdateAnchorPoint }) => {
   const chartRef = useRef(null);
   // Find all data for selected wind speeds
   const selectedData = polarData.filter(data => 
@@ -357,4 +357,4 @@ const PolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetDa
   );
 };
 
-export default PolarChart;
+export default LinePolarChart;
