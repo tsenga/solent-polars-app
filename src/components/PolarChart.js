@@ -245,19 +245,23 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
             <Radar
               name="Actual Data"
               dataKey="boatSpeed"
-              stroke="rgba(255, 0, 0, 0.6)"
+              stroke="none"
               fill="none"
               strokeWidth={0}
               data={scatterData}
-              dot={(props) => (
-                <circle 
-                  cx={props.cx} 
-                  cy={props.cy} 
-                  r={1.5} 
-                  fill="rgba(255, 0, 0, 0.6)" 
-                  stroke="none"
-                />
-              )}
+              dot={(props) => {
+                if (!props.cx || !props.cy) return null;
+                return (
+                  <circle 
+                    cx={props.cx} 
+                    cy={props.cy} 
+                    r={2} 
+                    fill="rgba(255, 0, 0, 0.8)" 
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    strokeWidth={0.5}
+                  />
+                );
+              }}
               line={false}
               isAnimationActive={false}
             />
