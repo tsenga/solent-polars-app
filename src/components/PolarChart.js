@@ -240,32 +240,6 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
             tickFormatter={(value) => `${value}`}
           />
           
-          {/* Scatter plot for parquet data */}
-          {scatterData.length > 0 && (
-            <Radar
-              name="Actual Data"
-              dataKey="boatSpeed"
-              stroke="none"
-              fill="none"
-              strokeWidth={0}
-              data={scatterData}
-              dot={(props) => {
-                if (!props.cx || !props.cy) return null;
-                return (
-                  <circle 
-                    cx={props.cx} 
-                    cy={props.cy} 
-                    r={2} 
-                    fill="rgba(255, 0, 0, 0.8)" 
-                    stroke="rgba(255, 255, 255, 0.5)"
-                    strokeWidth={0.5}
-                  />
-                );
-              }}
-              line={false}
-              isAnimationActive={false}
-            />
-          )}
           {selectedData.map((windData, index) => {
             // Generate different colors for each wind speed
             const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
