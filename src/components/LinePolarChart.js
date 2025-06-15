@@ -40,9 +40,12 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       d3.max(windData.anchorPoints, d => d.boatSpeed)
     ) || 10;
     
+    // Round up to next full BSP for grid circles
+    const maxRadius = Math.ceil(maxBoatSpeed);
+    
     // Scale for radius (boat speed)
     const rScale = d3.scaleLinear()
-      .domain([0, maxBoatSpeed * 1.2]) // Add 20% margin
+      .domain([0, maxRadius])
       .range([0, radius]);
     
     // Scale for angles (0 at top, 180 at bottom, only right half)
@@ -50,16 +53,16 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       .domain([0, 180])
       .range([Math.PI * 0, Math.PI * 1]); // Start at top (0°), end at bottom (180°) - right side only
     
-    // Create grid circles
-    const gridCircles = [0, 0.25, 0.5, 0.75, 1];
+    // Create grid circles at 1 BSP increments
+    const gridCircles = Array.from({ length: maxRadius + 1 }, (_, i) => i);
     svg.selectAll('.grid-circle')
       .data(gridCircles)
       .enter()
       .append('circle')
       .attr('class', 'grid-circle')
-      .attr('r', d => rScale(d * maxBoatSpeed * 1.2))
+      .attr('r', d => rScale(d))
       .attr('fill', 'none')
-      .attr('stroke', '#ddd')
+      .attr('stroke', d === 0 ? 'none' : '#ddd')
       .attr('stroke-dasharray', '3,3');
     
     // Create grid lines for angles
@@ -89,19 +92,19 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       .attr('font-size', '12px')
       .text(d => `${d}°`);
     
-    // Add radius labels (boat speed)
-    const radiusLabels = [0, maxBoatSpeed * 0.3, maxBoatSpeed * 0.6, maxBoatSpeed * 0.9, maxBoatSpeed * 1.2];
+    // Add BSP labels at 1 knot increments
+    const radiusLabels = gridCircles.filter(bspValue => bspValue > 0);
     svg.selectAll('.radius-label')
       .data(radiusLabels)
       .enter()
       .append('text')
       .attr('class', 'radius-label')
-      .attr('x', d => rScale(d) * 0.05) // Position slightly to the right of center
-      .attr('y', d => -rScale(d) * 0.05) // Position slightly above center
+      .attr('x', 5) // Position slightly to the right of center
+      .attr('y', d => -rScale(d)) // Position at the grid circle
       .attr('text-anchor', 'start')
       .attr('dominant-baseline', 'middle')
       .attr('font-size', '10px')
-      .text(d => d.toFixed(1));
+      .text(d => d);
     
     // Create line generator
     const lineGenerator = d3.lineRadial()
