@@ -100,6 +100,15 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
   
   const maxBoatSpeed = Math.max(...allBoatSpeeds) || 10;
   const domain = [0, Math.ceil(maxBoatSpeed)]; // Round up to next full BSP
+  const ticks = Array.from({ length: domain[1] + 1 }, (_, i) => i);
+  
+  // Debug logging
+  console.log('Grid circle debug:', {
+    maxBoatSpeed,
+    domain,
+    ticks,
+    expectedCircles: ticks.length
+  });
   
   // Add drag functionality
   useEffect(() => {
@@ -235,7 +244,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
           <PolarRadiusAxis
             angle={0}
             domain={domain}
-            ticks={Array.from({ length: domain[1] + 1 }, (_, i) => i)}
+            ticks={ticks}
             tick={{ fontSize: 12 }}
             tickFormatter={(value) => `${value}`}
           />
