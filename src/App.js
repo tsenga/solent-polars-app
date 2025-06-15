@@ -6,6 +6,7 @@ import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
 import DataFilter from './components/DataFilter';
+import ParquetDataSummary from './components/ParquetDataSummary';
 
 // Sample initial data with anchor points
 const initialPolarData = [
@@ -133,6 +134,7 @@ function App() {
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   const [parquetData, setParquetData] = useState([]);
   const [filteredParquetData, setFilteredParquetData] = useState([]);
+  const [displayedParquetData, setDisplayedParquetData] = useState([]);
   const [loadingParquetData, setLoadingParquetData] = useState(false);
   
   // Find the data for the selected wind speeds and the one being edited
@@ -314,6 +316,7 @@ function App() {
 
       const result = await response.json();
       setParquetData(result.data);
+      setFilteredParquetData(result.data);
       
       // Filter data for the currently editing wind speed
       filterParquetDataForEditingWindSpeed(result.data, editingWindSpeed, twsBands);
@@ -329,7 +332,7 @@ function App() {
   // Filter parquet data for the currently editing wind speed band
   const filterParquetDataForEditingWindSpeed = (data, windSpeed, twsBands) => {
     if (!data || data.length === 0) {
-      setFilteredParquetData([]);
+      setDisplayedParquetData([]);
       return;
     }
 
@@ -344,7 +347,7 @@ function App() {
       return closestBand === windSpeed;
     });
 
-    setFilteredParquetData(filtered);
+    setDisplayedParquetData(filtered);
   };
 
   // Handle filter changes
