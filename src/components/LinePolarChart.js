@@ -62,7 +62,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       .attr('class', 'grid-circle')
       .attr('r', d => rScale(d))
       .attr('fill', 'none')
-      .attr('stroke', d === 0 ? 'none' : '#ddd')
+      .attr('stroke', d => d === 0 ? 'none' : '#ddd')
       .attr('stroke-dasharray', '3,3');
     
     // Create grid lines for angles
