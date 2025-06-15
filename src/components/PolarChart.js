@@ -78,17 +78,17 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
       
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
-          {/* Grid circles */}
-          {gridCircles.map(radius => {
-            const circleRadius = (radius / maxRadius) * chartRadius;
+          {/* Grid circles at 1 BSP increments */}
+          {gridCircles.map(bspValue => {
+            const circleRadius = (bspValue / maxRadius) * chartRadius;
             return (
               <circle
-                key={radius}
+                key={bspValue}
                 cx={centerX}
                 cy={centerY}
                 r={circleRadius}
                 fill="none"
-                stroke={radius === 0 ? "none" : "#e0e0e0"}
+                stroke={bspValue === 0 ? "none" : "#e0e0e0"}
                 strokeWidth={1}
               />
             );
@@ -128,16 +128,16 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
             );
           })}
           
-          {/* Radius labels */}
-          {gridCircles.filter(radius => radius > 0).map(radius => (
+          {/* BSP labels at 1 knot increments */}
+          {gridCircles.filter(bspValue => bspValue > 0).map(bspValue => (
             <text
-              key={radius}
+              key={bspValue}
               x={centerX + 5}
-              y={centerY - (radius / maxRadius) * chartRadius}
+              y={centerY - (bspValue / maxRadius) * chartRadius}
               fontSize="12"
               fill="#666"
             >
-              {radius}
+              {bspValue}
             </text>
           ))}
           
