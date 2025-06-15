@@ -99,7 +99,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
   });
   
   const maxBoatSpeed = Math.max(...allBoatSpeeds) || 10;
-  const domain = [0, Math.ceil(maxBoatSpeed * 1.2)]; // Add 20% margin
+  const domain = [0, Math.ceil(maxBoatSpeed)]; // Round up to next full BSP
   
   // Add drag functionality
   useEffect(() => {
@@ -235,7 +235,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
           <PolarRadiusAxis
             angle={0}
             domain={domain}
-            tickCount={6}
+            tickCount={domain[1] + 1}
             tick={{ fontSize: 12 }}
             tickFormatter={(value) => `${value}`}
           />
