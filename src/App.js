@@ -378,6 +378,10 @@ function App() {
         </Box>
         <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
         <div className="file-section">
+          <DataFilter 
+            onFilterChange={handleFilterChange}
+            loading={loadingParquetData}
+          />
           <FileSelector 
             onFileLoad={handleFileLoad} 
             onDownloadPolarFile={() => {
