@@ -384,6 +384,12 @@ function App() {
             onFilterChange={handleFilterChange}
             loading={loadingParquetData}
           />
+          <ParquetDataSummary 
+            totalParquetData={parquetData.length}
+            filteredParquetData={filteredParquetData.length}
+            displayedParquetData={displayedParquetData.length}
+            editingWindSpeed={editingWindSpeed}
+          />
           <FileSelector 
             onFileLoad={handleFileLoad} 
             onDownloadPolarFile={() => {
@@ -433,7 +439,7 @@ function App() {
             polarData={polarData}
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}
-            parquetData={filteredParquetData}
+            parquetData={displayedParquetData}
             onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
               setPolarData(prevData => {
                 return prevData.map(windData => {
