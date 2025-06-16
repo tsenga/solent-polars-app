@@ -252,8 +252,9 @@ const TimeSeriesWithHistogram = ({
                   onMouseLeave();
                 }
               }}
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 if (onMouseDown) {
+                  e.stopPropagation(); // Prevent event from bubbling to document
                   const svgRect = e.currentTarget.closest('svg').getBoundingClientRect();
                   const x = e.clientX - svgRect.left - margin.left;
                   
