@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch, Checkbox } from '@mui/material';
 
-const DataFilter = ({ onFilterChange, loading }) => {
+const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [maxTws, setMaxTws] = useState('');
