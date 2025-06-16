@@ -427,9 +427,8 @@ function App() {
             loading={loadingParquetData}
           />
           <ParquetDataSummary 
-            totalParquetData={parquetData.length}
-            filteredParquetData={filteredParquetData.length}
             displayedParquetData={displayedParquetData.length}
+            rawParquetData={parquetData}
             filteredData={filteredParquetData}
             editingWindSpeed={editingWindSpeed}
           />
