@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Chip, Grid } from '@mui/material';
+import { Box, Typography, Paper, Chip } from '@mui/material';
 
 const ParquetDataSummary = ({ 
   displayedParquetData, 
@@ -36,9 +36,6 @@ const ParquetDataSummary = ({
     return histogram;
   };
   
-  const twsHistogram = createHistogram(rawParquetData, 'tws', 8);
-  const twaHistogram = createHistogram(rawParquetData, 'twa', 10);
-  const bspHistogram = createHistogram(rawParquetData, 'bsp', 8);
   
   // Simple SVG histogram component
   const SimpleHistogram = ({ data, title, color = '#1976d2' }) => {
@@ -292,7 +289,6 @@ const ParquetDataSummary = ({
                 fill="transparent"
                 onMouseMove={(e) => {
                   if (onMouseMove) {
-                    const rect = e.currentTarget.getBoundingClientRect();
                     const svgRect = e.currentTarget.closest('svg').getBoundingClientRect();
                     const x = e.clientX - svgRect.left - margin.left;
                     
@@ -325,10 +321,10 @@ const ParquetDataSummary = ({
 
   // Combined time series charts component
   const TimeSeriesCharts = ({ data }) => {
-    if (!data || data.length === 0) return null;
-    
     const [hoverX, setHoverX] = React.useState(null);
     const [hoverTime, setHoverTime] = React.useState(null);
+    
+    if (!data || data.length === 0) return null;
     
     // Sort data by timestamp for consistent time extent
     const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
