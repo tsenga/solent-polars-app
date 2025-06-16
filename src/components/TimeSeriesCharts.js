@@ -41,7 +41,7 @@ const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
   const handleMouseLeave = () => {
     setHoverX(null);
     setHoverTime(null);
-    setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+    // Don't hide context menu on mouse leave - let the click outside handler manage it
   };
 
   const handleMouseDown = (event, timestamp) => {
