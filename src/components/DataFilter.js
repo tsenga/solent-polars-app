@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch, Checkbox } from '@mui/material';
 
 const DataFilter = ({ onFilterChange, loading }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [maxTws, setMaxTws] = useState('');
   const [useMockData, setUseMockData] = useState(true);
+  const [useTimeFilter, setUseTimeFilter] = useState(false);
 
   const handleApplyFilter = () => {
-    // Check if only one time is specified
-    if ((startTime && !endTime) || (!startTime && endTime)) {
-      alert('Please specify both start and end times, or leave both empty');
+    // Check if time filter is enabled but only one time is specified
+    if (useTimeFilter && ((startTime && !endTime) || (!startTime && endTime))) {
+      alert('Please specify both start and end times when using time filter');
       return;
     }
     
     // Check if start time is before end time when both are specified
-    if (startTime && endTime && new Date(startTime) >= new Date(endTime)) {
+    if (useTimeFilter && startTime && endTime && new Date(startTime) >= new Date(endTime)) {
       alert('Start time must be before end time');
       return;
     }
@@ -24,8 +25,8 @@ const DataFilter = ({ onFilterChange, loading }) => {
       useMockData: useMockData
     };
 
-    // Only add time filters if both are specified
-    if (startTime && endTime) {
+    // Only add time filters if time filter is enabled and both times are specified
+    if (useTimeFilter && startTime && endTime) {
       filterData.startTime = new Date(startTime).toISOString();
       filterData.endTime = new Date(endTime).toISOString();
     }
@@ -42,6 +43,7 @@ const DataFilter = ({ onFilterChange, loading }) => {
     setStartTime('');
     setEndTime('');
     setMaxTws('');
+    setUseTimeFilter(false);
     onFilterChange({ useMockData: useMockData });
   };
 
@@ -54,7 +56,7 @@ const DataFilter = ({ onFilterChange, loading }) => {
       useMockData: newUseMockData
     };
     
-    if (startTime && endTime) {
+    if (useTimeFilter && startTime && endTime) {
       currentFilter.startTime = new Date(startTime).toISOString();
       currentFilter.endTime = new Date(endTime).toISOString();
     }
@@ -83,6 +85,19 @@ const DataFilter = ({ onFilterChange, loading }) => {
           label={useMockData ? "Using Mock Data" : "Using Real Parquet Data (S3)"}
         />
       </Box>
+      
+      <Box sx={{ mb: 2 }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={useTimeFilter}
+              onChange={(e) => setUseTimeFilter(e.target.checked)}
+            />
+          }
+          label="Use time filter"
+        />
+      </Box>
+      
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           label="Start Time"
@@ -93,6 +108,7 @@ const DataFilter = ({ onFilterChange, loading }) => {
             shrink: true,
           }}
           size="small"
+          disabled={!useTimeFilter}
         />
         <TextField
           label="End Time"
@@ -103,6 +119,7 @@ const DataFilter = ({ onFilterChange, loading }) => {
             shrink: true,
           }}
           size="small"
+          disabled={!useTimeFilter}
         />
         <TextField
           label="Max TWS (knots)"
