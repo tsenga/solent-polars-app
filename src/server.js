@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const AWS = require('aws-sdk');
+const parquet = require('parquet-wasm');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -103,17 +104,73 @@ app.post('/api/parquet-data', async (req, res) => {
       console.log('Attempting to fetch real parquet data from S3...');
       
       try {
-        // For now, return an error message since we don't have parquet reading implemented
-        // In the future, this would read from s3://sailing-tseng/quailo/exp_logs.parquet
-        throw new Error('Real parquet data reading not yet implemented. Please use mock data mode.');
+        // Download parquet file from S3
+        const params = {
+          Bucket: 'sailing-tseng',
+          Key: 'quailo/exp_logs.parquet'
+        };
         
-        // TODO: Implement actual parquet reading from S3
-        // const params = {
-        //   Bucket: 'sailing-tseng',
-        //   Key: 'quailo/exp_logs.parquet'
-        // };
-        // const s3Object = await s3.getObject(params).promise();
-        // ... process parquet file ...
+        console.log('Downloading parquet file from S3...');
+        const s3Object = await s3.getObject(params).promise();
+        
+        // Read parquet data using parquet-wasm
+        console.log('Parsing parquet data...');
+        const parquetData = parquet.readParquet(s3Object.Body);
+        
+        // Convert to array of objects
+        const records = [];
+        const schema = parquetData.schema;
+        const numRows = parquetData.numRows;
+        
+        console.log(`Processing ${numRows} rows from parquet file`);
+        
+        for (let i = 0; i < numRows; i++) {
+          const record = {};
+          
+          // Extract the required fields: bsp, twa, tws, timestamp
+          for (const field of schema.fields) {
+            const columnData = parquetData.getColumn(field.name);
+            if (columnData && i < columnData.length) {
+              record[field.name] = columnData[i];
+            }
+          }
+          
+          // Only include records that have the required fields
+          if (record.bsp != null && record.twa != null && record.tws != null) {
+            // Apply time filter if provided
+            if (startTime && endTime && record.timestamp) {
+              const recordTime = new Date(record.timestamp);
+              if (recordTime < new Date(startTime) || recordTime > new Date(endTime)) {
+                continue;
+              }
+            }
+            
+            // Apply TWS band filter if provided
+            if (twsBands && twsBands.length > 0) {
+              // Find the closest TWS band
+              const closestBand = twsBands.reduce((closest, band) => {
+                const currentDiff = Math.abs(record.tws - band);
+                const closestDiff = Math.abs(record.tws - closest);
+                return currentDiff < closestDiff ? band : closest;
+              });
+              
+              // Only include if within reasonable range of the band (±2.5 knots)
+              if (Math.abs(record.tws - closestBand) > 2.5) {
+                continue;
+              }
+            }
+            
+            records.push({
+              bsp: parseFloat(record.bsp),
+              twa: parseFloat(record.twa),
+              tws: parseFloat(record.tws),
+              timestamp: record.timestamp || new Date().toISOString()
+            });
+          }
+        }
+        
+        console.log(`Returning ${records.length} filtered records from parquet file`);
+        res.json({ data: records });
         
       } catch (s3Error) {
         console.error('Error fetching real parquet data:', s3Error);
