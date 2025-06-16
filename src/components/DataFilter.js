@@ -8,22 +8,34 @@ const DataFilter = ({ onFilterChange, loading }) => {
   const [useMockData, setUseMockData] = useState(true);
 
   const handleApplyFilter = () => {
-    if (!startTime || !endTime) {
-      alert('Please select both start and end times');
+    // Check if only one time is specified
+    if ((startTime && !endTime) || (!startTime && endTime)) {
+      alert('Please specify both start and end times, or leave both empty');
       return;
     }
     
-    if (new Date(startTime) >= new Date(endTime)) {
+    // Check if start time is before end time when both are specified
+    if (startTime && endTime && new Date(startTime) >= new Date(endTime)) {
       alert('Start time must be before end time');
       return;
     }
 
-    onFilterChange({
-      startTime: new Date(startTime).toISOString(),
-      endTime: new Date(endTime).toISOString(),
-      maxTws: maxTws ? parseFloat(maxTws) : undefined,
+    const filterData = {
       useMockData: useMockData
-    });
+    };
+
+    // Only add time filters if both are specified
+    if (startTime && endTime) {
+      filterData.startTime = new Date(startTime).toISOString();
+      filterData.endTime = new Date(endTime).toISOString();
+    }
+
+    // Add max TWS filter if specified
+    if (maxTws) {
+      filterData.maxTws = parseFloat(maxTws);
+    }
+
+    onFilterChange(filterData);
   };
 
   const handleClearFilter = () => {
