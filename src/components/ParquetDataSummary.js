@@ -84,8 +84,8 @@ const ParquetDataSummary = ({
     );
   };
 
-  // Individual time series chart component
-  const IndividualTimeSeriesChart = ({ data, valueKey, title, color, unit, showXAxis = false }) => {
+  // Individual time series chart with histogram component
+  const TimeSeriesWithHistogram = ({ data, valueKey, title, color, unit, showXAxis = false }) => {
     if (!data || data.length === 0) return null;
     
     // Sort data by timestamp
@@ -157,89 +157,102 @@ const ParquetDataSummary = ({
       });
     }
     
+    // Create histogram data
+    const histogramData = createHistogram(data, valueKey, 8);
+    
     return (
-      <Box sx={{ textAlign: 'center', mb: 1 }}>
-        <Typography variant="subtitle2" gutterBottom>{title}</Typography>
-        <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
-          <g transform={`translate(${margin.left}, ${margin.top})`}>
-            {/* Grid lines */}
-            {timeTicks.map((tick, i) => (
-              <line
-                key={i}
-                x1={tick.x}
-                y1={0}
-                x2={tick.x}
-                y2={chartHeight}
-                stroke="#f0f0f0"
-                strokeWidth={1}
-              />
-            ))}
-            
-            {/* Horizontal grid lines */}
-            {yTicks.map((tick, i) => (
-              <line
-                key={i}
-                x1={0}
-                y1={tick.y}
-                x2={chartWidth}
-                y2={tick.y}
-                stroke="#f0f0f0"
-                strokeWidth={1}
-              />
-            ))}
-            
-            {/* Data line */}
-            <path d={path} fill="none" stroke={color} strokeWidth={2} opacity={0.8} />
-            
-            {/* X-axis */}
-            <line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#666" strokeWidth={1} />
-            
-            {/* X-axis labels (only on bottom chart) */}
-            {showXAxis && timeTicks.map((tick, i) => (
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1, gap: 2 }}>
+        {/* Time series chart */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="subtitle2" gutterBottom>{title}</Typography>
+          <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
+            <g transform={`translate(${margin.left}, ${margin.top})`}>
+              {/* Grid lines */}
+              {timeTicks.map((tick, i) => (
+                <line
+                  key={i}
+                  x1={tick.x}
+                  y1={0}
+                  x2={tick.x}
+                  y2={chartHeight}
+                  stroke="#f0f0f0"
+                  strokeWidth={1}
+                />
+              ))}
+              
+              {/* Horizontal grid lines */}
+              {yTicks.map((tick, i) => (
+                <line
+                  key={i}
+                  x1={0}
+                  y1={tick.y}
+                  x2={chartWidth}
+                  y2={tick.y}
+                  stroke="#f0f0f0"
+                  strokeWidth={1}
+                />
+              ))}
+              
+              {/* Data line */}
+              <path d={path} fill="none" stroke={color} strokeWidth={2} opacity={0.8} />
+              
+              {/* X-axis */}
+              <line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#666" strokeWidth={1} />
+              
+              {/* X-axis labels (only on bottom chart) */}
+              {showXAxis && timeTicks.map((tick, i) => (
+                <text
+                  key={i}
+                  x={tick.x}
+                  y={chartHeight + 15}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill="#666"
+                >
+                  {tick.label}
+                </text>
+              ))}
+              
+              {/* Y-axis */}
+              <line x1={0} y1={0} x2={0} y2={chartHeight} stroke="#666" strokeWidth={1} />
+              
+              {/* Y-axis labels */}
+              {yTicks.map((tick, i) => (
+                <text
+                  key={i}
+                  x={-10}
+                  y={tick.y}
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  fontSize="10"
+                  fill="#666"
+                >
+                  {tick.label}
+                </text>
+              ))}
+              
+              {/* Y-axis title */}
               <text
-                key={i}
-                x={tick.x}
-                y={chartHeight + 15}
+                x={-40}
+                y={chartHeight / 2}
                 textAnchor="middle"
-                fontSize="10"
-                fill="#666"
-              >
-                {tick.label}
-              </text>
-            ))}
-            
-            {/* Y-axis */}
-            <line x1={0} y1={0} x2={0} y2={chartHeight} stroke="#666" strokeWidth={1} />
-            
-            {/* Y-axis labels */}
-            {yTicks.map((tick, i) => (
-              <text
-                key={i}
-                x={-10}
-                y={tick.y}
-                textAnchor="end"
                 dominantBaseline="middle"
                 fontSize="10"
                 fill="#666"
+                transform={`rotate(-90, -40, ${chartHeight / 2})`}
               >
-                {tick.label}
+                {unit}
               </text>
-            ))}
-            
-            {/* Y-axis title */}
-            <text
-              x={-40}
-              y={chartHeight / 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="10"
-              fill="#666"
-              transform={`rotate(-90, -40, ${chartHeight / 2})`}
-            >
-              {unit}
-            </text>
-          </g>
-        </svg>
+            </g>
+          </svg>
+        </Box>
+        
+        {/* Histogram */}
+        <SimpleHistogram 
+          data={histogramData} 
+          title={`${title} Distribution`} 
+          color={color} 
+        />
       </Box>
     );
   };
@@ -251,7 +264,7 @@ const ParquetDataSummary = ({
     return (
       <Box sx={{ textAlign: 'center', mb: 2 }}>
         <Typography variant="subtitle1" gutterBottom>Time Series</Typography>
-        <IndividualTimeSeriesChart 
+        <TimeSeriesWithHistogram 
           data={data} 
           valueKey="tws" 
           title="True Wind Speed" 
@@ -259,7 +272,7 @@ const ParquetDataSummary = ({
           unit="TWS (knots)"
           showXAxis={false}
         />
-        <IndividualTimeSeriesChart 
+        <TimeSeriesWithHistogram 
           data={data} 
           valueKey="twa" 
           title="True Wind Angle" 
@@ -267,7 +280,7 @@ const ParquetDataSummary = ({
           unit="TWA (degrees)"
           showXAxis={false}
         />
-        <IndividualTimeSeriesChart 
+        <TimeSeriesWithHistogram 
           data={data} 
           valueKey="bsp" 
           title="Boat Speed" 
@@ -306,33 +319,6 @@ const ParquetDataSummary = ({
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
             <TimeSeriesCharts data={rawParquetData} />
           </Box>
-          
-          <Typography variant="subtitle1" gutterBottom>
-            Data Distribution
-          </Typography>
-          <Grid container spacing={2} justifyContent="center">
-            <Grid item>
-              <SimpleHistogram 
-                data={twsHistogram} 
-                title="TWS (knots)" 
-                color="#1976d2" 
-              />
-            </Grid>
-            <Grid item>
-              <SimpleHistogram 
-                data={twaHistogram} 
-                title="TWA (degrees)" 
-                color="#388e3c" 
-              />
-            </Grid>
-            <Grid item>
-              <SimpleHistogram 
-                data={bspHistogram} 
-                title="BSP (knots)" 
-                color="#f57c00" 
-              />
-            </Grid>
-          </Grid>
         </>
       )}
     </Paper>
