@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
-const parquet = require('parquet-wasm');
+const duckdb = require('duckdb');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -102,77 +102,67 @@ app.post('/api/parquet-data', async (req, res) => {
       console.log('Attempting to fetch real parquet data from S3...');
       
       try {
-        // Download parquet file from S3
-        const command = new GetObjectCommand({
-          Bucket: 'sailing-tseng',
-          Key: 'quailo/exp_logs.parquet'
-        });
+        console.log('Using DuckDB to query parquet file from S3...');
         
-        console.log('Downloading parquet file from S3...');
-        const s3Object = await s3Client.send(command);
+        // Create a new DuckDB database instance
+        const db = new duckdb.Database(':memory:');
         
-        // Convert stream to buffer for parquet-wasm
-        const chunks = [];
-        for await (const chunk of s3Object.Body) {
-          chunks.push(chunk);
-        }
-        const buffer = Buffer.concat(chunks);
-        
-        // Read parquet data using parquet-wasm
-        console.log('Parsing parquet data...');
-        const parquetData = parquet.readParquet(buffer);
-        
-        // Convert to array of objects
-        const records = [];
-        const schema = parquetData.schema;
-        const numRows = parquetData.numRows;
-        
-        console.log(`Processing ${numRows} rows from parquet file`);
-        
-        for (let i = 0; i < numRows; i++) {
-          const record = {};
-          
-          // Extract the required fields: bsp, twa, tws, timestamp
-          for (const field of schema.fields) {
-            const columnData = parquetData.getColumn(field.name);
-            if (columnData && i < columnData.length) {
-              record[field.name] = columnData[i];
-            }
-          }
-          
-          // Only include records that have the required fields
-          if (record.bsp != null && record.twa != null && record.tws != null) {
-            // Apply time filter if provided
-            if (startTime && endTime && record.timestamp) {
-              const recordTime = new Date(record.timestamp);
-              if (recordTime < new Date(startTime) || recordTime > new Date(endTime)) {
-                continue;
-              }
-            }
-            
-            // Apply TWS band filter if provided
-            if (twsBands && twsBands.length > 0) {
-              // Find the closest TWS band
-              const closestBand = twsBands.reduce((closest, band) => {
-                const currentDiff = Math.abs(record.tws - band);
-                const closestDiff = Math.abs(record.tws - closest);
-                return currentDiff < closestDiff ? band : closest;
-              });
-              
-              // Only include if within reasonable range of the band (±2.5 knots)
-              if (Math.abs(record.tws - closestBand) > 2.5) {
-                continue;
-              }
-            }
-            
-            records.push({
-              bsp: parseFloat(record.bsp),
-              twa: parseFloat(record.twa),
-              tws: parseFloat(record.tws),
-              timestamp: record.timestamp || new Date().toISOString()
+        // Create a promise wrapper for DuckDB operations
+        const queryAsync = (query) => {
+          return new Promise((resolve, reject) => {
+            db.all(query, (err, rows) => {
+              if (err) reject(err);
+              else resolve(rows);
             });
-          }
+          });
+        };
+        
+        // Install and load httpfs extension for S3 access
+        await queryAsync("INSTALL httpfs;");
+        await queryAsync("LOAD httpfs;");
+        
+        // Configure S3 credentials (if needed)
+        // Note: DuckDB will use default AWS credentials from environment or IAM role
+        
+        // Build the SQL query with filters
+        let sqlQuery = `
+          SELECT bsp, twa, tws, timestamp
+          FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
+          WHERE bsp IS NOT NULL 
+            AND twa IS NOT NULL 
+            AND tws IS NOT NULL
+        `;
+        
+        // Add time filter if provided
+        if (startTime && endTime) {
+          sqlQuery += ` AND timestamp >= '${startTime}' AND timestamp <= '${endTime}'`;
         }
+        
+        // Add TWS band filter if provided
+        if (twsBands && twsBands.length > 0) {
+          const twsConditions = twsBands.map(band => 
+            `(ABS(tws - ${band}) <= 2.5)`
+          ).join(' OR ');
+          sqlQuery += ` AND (${twsConditions})`;
+        }
+        
+        console.log('Executing DuckDB query:', sqlQuery);
+        
+        // Execute the query
+        const rows = await queryAsync(sqlQuery);
+        
+        console.log(`DuckDB returned ${rows.length} rows`);
+        
+        // Convert to the expected format
+        const records = rows.map(row => ({
+          bsp: parseFloat(row.bsp),
+          twa: parseFloat(row.twa),
+          tws: parseFloat(row.tws),
+          timestamp: row.timestamp || new Date().toISOString()
+        }));
+        
+        // Close the database connection
+        db.close();
         
         console.log(`Returning ${records.length} filtered records from parquet file`);
         res.json({ data: records });
