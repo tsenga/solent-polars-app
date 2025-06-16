@@ -4,6 +4,7 @@ import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch } f
 const DataFilter = ({ onFilterChange, loading }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [maxTws, setMaxTws] = useState('');
   const [useMockData, setUseMockData] = useState(true);
 
   const handleApplyFilter = () => {
@@ -20,6 +21,7 @@ const DataFilter = ({ onFilterChange, loading }) => {
     onFilterChange({
       startTime: new Date(startTime).toISOString(),
       endTime: new Date(endTime).toISOString(),
+      maxTws: maxTws ? parseFloat(maxTws) : undefined,
       useMockData: useMockData
     });
   };
@@ -27,6 +29,7 @@ const DataFilter = ({ onFilterChange, loading }) => {
   const handleClearFilter = () => {
     setStartTime('');
     setEndTime('');
+    setMaxTws('');
     onFilterChange({ useMockData: useMockData });
   };
 
@@ -42,6 +45,10 @@ const DataFilter = ({ onFilterChange, loading }) => {
     if (startTime && endTime) {
       currentFilter.startTime = new Date(startTime).toISOString();
       currentFilter.endTime = new Date(endTime).toISOString();
+    }
+    
+    if (maxTws) {
+      currentFilter.maxTws = parseFloat(maxTws);
     }
     
     onFilterChange(currentFilter);
@@ -84,6 +91,17 @@ const DataFilter = ({ onFilterChange, loading }) => {
             shrink: true,
           }}
           size="small"
+        />
+        <TextField
+          label="Max TWS (knots)"
+          type="number"
+          value={maxTws}
+          onChange={(e) => setMaxTws(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          size="small"
+          inputProps={{ min: 0, step: 0.1 }}
         />
         <Button 
           variant="contained" 

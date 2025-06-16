@@ -161,12 +161,9 @@ app.post('/api/parquet-data', async (req, res) => {
           sqlQuery += ` AND utc >= '${startTime}' AND utc <= '${endTime}'`;
         }
         
-        // Add TWS band filter if provided
-        if (twsBands && twsBands.length > 0) {
-          const twsConditions = twsBands.map(band => 
-            `(ABS(tws - ${band}) <= 2.5)`
-          ).join(' OR ');
-          sqlQuery += ` AND (${twsConditions})`;
+        // Add max TWS filter if provided
+        if (maxTws) {
+          sqlQuery += ` AND tws <= ${maxTws}`;
         }
         
         console.log('Executing DuckDB query:', sqlQuery);

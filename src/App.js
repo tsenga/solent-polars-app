@@ -292,12 +292,10 @@ function App() {
     }
   };
 
-  // Fetch parquet data based on current filters and TWS bands
+  // Fetch parquet data based on current filters
   const fetchParquetData = async (filter = null) => {
     setLoadingParquetData(true);
     try {
-      const twsBands = polarData.map(data => data.windSpeed);
-      
       const response = await fetch('/api/parquet-data', {
         method: 'POST',
         headers: {
@@ -306,21 +304,26 @@ function App() {
         body: JSON.stringify({
           startTime: filter?.startTime,
           endTime: filter?.endTime,
-          twsBands: twsBands,
+          maxTws: filter?.maxTws,
           useMockData: filter?.useMockData !== undefined ? filter.useMockData : true
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch parquet data');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch parquet data');
       }
 
       const result = await response.json();
       setParquetData(result.data);
-      setFilteredParquetData(result.data);
+      
+      // Apply TWS band filtering in the browser
+      const twsBands = polarData.map(data => data.windSpeed);
+      const twsBandFiltered = applyTwsBandFiltering(result.data, twsBands);
+      setFilteredParquetData(twsBandFiltered);
       
       // Filter data for the currently editing wind speed
-      filterParquetDataForEditingWindSpeed(result.data, editingWindSpeed, twsBands);
+      filterParquetDataForEditingWindSpeed(twsBandFiltered, editingWindSpeed, twsBands);
       
     } catch (error) {
       console.error('Error fetching parquet data:', error);
@@ -328,6 +331,31 @@ function App() {
     } finally {
       setLoadingParquetData(false);
     }
+  };
+
+  // Apply TWS band filtering in the browser
+  const applyTwsBandFiltering = (data, twsBands) => {
+    if (!data || data.length === 0 || !twsBands || twsBands.length === 0) {
+      return data || [];
+    }
+
+    console.log(`Applying TWS band filtering for bands: [${twsBands.join(', ')}]`);
+    console.log(`Total parquet points before TWS band filtering: ${data.length}`);
+
+    const filtered = data.filter(point => {
+      // Find the closest TWS band
+      const closestBand = twsBands.reduce((closest, band) => {
+        const currentDiff = Math.abs(point.tws - band);
+        const closestDiff = Math.abs(point.tws - closest);
+        return currentDiff < closestDiff ? band : closest;
+      });
+      
+      // Only include if within reasonable range of the band (±2.5 knots)
+      return Math.abs(point.tws - closestBand) <= 2.5;
+    });
+
+    console.log(`Parquet points after TWS band filtering: ${filtered.length}`);
+    return filtered;
   };
 
   // Filter parquet data for the currently editing wind speed band
