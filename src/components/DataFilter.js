@@ -10,6 +10,27 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
   const [defaultStartTime, setDefaultStartTime] = useState('');
   const [defaultEndTime, setDefaultEndTime] = useState('');
 
+  // Set default start and end times from parquet data
+  React.useEffect(() => {
+    if (parquetData && parquetData.length > 0) {
+      // Sort data by timestamp to find first and last
+      const sortedData = [...parquetData].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      const firstTime = new Date(sortedData[0].timestamp).toISOString().slice(0, 16);
+      const lastTime = new Date(sortedData[sortedData.length - 1].timestamp).toISOString().slice(0, 16);
+      
+      // Always set default times for placeholders
+      setDefaultStartTime(firstTime);
+      setDefaultEndTime(lastTime);
+      
+      // Only set actual values if times are currently empty
+      if (!startTime && !endTime) {
+        setStartTime(firstTime);
+        setEndTime(lastTime);
+        setUseTimeFilter(true); // Enable time filter when we set default times
+      }
+    }
+  }, [parquetData]);
+
   // Listen for time filter events from ParquetDataSummary
   React.useEffect(() => {
     const handleSetTimeFilter = (event) => {
