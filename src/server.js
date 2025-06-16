@@ -121,8 +121,21 @@ app.post('/api/parquet-data', async (req, res) => {
         await queryAsync("INSTALL httpfs;");
         await queryAsync("LOAD httpfs;");
         
-        // Configure S3 credentials (if needed)
-        // Note: DuckDB will use default AWS credentials from environment or IAM role
+        // Configure S3 credentials for DuckDB
+        // Set AWS credentials from environment variables or use default profile
+        const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
+        const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+        const awsRegion = process.env.AWS_DEFAULT_REGION || 'eu-west-2';
+        
+        if (awsAccessKeyId && awsSecretAccessKey) {
+          await queryAsync(`SET s3_access_key_id='${awsAccessKeyId}';`);
+          await queryAsync(`SET s3_secret_access_key='${awsSecretAccessKey}';`);
+        }
+        await queryAsync(`SET s3_region='${awsRegion}';`);
+        
+        // Enable S3 path style access (sometimes needed for certain S3 configurations)
+        await queryAsync("SET s3_use_ssl=true;");
+        await queryAsync("SET s3_url_style='path';");
         
         // Build the SQL query with filters
         let sqlQuery = `
