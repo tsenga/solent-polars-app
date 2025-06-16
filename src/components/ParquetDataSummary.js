@@ -2,13 +2,13 @@ import React from 'react';
 import { Box, Typography, Paper, Chip, Grid } from '@mui/material';
 
 const ParquetDataSummary = ({ 
-  totalParquetData, 
-  filteredParquetData, 
   displayedParquetData, 
   filteredData = [],
   rawParquetData = [],
   editingWindSpeed 
 }) => {
+  const totalParquetData = rawParquetData.length;
+  const filteredParquetData = filteredData.length;
   
   // Create histogram data for TWS, TWA, and BSP
   const createHistogram = (data, key, bins = 10) => {
@@ -36,9 +36,9 @@ const ParquetDataSummary = ({
     return histogram;
   };
   
-  const twsHistogram = createHistogram(filteredData, 'tws', 8);
-  const twaHistogram = createHistogram(filteredData, 'twa', 10);
-  const bspHistogram = createHistogram(filteredData, 'bsp', 8);
+  const twsHistogram = createHistogram(rawParquetData, 'tws', 8);
+  const twaHistogram = createHistogram(rawParquetData, 'twa', 10);
+  const bspHistogram = createHistogram(rawParquetData, 'bsp', 8);
   
   // Simple SVG histogram component
   const SimpleHistogram = ({ data, title, color = '#1976d2' }) => {
@@ -304,7 +304,7 @@ const ParquetDataSummary = ({
       {filteredData.length > 0 && (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-            <TimeSeriesCharts data={filteredData} />
+            <TimeSeriesCharts data={rawParquetData} />
           </Box>
           
           <Typography variant="subtitle1" gutterBottom>
