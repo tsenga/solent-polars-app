@@ -7,6 +7,7 @@ import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
 import DataFilter from './components/DataFilter';
 import ParquetDataSummary from './components/ParquetDataSummary';
+import ViewSettings from './components/ViewSettings';
 
 // Sample initial data with anchor points
 const initialPolarData = [
@@ -136,6 +137,7 @@ function App() {
   const [filteredParquetData, setFilteredParquetData] = useState([]);
   const [displayedParquetData, setDisplayedParquetData] = useState([]);
   const [loadingParquetData, setLoadingParquetData] = useState(false);
+  const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   
   // Find the data for the selected wind speeds and the one being edited
   const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
@@ -468,12 +470,14 @@ function App() {
           />
         </div>
         <div className="controls">
-          <WindSpeedSelector 
+          <ViewSettings 
             windSpeeds={polarData.map(data => data.windSpeed)}
             selectedWindSpeeds={selectedWindSpeeds}
             onSelectWindSpeed={setSelectedWindSpeeds}
             onAddWindSpeed={addWindSpeed}
             onDeleteWindSpeed={deleteWindSpeed}
+            plotAbsoluteTwa={plotAbsoluteTwa}
+            onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
           />
         </div>
         <div className="chart-container">
@@ -482,6 +486,7 @@ function App() {
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}
             parquetData={displayedParquetData}
+            plotAbsoluteTwa={plotAbsoluteTwa}
             onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
               setPolarData(prevData => {
                 return prevData.map(windData => {

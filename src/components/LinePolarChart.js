@@ -5,7 +5,7 @@ import './LinePolarChart.css';
 // Define colors array outside the component for consistency
 const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
 
-const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetData = [], onUpdateAnchorPoint }) => {
+const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetData = [], plotAbsoluteTwa = true, onUpdateAnchorPoint }) => {
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
 
@@ -140,16 +140,23 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
         .enter()
         .append('circle')
         .attr('class', 'parquet-dot')
-        .attr('cx', d => rScale(d.bsp) * Math.sin(angleScale(d.twa)))
-        .attr('cy', d => -rScale(d.bsp) * Math.cos(angleScale(d.twa)))
+        .attr('cx', d => {
+          const twa = plotAbsoluteTwa ? Math.abs(d.twa) : d.twa;
+          return rScale(d.bsp) * Math.sin(angleScale(twa));
+        })
+        .attr('cy', d => {
+          const twa = plotAbsoluteTwa ? Math.abs(d.twa) : d.twa;
+          return -rScale(d.bsp) * Math.cos(angleScale(twa));
+        })
         .attr('r', 2)
         .attr('fill', 'rgba(255, 0, 0, 0.6)')
         .attr('stroke', 'rgba(255, 255, 255, 0.8)')
         .attr('stroke-width', 0.5)
         .on('mouseover', function(event, d) {
           const rect = svgRef.current.getBoundingClientRect();
-          const cx = rScale(d.bsp) * Math.sin(angleScale(d.twa));
-          const cy = -rScale(d.bsp) * Math.cos(angleScale(d.twa));
+          const twa = plotAbsoluteTwa ? Math.abs(d.twa) : d.twa;
+          const cx = rScale(d.bsp) * Math.sin(angleScale(twa));
+          const cy = -rScale(d.bsp) * Math.cos(angleScale(twa));
           
           // Show and position the highlight circle
           highlightCircle
@@ -289,7 +296,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
       // We'll create a legend instead of adding labels directly to the chart
     });
     
-  }, [selectedData, editingWindSpeed, parquetData, onUpdateAnchorPoint]);
+  }, [selectedData, editingWindSpeed, parquetData, plotAbsoluteTwa, onUpdateAnchorPoint]);
 
   // Create a legend for the wind speeds
   const renderLegend = () => {
