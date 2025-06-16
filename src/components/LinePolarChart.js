@@ -5,7 +5,7 @@ import './LinePolarChart.css';
 // Define colors array outside the component for consistency
 const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
 
-const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpdateAnchorPoint }) => {
+const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parquetData = [], onUpdateAnchorPoint }) => {
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
 
@@ -123,6 +123,34 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, onUpd
       .style('box-shadow', '0 2px 5px rgba(0,0,0,0.2)')
       .style('z-index', '1000');
     
+    // Add parquet data scatter points
+    if (parquetData && parquetData.length > 0) {
+      svg.selectAll('.parquet-dot')
+        .data(parquetData)
+        .enter()
+        .append('circle')
+        .attr('class', 'parquet-dot')
+        .attr('cx', d => rScale(d.bsp) * Math.sin(angleScale(d.twa)))
+        .attr('cy', d => -rScale(d.bsp) * Math.cos(angleScale(d.twa)))
+        .attr('r', 2)
+        .attr('fill', 'rgba(255, 0, 0, 0.6)')
+        .attr('stroke', 'rgba(255, 255, 255, 0.8)')
+        .attr('stroke-width', 0.5)
+        .on('mouseover', function(event, d) {
+          tooltip
+            .style('visibility', 'visible')
+            .html(`<strong>TWA:</strong> ${d.twa.toFixed(1)}°<br>
+                   <strong>BSP:</strong> ${d.bsp.toFixed(2)} knots<br>
+                   <strong>TWS:</strong> ${d.tws.toFixed(1)} knots<br>
+                   <strong>Time:</strong> ${new Date(d.timestamp).toLocaleString()}`)
+            .style('left', `${event.pageX + 10}px`)
+            .style('top', `${event.pageY - 28}px`);
+        })
+        .on('mouseout', function() {
+          tooltip.style('visibility', 'hidden');
+        });
+    }
+
     // Draw lines for each wind speed
     // Using the colors array defined at the top of the component
     
