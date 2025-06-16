@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const AWS = require('aws-sdk');
+const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const parquet = require('parquet-wasm');
 
 const app = express();
@@ -14,12 +14,10 @@ app.use(cors());
 // Middleware to parse JSON
 app.use(express.json());
 
-// Configure AWS SDK
-AWS.config.update({
+// Configure AWS SDK v3
+const s3Client = new S3Client({
   region: 'eu-west-2' // Update this to match your S3 bucket region
 });
-
-const s3 = new AWS.S3();
 
 // API endpoint to get list of files in the data directory
 app.get('/api/files', (req, res) => {
@@ -105,17 +103,24 @@ app.post('/api/parquet-data', async (req, res) => {
       
       try {
         // Download parquet file from S3
-        const params = {
+        const command = new GetObjectCommand({
           Bucket: 'sailing-tseng',
           Key: 'quailo/exp_logs.parquet'
-        };
+        });
         
         console.log('Downloading parquet file from S3...');
-        const s3Object = await s3.getObject(params).promise();
+        const s3Object = await s3Client.send(command);
+        
+        // Convert stream to buffer for parquet-wasm
+        const chunks = [];
+        for await (const chunk of s3Object.Body) {
+          chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
         
         // Read parquet data using parquet-wasm
         console.log('Parsing parquet data...');
-        const parquetData = parquet.readParquet(s3Object.Body);
+        const parquetData = parquet.readParquet(buffer);
         
         // Convert to array of objects
         const records = [];
