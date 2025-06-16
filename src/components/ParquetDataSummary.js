@@ -6,6 +6,7 @@ const ParquetDataSummary = ({
   filteredParquetData, 
   displayedParquetData, 
   filteredData = [],
+  rawParquetData = [],
   editingWindSpeed 
 }) => {
   
