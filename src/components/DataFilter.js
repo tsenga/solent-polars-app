@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Paper } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch } from '@mui/material';
 
 const DataFilter = ({ onFilterChange, loading }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [useMockData, setUseMockData] = useState(true);
 
   const handleApplyFilter = () => {
     if (!startTime || !endTime) {
@@ -18,14 +19,32 @@ const DataFilter = ({ onFilterChange, loading }) => {
 
     onFilterChange({
       startTime: new Date(startTime).toISOString(),
-      endTime: new Date(endTime).toISOString()
+      endTime: new Date(endTime).toISOString(),
+      useMockData: useMockData
     });
   };
 
   const handleClearFilter = () => {
     setStartTime('');
     setEndTime('');
-    onFilterChange(null);
+    onFilterChange({ useMockData: useMockData });
+  };
+
+  const handleToggleDataSource = (event) => {
+    const newUseMockData = event.target.checked;
+    setUseMockData(newUseMockData);
+    
+    // Immediately apply the data source change
+    const currentFilter = {
+      useMockData: newUseMockData
+    };
+    
+    if (startTime && endTime) {
+      currentFilter.startTime = new Date(startTime).toISOString();
+      currentFilter.endTime = new Date(endTime).toISOString();
+    }
+    
+    onFilterChange(currentFilter);
   };
 
   return (
@@ -33,6 +52,18 @@ const DataFilter = ({ onFilterChange, loading }) => {
       <Typography variant="h6" gutterBottom>
         Data Filter
       </Typography>
+      <Box sx={{ mb: 2 }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={useMockData}
+              onChange={handleToggleDataSource}
+              disabled={loading}
+            />
+          }
+          label={useMockData ? "Using Mock Data" : "Using Real Parquet Data (S3)"}
+        />
+      </Box>
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           label="Start Time"

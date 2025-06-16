@@ -69,35 +69,61 @@ app.get('/api/files/:filename', (req, res) => {
 // API endpoint to get parquet data with filtering
 app.post('/api/parquet-data', async (req, res) => {
   try {
-    const { startTime, endTime, twsBands } = req.body;
+    const { startTime, endTime, twsBands, useMockData = true } = req.body;
     
-    console.log('Fetching parquet data with filters:', { startTime, endTime, twsBands });
+    console.log('Fetching parquet data with filters:', { startTime, endTime, twsBands, useMockData });
     
-    // For now, return mock data until we can properly handle the parquet file
-    // This allows the UI to work while we resolve the parquet reading issue
-    const mockData = [];
-    
-    // Generate some sample data points for testing
-    if (twsBands && twsBands.length > 0) {
-      const selectedTws = twsBands[0]; // Use first TWS band for mock data
+    if (useMockData) {
+      // Generate mock data
+      const mockData = [];
       
-      // Generate sample points around the selected TWS
-      for (let i = 0; i < 50; i++) {
-        const twa = Math.random() * 180; // Random angle 0-180
-        const bsp = Math.random() * 8 + 2; // Random boat speed 2-10 knots
-        const tws = selectedTws + (Math.random() - 0.5) * 4; // TWS ±2 knots around selected
+      // Generate some sample data points for testing
+      if (twsBands && twsBands.length > 0) {
+        const selectedTws = twsBands[0]; // Use first TWS band for mock data
         
-        mockData.push({
-          bsp: parseFloat(bsp.toFixed(2)),
-          twa: parseFloat(twa.toFixed(1)),
-          tws: parseFloat(tws.toFixed(1)),
-          timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString() // Random time in last 24h
+        // Generate sample points around the selected TWS
+        for (let i = 0; i < 50; i++) {
+          const twa = Math.random() * 180; // Random angle 0-180
+          const bsp = Math.random() * 8 + 2; // Random boat speed 2-10 knots
+          const tws = selectedTws + (Math.random() - 0.5) * 4; // TWS ±2 knots around selected
+          
+          mockData.push({
+            bsp: parseFloat(bsp.toFixed(2)),
+            twa: parseFloat(twa.toFixed(1)),
+            tws: parseFloat(tws.toFixed(1)),
+            timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString() // Random time in last 24h
+          });
+        }
+      }
+      
+      console.log(`Returning ${mockData.length} mock records`);
+      res.json({ data: mockData });
+    } else {
+      // Fetch real parquet data from S3
+      console.log('Attempting to fetch real parquet data from S3...');
+      
+      try {
+        // For now, return an error message since we don't have parquet reading implemented
+        // In the future, this would read from s3://sailing-tseng/quailo/exp_logs.parquet
+        throw new Error('Real parquet data reading not yet implemented. Please use mock data mode.');
+        
+        // TODO: Implement actual parquet reading from S3
+        // const params = {
+        //   Bucket: 'sailing-tseng',
+        //   Key: 'quailo/exp_logs.parquet'
+        // };
+        // const s3Object = await s3.getObject(params).promise();
+        // ... process parquet file ...
+        
+      } catch (s3Error) {
+        console.error('Error fetching real parquet data:', s3Error);
+        res.status(500).json({ 
+          error: 'Failed to fetch real parquet data: ' + s3Error.message,
+          suggestion: 'Try using mock data mode instead.'
         });
+        return;
       }
     }
-    
-    console.log(`Returning ${mockData.length} mock records`);
-    res.json({ data: mockData });
     
   } catch (error) {
     console.error('Error fetching parquet data:', error);
