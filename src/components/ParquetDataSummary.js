@@ -46,12 +46,13 @@ const ParquetDataSummary = ({
     const maxCount = Math.max(...data.map(d => d.count));
     const width = 200;
     const height = 100;
+    const labelHeight = 40; // Extra space for rotated labels
     const barWidth = width / data.length;
     
     return (
       <Box sx={{ textAlign: 'center', mb: 2 }}>
         <Typography variant="subtitle2" gutterBottom>{title}</Typography>
-        <svg width={width} height={height + 20} style={{ border: '1px solid #ddd' }}>
+        <svg width={width} height={height + labelHeight} style={{ border: '1px solid #ddd' }}>
           {data.map((bin, i) => (
             <g key={i}>
               <rect
@@ -64,17 +65,17 @@ const ParquetDataSummary = ({
               />
               <text
                 x={i * barWidth + barWidth / 2}
-                y={height + 15}
+                y={height + 12}
                 textAnchor="start"
                 fontSize="8"
                 fill="#666"
-                transform={`rotate(90, ${i * barWidth + barWidth / 2}, ${height + 15})`}
+                transform={`rotate(90, ${i * barWidth + barWidth / 2}, ${height + 12})`}
               >
                 {parseFloat(bin.label.split('-')[0]).toFixed(1)}
               </text>
             </g>
           ))}
-          <text x={width / 2} y={height + 15} textAnchor="middle" fontSize="8" fill="#666">
+          <text x={width / 2} y={height + labelHeight - 5} textAnchor="middle" fontSize="8" fill="#666">
             {title}
           </text>
         </svg>
