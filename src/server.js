@@ -76,23 +76,23 @@ app.post('/api/parquet-data', async (req, res) => {
       // Generate mock data
       const mockData = [];
       
-      // Generate some sample data points for testing
-      if (twsBands && twsBands.length > 0) {
-        const selectedTws = twsBands[0]; // Use first TWS band for mock data
+      // Generate sample data points for testing
+      for (let i = 0; i < 200; i++) {
+        const twa = Math.random() * 180; // Random angle 0-180
+        const bsp = Math.random() * 8 + 2; // Random boat speed 2-10 knots
+        const tws = Math.random() * 20 + 5; // Random TWS 5-25 knots
         
-        // Generate sample points around the selected TWS
-        for (let i = 0; i < 50; i++) {
-          const twa = Math.random() * 180; // Random angle 0-180
-          const bsp = Math.random() * 8 + 2; // Random boat speed 2-10 knots
-          const tws = selectedTws + (Math.random() - 0.5) * 4; // TWS ±2 knots around selected
-          
-          mockData.push({
-            bsp: parseFloat(bsp.toFixed(2)),
-            twa: parseFloat(twa.toFixed(1)),
-            tws: parseFloat(tws.toFixed(1)),
-            timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString() // Random time in last 24h
-          });
+        // Apply max TWS filter if provided
+        if (maxTws && tws > maxTws) {
+          continue;
         }
+        
+        mockData.push({
+          bsp: parseFloat(bsp.toFixed(2)),
+          twa: parseFloat(twa.toFixed(1)),
+          tws: parseFloat(tws.toFixed(1)),
+          timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString() // Random time in last 24h
+        });
       }
       
       console.log(`Returning ${mockData.length} mock records`);
