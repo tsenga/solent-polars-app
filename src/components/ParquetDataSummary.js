@@ -85,7 +85,19 @@ const ParquetDataSummary = ({
   };
 
   // Individual time series chart with histogram component
-  const TimeSeriesWithHistogram = ({ data, valueKey, title, color, unit, showXAxis = false }) => {
+  const TimeSeriesWithHistogram = ({ 
+    data, 
+    valueKey, 
+    title, 
+    color, 
+    unit, 
+    showXAxis = false,
+    hoverX = null,
+    hoverTime = null,
+    timeExtent = null,
+    onMouseMove = null,
+    onMouseLeave = null
+  }) => {
     if (!data || data.length === 0) return null;
     
     // Sort data by timestamp
@@ -97,15 +109,15 @@ const ParquetDataSummary = ({
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
     
-    // Create scales
-    const timeExtent = [
+    // Use provided timeExtent or calculate from data
+    const actualTimeExtent = timeExtent || [
       new Date(sortedData[0].timestamp),
       new Date(sortedData[sortedData.length - 1].timestamp)
     ];
     
     const xScale = (timestamp) => {
       const time = new Date(timestamp);
-      return ((time - timeExtent[0]) / (timeExtent[1] - timeExtent[0])) * chartWidth;
+      return ((time - actualTimeExtent[0]) / (actualTimeExtent[1] - actualTimeExtent[0])) * chartWidth;
     };
     
     // Value scale
@@ -136,7 +148,7 @@ const ParquetDataSummary = ({
     const tickCount = 5;
     for (let i = 0; i <= tickCount; i++) {
       const ratio = i / tickCount;
-      const time = new Date(timeExtent[0].getTime() + ratio * (timeExtent[1] - timeExtent[0]));
+      const time = new Date(actualTimeExtent[0].getTime() + ratio * (actualTimeExtent[1] - actualTimeExtent[0]));
       timeTicks.push({
         time,
         x: ratio * chartWidth,
@@ -196,6 +208,19 @@ const ParquetDataSummary = ({
               {/* Data line */}
               <path d={path} fill="none" stroke={color} strokeWidth={2} opacity={0.8} />
               
+              {/* Hover guideline */}
+              {hoverX !== null && (
+                <line
+                  x1={hoverX}
+                  y1={0}
+                  x2={hoverX}
+                  y2={chartHeight}
+                  stroke="#333"
+                  strokeWidth={1}
+                  strokeDasharray="3,3"
+                />
+              )}
+              
               {/* X-axis */}
               <line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#666" strokeWidth={1} />
               
@@ -212,6 +237,20 @@ const ParquetDataSummary = ({
                   {tick.label}
                 </text>
               ))}
+              
+              {/* Hover time label (only on bottom chart) */}
+              {showXAxis && hoverX !== null && hoverTime && (
+                <text
+                  x={hoverX}
+                  y={chartHeight + 30}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill="#333"
+                  fontWeight="bold"
+                >
+                  {formatTime(hoverTime)}
+                </text>
+              )}
               
               {/* Y-axis */}
               <line x1={0} y1={0} x2={0} y2={chartHeight} stroke="#666" strokeWidth={1} />
@@ -243,6 +282,33 @@ const ParquetDataSummary = ({
               >
                 {unit}
               </text>
+              
+              {/* Invisible overlay for mouse events */}
+              <rect
+                x={0}
+                y={0}
+                width={chartWidth}
+                height={chartHeight}
+                fill="transparent"
+                onMouseMove={(e) => {
+                  if (onMouseMove) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const svgRect = e.currentTarget.closest('svg').getBoundingClientRect();
+                    const x = e.clientX - svgRect.left - margin.left;
+                    
+                    // Convert x position back to timestamp
+                    const ratio = x / chartWidth;
+                    const timestamp = new Date(actualTimeExtent[0].getTime() + ratio * (actualTimeExtent[1] - actualTimeExtent[0]));
+                    
+                    onMouseMove(x, timestamp);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (onMouseLeave) {
+                    onMouseLeave();
+                  }
+                }}
+              />
             </g>
           </svg>
         </Box>
@@ -261,6 +327,27 @@ const ParquetDataSummary = ({
   const TimeSeriesCharts = ({ data }) => {
     if (!data || data.length === 0) return null;
     
+    const [hoverX, setHoverX] = React.useState(null);
+    const [hoverTime, setHoverTime] = React.useState(null);
+    
+    // Sort data by timestamp for consistent time extent
+    const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    const timeExtent = [
+      new Date(sortedData[0].timestamp),
+      new Date(sortedData[sortedData.length - 1].timestamp)
+    ];
+    
+    const handleMouseMove = (x, timestamp) => {
+      setHoverX(x);
+      setHoverTime(timestamp);
+    };
+    
+    const handleMouseLeave = () => {
+      setHoverX(null);
+      setHoverTime(null);
+    };
+    
     return (
       <Box sx={{ textAlign: 'center', mb: 2 }}>
         <Typography variant="subtitle1" gutterBottom>Time Series</Typography>
@@ -271,6 +358,11 @@ const ParquetDataSummary = ({
           color="#1976d2" 
           unit="TWS (knots)"
           showXAxis={false}
+          hoverX={hoverX}
+          hoverTime={hoverTime}
+          timeExtent={timeExtent}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         />
         <TimeSeriesWithHistogram 
           data={data} 
@@ -279,6 +371,11 @@ const ParquetDataSummary = ({
           color="#388e3c" 
           unit="TWA (degrees)"
           showXAxis={false}
+          hoverX={hoverX}
+          hoverTime={hoverTime}
+          timeExtent={timeExtent}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         />
         <TimeSeriesWithHistogram 
           data={data} 
@@ -287,6 +384,11 @@ const ParquetDataSummary = ({
           color="#f57c00" 
           unit="BSP (knots)"
           showXAxis={true}
+          hoverX={hoverX}
+          hoverTime={hoverTime}
+          timeExtent={timeExtent}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         />
       </Box>
     );
