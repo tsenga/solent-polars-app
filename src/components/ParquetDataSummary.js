@@ -109,7 +109,7 @@ const ParquetDataSummary = ({
     
     // Value scale
     const valueExtent = valueKey === 'twa' 
-      ? [0, 180] 
+      ? [-180, 180] 
       : [
           Math.min(...sortedData.map(d => d[valueKey])),
           Math.max(...sortedData.map(d => d[valueKey]))
