@@ -136,10 +136,20 @@ app.post('/api/parquet-data', async (req, res) => {
         // Enable S3 path style access (sometimes needed for certain S3 configurations)
         await queryAsync("SET s3_use_ssl=true;");
         await queryAsync("SET s3_url_style='path';");
+        await queryAsync("SET http_keep_alive=false;");
+
+        await queryAsync(`
+          CREATE SECRET (
+            TYPE s3,
+            PROVIDER credential_chain
+          );
+          `);
+
+        console.log(`AWS access_key_id=${awsAccessKeyId} secret_access_key=${awsSecretAccessKey} region=${awsRegion}`)
         
         // Build the SQL query with filters
         let sqlQuery = `
-          SELECT bsp, twa, tws, timestamp
+          SELECT bsp, twa, tws, utc
           FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
           WHERE bsp IS NOT NULL 
             AND twa IS NOT NULL 
@@ -148,7 +158,7 @@ app.post('/api/parquet-data', async (req, res) => {
         
         // Add time filter if provided
         if (startTime && endTime) {
-          sqlQuery += ` AND timestamp >= '${startTime}' AND timestamp <= '${endTime}'`;
+          sqlQuery += ` AND utc >= '${startTime}' AND utc <= '${endTime}'`;
         }
         
         // Add TWS band filter if provided
@@ -171,7 +181,7 @@ app.post('/api/parquet-data', async (req, res) => {
           bsp: parseFloat(row.bsp),
           twa: parseFloat(row.twa),
           tws: parseFloat(row.tws),
-          timestamp: row.timestamp || new Date().toISOString()
+          timestamp: row.utc || new Date().toISOString()
         }));
         
         // Close the database connection
