@@ -126,6 +126,15 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
     
     // Add parquet data scatter points
     if (parquetData && parquetData.length > 0) {
+      // Create a highlight circle that will be shown on hover
+      const highlightCircle = svg.append('circle')
+        .attr('class', 'parquet-highlight')
+        .attr('r', 8)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(255, 0, 0, 0.8)')
+        .attr('stroke-width', 2)
+        .style('visibility', 'hidden');
+
       svg.selectAll('.parquet-dot')
         .data(parquetData)
         .enter()
@@ -139,6 +148,16 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
         .attr('stroke-width', 0.5)
         .on('mouseover', function(event, d) {
           const rect = svgRef.current.getBoundingClientRect();
+          const cx = rScale(d.bsp) * Math.sin(angleScale(d.twa));
+          const cy = -rScale(d.bsp) * Math.cos(angleScale(d.twa));
+          
+          // Show and position the highlight circle
+          highlightCircle
+            .attr('cx', cx)
+            .attr('cy', cy)
+            .style('visibility', 'visible');
+          
+          // Show tooltip
           tooltip
             .style('visibility', 'visible')
             .html(`<strong>TWA:</strong> ${d.twa.toFixed(1)}°<br>
@@ -149,6 +168,9 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
             .style('top', `${rect.top + event.offsetY - 28}px`);
         })
         .on('mouseout', function() {
+          // Hide the highlight circle
+          highlightCircle.style('visibility', 'hidden');
+          // Hide tooltip
           tooltip.style('visibility', 'hidden');
         });
     }
