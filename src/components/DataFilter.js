@@ -7,6 +7,8 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
   const [maxTws, setMaxTws] = useState('');
   const [useMockData, setUseMockData] = useState(true);
   const [useTimeFilter, setUseTimeFilter] = useState(false);
+  const [defaultStartTime, setDefaultStartTime] = useState('');
+  const [defaultEndTime, setDefaultEndTime] = useState('');
 
   // Listen for time filter events from ParquetDataSummary
   React.useEffect(() => {
@@ -123,24 +125,26 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
         <TextField
           label="Start Time"
           type="datetime-local"
-          value={startTime}
+          value={useTimeFilter ? startTime : defaultStartTime}
           onChange={(e) => setStartTime(e.target.value)}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
           disabled={!useTimeFilter}
+          placeholder={defaultStartTime}
         />
         <TextField
           label="End Time"
           type="datetime-local"
-          value={endTime}
+          value={useTimeFilter ? endTime : defaultEndTime}
           onChange={(e) => setEndTime(e.target.value)}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
           disabled={!useTimeFilter}
+          placeholder={defaultEndTime}
         />
         <TextField
           label="Max TWS (knots)"
