@@ -250,7 +250,7 @@ const ParquetDataSummary = ({
         {/* Histogram */}
         <SimpleHistogram 
           data={histogramData} 
-          title={`${title} Distribution`} 
+          title={`Distribution`} 
           color={color} 
         />
       </Box>
