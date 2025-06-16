@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Configure AWS SDK
 AWS.config.update({
-  region: 'us-east-1' // Update this to match your S3 bucket region
+  region: 'eu-west-2' // Update this to match your S3 bucket region
 });
 
 const s3 = new AWS.S3();
