@@ -9,8 +9,12 @@ const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
 
    // Close context menu when clicking elsewhere
   React.useEffect(() => {
-    const handleClickOutside = () => {
-      setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+    const handleClickOutside = (event) => {
+      // Check if the click is outside the context menu
+      const contextMenuElement = event.target.closest('[data-context-menu]');
+      if (!contextMenuElement) {
+        setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+      }
     };
     
     if (contextMenu.visible) {
