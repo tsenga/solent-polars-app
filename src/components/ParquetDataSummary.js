@@ -83,16 +83,16 @@ const ParquetDataSummary = ({
     );
   };
 
-  // Time series line chart component
-  const TimeSeriesChart = ({ data }) => {
+  // Individual time series chart component
+  const IndividualTimeSeriesChart = ({ data, valueKey, title, color, unit, showXAxis = false }) => {
     if (!data || data.length === 0) return null;
     
     // Sort data by timestamp
     const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     
     const width = 600;
-    const height = 200;
-    const margin = { top: 20, right: 80, bottom: 40, left: 60 };
+    const height = 120;
+    const margin = { top: 10, right: 60, bottom: showXAxis ? 40 : 20, left: 60 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
     
@@ -107,33 +107,22 @@ const ParquetDataSummary = ({
       return ((time - timeExtent[0]) / (timeExtent[1] - timeExtent[0])) * chartWidth;
     };
     
-    // Separate scales for each metric
-    const twsExtent = [
-      Math.min(...sortedData.map(d => d.tws)),
-      Math.max(...sortedData.map(d => d.tws))
-    ];
-    const twaExtent = [0, 180]; // TWA is always 0-180
-    const bspExtent = [
-      Math.min(...sortedData.map(d => d.bsp)),
-      Math.max(...sortedData.map(d => d.bsp))
-    ];
+    // Value scale
+    const valueExtent = valueKey === 'twa' 
+      ? [0, 180] 
+      : [
+          Math.min(...sortedData.map(d => d[valueKey])),
+          Math.max(...sortedData.map(d => d[valueKey]))
+        ];
     
-    const twsScale = (value) => chartHeight - ((value - twsExtent[0]) / (twsExtent[1] - twsExtent[0])) * chartHeight;
-    const twaScale = (value) => chartHeight - (value / 180) * chartHeight;
-    const bspScale = (value) => chartHeight - ((value - bspExtent[0]) / (bspExtent[1] - bspExtent[0])) * chartHeight;
+    const yScale = (value) => chartHeight - ((value - valueExtent[0]) / (valueExtent[1] - valueExtent[0])) * chartHeight;
     
-    // Generate path strings
-    const generatePath = (scaleFunc, valueKey) => {
-      return sortedData.map((d, i) => {
-        const x = xScale(d.timestamp);
-        const y = scaleFunc(d[valueKey]);
-        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-      }).join(' ');
-    };
-    
-    const twsPath = generatePath(twsScale, 'tws');
-    const twaPath = generatePath(twaScale, 'twa');
-    const bspPath = generatePath(bspScale, 'bsp');
+    // Generate path string
+    const path = sortedData.map((d, i) => {
+      const x = xScale(d.timestamp);
+      const y = yScale(d[valueKey]);
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+    }).join(' ');
     
     // Format time labels
     const formatTime = (timestamp) => {
@@ -154,9 +143,22 @@ const ParquetDataSummary = ({
       });
     }
     
+    // Generate Y ticks
+    const yTicks = [];
+    const yTickCount = 4;
+    for (let i = 0; i <= yTickCount; i++) {
+      const ratio = i / yTickCount;
+      const value = valueExtent[0] + ratio * (valueExtent[1] - valueExtent[0]);
+      yTicks.push({
+        value,
+        y: chartHeight - ratio * chartHeight,
+        label: value.toFixed(1)
+      });
+    }
+    
     return (
-      <Box sx={{ textAlign: 'center', mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Time Series</Typography>
+      <Box sx={{ textAlign: 'center', mb: 1 }}>
+        <Typography variant="subtitle2" gutterBottom>{title}</Typography>
         <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
           <g transform={`translate(${margin.left}, ${margin.top})`}>
             {/* Grid lines */}
@@ -172,16 +174,27 @@ const ParquetDataSummary = ({
               />
             ))}
             
-            {/* Data lines */}
-            <path d={twsPath} fill="none" stroke="#1976d2" strokeWidth={2} opacity={0.8} />
-            <path d={twaPath} fill="none" stroke="#388e3c" strokeWidth={2} opacity={0.8} />
-            <path d={bspPath} fill="none" stroke="#f57c00" strokeWidth={2} opacity={0.8} />
+            {/* Horizontal grid lines */}
+            {yTicks.map((tick, i) => (
+              <line
+                key={i}
+                x1={0}
+                y1={tick.y}
+                x2={chartWidth}
+                y2={tick.y}
+                stroke="#f0f0f0"
+                strokeWidth={1}
+              />
+            ))}
+            
+            {/* Data line */}
+            <path d={path} fill="none" stroke={color} strokeWidth={2} opacity={0.8} />
             
             {/* X-axis */}
             <line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#666" strokeWidth={1} />
             
-            {/* X-axis labels */}
-            {timeTicks.map((tick, i) => (
+            {/* X-axis labels (only on bottom chart) */}
+            {showXAxis && timeTicks.map((tick, i) => (
               <text
                 key={i}
                 x={tick.x}
@@ -197,14 +210,70 @@ const ParquetDataSummary = ({
             {/* Y-axis */}
             <line x1={0} y1={0} x2={0} y2={chartHeight} stroke="#666" strokeWidth={1} />
             
-            {/* Legend */}
-            <g transform={`translate(${chartWidth + 10}, 20)`}>
-              <text x={0} y={0} fontSize="10" fill="#1976d2">TWS</text>
-              <text x={0} y={15} fontSize="10" fill="#388e3c">TWA</text>
-              <text x={0} y={30} fontSize="10" fill="#f57c00">BSP</text>
-            </g>
+            {/* Y-axis labels */}
+            {yTicks.map((tick, i) => (
+              <text
+                key={i}
+                x={-10}
+                y={tick.y}
+                textAnchor="end"
+                dominantBaseline="middle"
+                fontSize="10"
+                fill="#666"
+              >
+                {tick.label}
+              </text>
+            ))}
+            
+            {/* Y-axis title */}
+            <text
+              x={-40}
+              y={chartHeight / 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="10"
+              fill="#666"
+              transform={`rotate(-90, -40, ${chartHeight / 2})`}
+            >
+              {unit}
+            </text>
           </g>
         </svg>
+      </Box>
+    );
+  };
+
+  // Combined time series charts component
+  const TimeSeriesCharts = ({ data }) => {
+    if (!data || data.length === 0) return null;
+    
+    return (
+      <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Typography variant="subtitle1" gutterBottom>Time Series</Typography>
+        <IndividualTimeSeriesChart 
+          data={data} 
+          valueKey="tws" 
+          title="True Wind Speed" 
+          color="#1976d2" 
+          unit="TWS (knots)"
+          showXAxis={false}
+        />
+        <IndividualTimeSeriesChart 
+          data={data} 
+          valueKey="twa" 
+          title="True Wind Angle" 
+          color="#388e3c" 
+          unit="TWA (degrees)"
+          showXAxis={false}
+        />
+        <IndividualTimeSeriesChart 
+          data={data} 
+          valueKey="bsp" 
+          title="Boat Speed" 
+          color="#f57c00" 
+          unit="BSP (knots)"
+          showXAxis={true}
+        />
       </Box>
     );
   };
@@ -233,11 +302,8 @@ const ParquetDataSummary = ({
       
       {filteredData.length > 0 && (
         <>
-          <Typography variant="subtitle1" gutterBottom>
-            Time Series
-          </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-            <TimeSeriesChart data={filteredData} />
+            <TimeSeriesCharts data={filteredData} />
           </Box>
           
           <Typography variant="subtitle1" gutterBottom>
