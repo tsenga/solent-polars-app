@@ -68,9 +68,9 @@ app.get('/api/files/:filename', (req, res) => {
 // API endpoint to get parquet data with filtering
 app.post('/api/parquet-data', async (req, res) => {
   try {
-    const { startTime, endTime, twsBands, useMockData = true } = req.body;
+    const { startTime, endTime, maxTws, useMockData = true } = req.body;
     
-    console.log('Fetching parquet data with filters:', { startTime, endTime, twsBands, useMockData });
+    console.log('Fetching parquet data with filters:', { startTime, endTime, maxTws, useMockData });
     
     if (useMockData) {
       // Generate mock data
