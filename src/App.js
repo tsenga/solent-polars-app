@@ -306,7 +306,8 @@ function App() {
         body: JSON.stringify({
           startTime: filter?.startTime,
           endTime: filter?.endTime,
-          twsBands: twsBands
+          twsBands: twsBands,
+          useMockData: filter?.useMockData !== undefined ? filter.useMockData : true
         }),
       });
 
