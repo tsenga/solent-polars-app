@@ -343,7 +343,6 @@ const ParquetDataSummary = ({
     const [hoverX, setHoverX] = React.useState(null);
     const [hoverTime, setHoverTime] = React.useState(null);
     const [contextMenu, setContextMenu] = React.useState({ visible: false, x: 0, y: 0, timestamp: null });
-    const [pressTimer, setPressTimer] = React.useState(null);
     
     if (!data || data.length === 0) return null;
     
@@ -364,29 +363,20 @@ const ParquetDataSummary = ({
       setHoverX(null);
       setHoverTime(null);
       setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
-      if (pressTimer) {
-        clearTimeout(pressTimer);
-        setPressTimer(null);
-      }
     };
 
     const handleMouseDown = (event, timestamp) => {
-      const timer = setTimeout(() => {
-        setContextMenu({
-          visible: true,
-          x: event.clientX,
-          y: event.clientY,
-          timestamp: timestamp
-        });
-      }, 500); // Show menu after 500ms hold
-      setPressTimer(timer);
+      // Show context menu immediately on click
+      setContextMenu({
+        visible: true,
+        x: event.clientX,
+        y: event.clientY,
+        timestamp: timestamp
+      });
     };
 
     const handleMouseUp = () => {
-      if (pressTimer) {
-        clearTimeout(pressTimer);
-        setPressTimer(null);
-      }
+      // No longer needed since we don't use a timer
     };
 
     const handleSetStartTime = () => {
