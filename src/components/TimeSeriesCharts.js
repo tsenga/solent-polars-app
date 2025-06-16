@@ -6,7 +6,23 @@ const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
   const [hoverX, setHoverX] = React.useState(null);
   const [hoverTime, setHoverTime] = React.useState(null);
   const [contextMenu, setContextMenu] = React.useState({ visible: false, x: 0, y: 0, timestamp: null });
-  
+
+   // Close context menu when clicking elsewhere
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+    };
+    
+    if (contextMenu.visible) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    
+    // Always return cleanup function
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu.visible]);
+
   if (!data || data.length === 0) return null;
   
   // Sort data by timestamp for consistent time extent
@@ -56,21 +72,7 @@ const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
     setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
   };
 
-  // Close context menu when clicking elsewhere
-  React.useEffect(() => {
-    const handleClickOutside = () => {
-      setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
-    };
-    
-    if (contextMenu.visible) {
-      document.addEventListener('click', handleClickOutside);
-    }
-    
-    // Always return cleanup function
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [contextMenu.visible]);
+ 
   
   return (
     <Box sx={{ textAlign: 'center', mb: 2 }}>
