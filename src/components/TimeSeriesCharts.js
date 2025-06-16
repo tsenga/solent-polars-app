@@ -130,6 +130,7 @@ const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
       {/* Context Menu */}
       {contextMenu.visible && (
         <Box
+          data-context-menu
           sx={{
             position: 'fixed',
             left: contextMenu.x,
