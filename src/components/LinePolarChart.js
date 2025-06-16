@@ -121,7 +121,8 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
       .style('border-radius', '5px')
       .style('padding', '10px')
       .style('box-shadow', '0 2px 5px rgba(0,0,0,0.2)')
-      .style('z-index', '1000');
+      .style('z-index', '1000')
+      .style('pointer-events', 'none');
     
     // Add parquet data scatter points
     if (parquetData && parquetData.length > 0) {
@@ -137,14 +138,15 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, parqu
         .attr('stroke', 'rgba(255, 255, 255, 0.8)')
         .attr('stroke-width', 0.5)
         .on('mouseover', function(event, d) {
+          const rect = svgRef.current.getBoundingClientRect();
           tooltip
             .style('visibility', 'visible')
             .html(`<strong>TWA:</strong> ${d.twa.toFixed(1)}°<br>
                    <strong>BSP:</strong> ${d.bsp.toFixed(2)} knots<br>
                    <strong>TWS:</strong> ${d.tws.toFixed(1)} knots<br>
                    <strong>Time:</strong> ${new Date(d.timestamp).toLocaleString()}`)
-            .style('left', `${event.pageX + 10}px`)
-            .style('top', `${event.pageY - 28}px`);
+            .style('left', `${rect.left + event.offsetX + 10}px`)
+            .style('top', `${rect.top + event.offsetY - 28}px`);
         })
         .on('mouseout', function() {
           tooltip.style('visibility', 'hidden');
