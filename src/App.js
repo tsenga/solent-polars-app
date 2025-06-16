@@ -482,7 +482,13 @@ function App() {
             data={selectedData.angles}
             windSpeed={editingWindSpeed}
             availableWindSpeeds={polarData.map(data => data.windSpeed)}
-            onChangeWindSpeed={setEditingWindSpeed}
+            onChangeWindSpeed={(newWindSpeed) => {
+              setEditingWindSpeed(newWindSpeed);
+              // If the new wind speed is not in the selected wind speeds, add it
+              if (!selectedWindSpeeds.includes(newWindSpeed)) {
+                setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
+              }
+            }}
             onUpdateBoatSpeed={updateBoatSpeed}
             onAddAngleEntry={addAngleEntry}
             onDeleteAngleEntry={deleteAngleEntry}
