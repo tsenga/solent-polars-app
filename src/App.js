@@ -401,6 +401,7 @@ function App() {
             totalParquetData={parquetData.length}
             filteredParquetData={filteredParquetData.length}
             displayedParquetData={displayedParquetData.length}
+            filteredData={filteredParquetData}
             editingWindSpeed={editingWindSpeed}
           />
           <FileSelector 
