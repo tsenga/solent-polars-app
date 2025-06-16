@@ -82,6 +82,132 @@ const ParquetDataSummary = ({
       </Box>
     );
   };
+
+  // Time series line chart component
+  const TimeSeriesChart = ({ data }) => {
+    if (!data || data.length === 0) return null;
+    
+    // Sort data by timestamp
+    const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    const width = 600;
+    const height = 200;
+    const margin = { top: 20, right: 80, bottom: 40, left: 60 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+    
+    // Create scales
+    const timeExtent = [
+      new Date(sortedData[0].timestamp),
+      new Date(sortedData[sortedData.length - 1].timestamp)
+    ];
+    
+    const xScale = (timestamp) => {
+      const time = new Date(timestamp);
+      return ((time - timeExtent[0]) / (timeExtent[1] - timeExtent[0])) * chartWidth;
+    };
+    
+    // Separate scales for each metric
+    const twsExtent = [
+      Math.min(...sortedData.map(d => d.tws)),
+      Math.max(...sortedData.map(d => d.tws))
+    ];
+    const twaExtent = [0, 180]; // TWA is always 0-180
+    const bspExtent = [
+      Math.min(...sortedData.map(d => d.bsp)),
+      Math.max(...sortedData.map(d => d.bsp))
+    ];
+    
+    const twsScale = (value) => chartHeight - ((value - twsExtent[0]) / (twsExtent[1] - twsExtent[0])) * chartHeight;
+    const twaScale = (value) => chartHeight - (value / 180) * chartHeight;
+    const bspScale = (value) => chartHeight - ((value - bspExtent[0]) / (bspExtent[1] - bspExtent[0])) * chartHeight;
+    
+    // Generate path strings
+    const generatePath = (scaleFunc, valueKey) => {
+      return sortedData.map((d, i) => {
+        const x = xScale(d.timestamp);
+        const y = scaleFunc(d[valueKey]);
+        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+      }).join(' ');
+    };
+    
+    const twsPath = generatePath(twsScale, 'tws');
+    const twaPath = generatePath(twaScale, 'twa');
+    const bspPath = generatePath(bspScale, 'bsp');
+    
+    // Format time labels
+    const formatTime = (timestamp) => {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+    
+    // Generate time ticks
+    const timeTicks = [];
+    const tickCount = 5;
+    for (let i = 0; i <= tickCount; i++) {
+      const ratio = i / tickCount;
+      const time = new Date(timeExtent[0].getTime() + ratio * (timeExtent[1] - timeExtent[0]));
+      timeTicks.push({
+        time,
+        x: ratio * chartWidth,
+        label: formatTime(time)
+      });
+    }
+    
+    return (
+      <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Typography variant="subtitle2" gutterBottom>Time Series</Typography>
+        <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
+          <g transform={`translate(${margin.left}, ${margin.top})`}>
+            {/* Grid lines */}
+            {timeTicks.map((tick, i) => (
+              <line
+                key={i}
+                x1={tick.x}
+                y1={0}
+                x2={tick.x}
+                y2={chartHeight}
+                stroke="#f0f0f0"
+                strokeWidth={1}
+              />
+            ))}
+            
+            {/* Data lines */}
+            <path d={twsPath} fill="none" stroke="#1976d2" strokeWidth={2} opacity={0.8} />
+            <path d={twaPath} fill="none" stroke="#388e3c" strokeWidth={2} opacity={0.8} />
+            <path d={bspPath} fill="none" stroke="#f57c00" strokeWidth={2} opacity={0.8} />
+            
+            {/* X-axis */}
+            <line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#666" strokeWidth={1} />
+            
+            {/* X-axis labels */}
+            {timeTicks.map((tick, i) => (
+              <text
+                key={i}
+                x={tick.x}
+                y={chartHeight + 15}
+                textAnchor="middle"
+                fontSize="10"
+                fill="#666"
+              >
+                {tick.label}
+              </text>
+            ))}
+            
+            {/* Y-axis */}
+            <line x1={0} y1={0} x2={0} y2={chartHeight} stroke="#666" strokeWidth={1} />
+            
+            {/* Legend */}
+            <g transform={`translate(${chartWidth + 10}, 20)`}>
+              <text x={0} y={0} fontSize="10" fill="#1976d2">TWS</text>
+              <text x={0} y={15} fontSize="10" fill="#388e3c">TWA</text>
+              <text x={0} y={30} fontSize="10" fill="#f57c00">BSP</text>
+            </g>
+          </g>
+        </svg>
+      </Box>
+    );
+  };
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
       <Typography variant="h6" gutterBottom>
