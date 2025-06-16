@@ -8,6 +8,27 @@ const DataFilter = ({ onFilterChange, loading }) => {
   const [useMockData, setUseMockData] = useState(true);
   const [useTimeFilter, setUseTimeFilter] = useState(false);
 
+  // Listen for time filter events from ParquetDataSummary
+  React.useEffect(() => {
+    const handleSetTimeFilter = (event) => {
+      const { type, formattedTime } = event.detail;
+      
+      if (type === 'start') {
+        setStartTime(formattedTime);
+      } else if (type === 'end') {
+        setEndTime(formattedTime);
+      }
+      
+      // Enable time filter if it's not already enabled
+      if (!useTimeFilter) {
+        setUseTimeFilter(true);
+      }
+    };
+
+    window.addEventListener('setTimeFilter', handleSetTimeFilter);
+    return () => window.removeEventListener('setTimeFilter', handleSetTimeFilter);
+  }, [useTimeFilter]);
+
   const handleApplyFilter = () => {
     // Check if time filter is enabled but only one time is specified
     if (useTimeFilter && ((startTime && !endTime) || (!startTime && endTime))) {

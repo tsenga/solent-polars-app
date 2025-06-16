@@ -398,6 +398,22 @@ function App() {
     fetchParquetData(filter);
   };
 
+  // Expose time filter function globally for ParquetDataSummary
+  React.useEffect(() => {
+    window.setTimeFilter = (type, formattedTime) => {
+      // Find the DataFilter component and update its state
+      // This is a workaround since we need to communicate between components
+      const event = new CustomEvent('setTimeFilter', {
+        detail: { type, formattedTime }
+      });
+      window.dispatchEvent(event);
+    };
+    
+    return () => {
+      delete window.setTimeFilter;
+    };
+  }, []);
+
   // Update filtered parquet data when editing wind speed changes
   useEffect(() => {
     if (parquetData.length > 0) {

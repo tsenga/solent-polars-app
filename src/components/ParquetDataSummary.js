@@ -93,7 +93,9 @@ const ParquetDataSummary = ({
     hoverTime = null,
     timeExtent = null,
     onMouseMove = null,
-    onMouseLeave = null
+    onMouseLeave = null,
+    onMouseDown = null,
+    onMouseUp = null
   }) => {
     if (!data || data.length === 0) return null;
     
@@ -304,6 +306,23 @@ const ParquetDataSummary = ({
                     onMouseLeave();
                   }
                 }}
+                onMouseDown={(e) => {
+                  if (onMouseDown) {
+                    const svgRect = e.currentTarget.closest('svg').getBoundingClientRect();
+                    const x = e.clientX - svgRect.left - margin.left;
+                    
+                    // Convert x position back to timestamp
+                    const ratio = x / chartWidth;
+                    const timestamp = new Date(actualTimeExtent[0].getTime() + ratio * (actualTimeExtent[1] - actualTimeExtent[0]));
+                    
+                    onMouseDown(e, timestamp);
+                  }
+                }}
+                onMouseUp={() => {
+                  if (onMouseUp) {
+                    onMouseUp();
+                  }
+                }}
               />
             </g>
           </svg>
@@ -320,9 +339,11 @@ const ParquetDataSummary = ({
   };
 
   // Combined time series charts component
-  const TimeSeriesCharts = ({ data }) => {
+  const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
     const [hoverX, setHoverX] = React.useState(null);
     const [hoverTime, setHoverTime] = React.useState(null);
+    const [contextMenu, setContextMenu] = React.useState({ visible: false, x: 0, y: 0, timestamp: null });
+    const [pressTimer, setPressTimer] = React.useState(null);
     
     if (!data || data.length === 0) return null;
     
@@ -342,7 +363,57 @@ const ParquetDataSummary = ({
     const handleMouseLeave = () => {
       setHoverX(null);
       setHoverTime(null);
+      setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        setPressTimer(null);
+      }
     };
+
+    const handleMouseDown = (event, timestamp) => {
+      const timer = setTimeout(() => {
+        setContextMenu({
+          visible: true,
+          x: event.clientX,
+          y: event.clientY,
+          timestamp: timestamp
+        });
+      }, 500); // Show menu after 500ms hold
+      setPressTimer(timer);
+    };
+
+    const handleMouseUp = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        setPressTimer(null);
+      }
+    };
+
+    const handleSetStartTime = () => {
+      if (contextMenu.timestamp && onSetTimeFilter) {
+        onSetTimeFilter('start', contextMenu.timestamp);
+      }
+      setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+    };
+
+    const handleSetEndTime = () => {
+      if (contextMenu.timestamp && onSetTimeFilter) {
+        onSetTimeFilter('end', contextMenu.timestamp);
+      }
+      setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+    };
+
+    // Close context menu when clicking elsewhere
+    React.useEffect(() => {
+      const handleClickOutside = () => {
+        setContextMenu({ visible: false, x: 0, y: 0, timestamp: null });
+      };
+      
+      if (contextMenu.visible) {
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+      }
+    }, [contextMenu.visible]);
     
     return (
       <Box sx={{ textAlign: 'center', mb: 2 }}>
@@ -359,6 +430,8 @@ const ParquetDataSummary = ({
           timeExtent={timeExtent}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         />
         <TimeSeriesWithHistogram 
           data={data} 
@@ -372,6 +445,8 @@ const ParquetDataSummary = ({
           timeExtent={timeExtent}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         />
         <TimeSeriesWithHistogram 
           data={data} 
@@ -385,7 +460,48 @@ const ParquetDataSummary = ({
           timeExtent={timeExtent}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         />
+        
+        {/* Context Menu */}
+        {contextMenu.visible && (
+          <Box
+            sx={{
+              position: 'fixed',
+              left: contextMenu.x,
+              top: contextMenu.y,
+              backgroundColor: 'white',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              zIndex: 1000,
+              minWidth: '150px'
+            }}
+          >
+            <Box
+              sx={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+                '&:hover': { backgroundColor: '#f5f5f5' }
+              }}
+              onClick={handleSetStartTime}
+            >
+              Set as Start Time
+            </Box>
+            <Box
+              sx={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderTop: '1px solid #eee',
+                '&:hover': { backgroundColor: '#f5f5f5' }
+              }}
+              onClick={handleSetEndTime}
+            >
+              Set as End Time
+            </Box>
+          </Box>
+        )}
       </Box>
     );
   };
@@ -415,7 +531,18 @@ const ParquetDataSummary = ({
       {filteredData.length > 0 && (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-            <TimeSeriesCharts data={rawParquetData} />
+            <TimeSeriesCharts 
+              data={rawParquetData} 
+              onSetTimeFilter={(type, timestamp) => {
+                // Format timestamp for datetime-local input
+                const formattedTime = new Date(timestamp).toISOString().slice(0, 16);
+                
+                // Call parent component to update the filter
+                if (window.setTimeFilter) {
+                  window.setTimeFilter(type, formattedTime);
+                }
+              }}
+            />
           </Box>
         </>
       )}
