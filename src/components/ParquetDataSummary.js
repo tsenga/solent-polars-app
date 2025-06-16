@@ -401,11 +401,14 @@ const ParquetDataSummary = ({
       
       if (contextMenu.visible) {
         document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
       }
       
-      // Return empty cleanup function when not visible
-      return () => {};
+      // Always return cleanup function
+      return () => {
+        if (contextMenu.visible) {
+          document.removeEventListener('click', handleClickOutside);
+        }
+      };
     }, [contextMenu.visible]);
     
     return (
