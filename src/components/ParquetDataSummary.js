@@ -65,11 +65,12 @@ const ParquetDataSummary = ({
               <text
                 x={i * barWidth + barWidth / 2}
                 y={height + 15}
-                textAnchor="middle"
+                textAnchor="start"
                 fontSize="8"
                 fill="#666"
+                transform={`rotate(90, ${i * barWidth + barWidth / 2}, ${height + 15})`}
               >
-                {bin.label.split('-')[0]}
+                {parseFloat(bin.label.split('-')[0]).toFixed(1)}
               </text>
             </g>
           ))}
