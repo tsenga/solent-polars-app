@@ -234,6 +234,13 @@ const ParquetDataSummary = ({
       {filteredData.length > 0 && (
         <>
           <Typography variant="subtitle1" gutterBottom>
+            Time Series
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <TimeSeriesChart data={filteredData} />
+          </Box>
+          
+          <Typography variant="subtitle1" gutterBottom>
             Data Distribution
           </Typography>
           <Grid container spacing={2} justifyContent="center">
