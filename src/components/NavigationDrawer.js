@@ -40,6 +40,11 @@ const NavigationDrawer = ({
       icon: <FileIcon />
     },
     {
+      id: 'raceDetails',
+      label: 'Race Details',
+      icon: <SettingsIcon />
+    },
+    {
       id: 'viewSettings',
       label: 'View Settings',
       icon: <SettingsIcon />

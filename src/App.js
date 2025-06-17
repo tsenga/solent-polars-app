@@ -9,6 +9,7 @@ import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
 import DataSourceSelection from './components/DataSourceSelection';
 import ViewSettings from './components/ViewSettings';
+import RaceDetailsManager from './components/RaceDetailsManager';
 import NavigationDrawer from './components/NavigationDrawer';
 
 // Sample initial data with anchor points
@@ -341,6 +342,8 @@ function AppContent() {
             }}
           />
         );
+      case 'raceDetails':
+        return <RaceDetailsManager />;
       case 'viewSettings':
         return (
           <ViewSettings 

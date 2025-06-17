@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import filterReducer from './filterSlice';
 import parquetDataReducer from './parquetDataSlice';
+import raceDetailsReducer from './raceDetailsSlice';
 
 export const store = configureStore({
   reducer: {
     filter: filterReducer,
     parquetData: parquetDataReducer,
+    raceDetails: raceDetailsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
