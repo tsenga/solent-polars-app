@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Box, Typography, Paper, Chip } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
+import { setTimeFilterFromSummary } from '../store/filterSlice';
 import TimeSeriesCharts from './TimeSeriesCharts';
 
 const ParquetDataSummary = ({ editingWindSpeed }) => {
@@ -120,10 +121,8 @@ const ParquetDataSummary = ({ editingWindSpeed }) => {
                 // Format timestamp for datetime-local input
                 const formattedTime = new Date(timestamp).toISOString().slice(0, 16);
                 
-                // Call parent component to update the filter
-                if (window.setTimeFilter) {
-                  window.setTimeFilter(type, formattedTime);
-                }
+                // Dispatch Redux action to update the filter
+                dispatch(setTimeFilterFromSummary({ type, formattedTime }));
               }}
             />
           </Box>

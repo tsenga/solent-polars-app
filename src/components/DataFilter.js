@@ -32,16 +32,6 @@ const DataFilter = () => {
     }
   }, [parquetData, dispatch]);
 
-  // Listen for time filter events from ParquetDataSummary
-  useEffect(() => {
-    const handleSetTimeFilter = (event) => {
-      const { type, formattedTime } = event.detail;
-      dispatch(setTimeFilterFromSummary({ type, formattedTime }));
-    };
-
-    window.addEventListener('setTimeFilter', handleSetTimeFilter);
-    return () => window.removeEventListener('setTimeFilter', handleSetTimeFilter);
-  }, [dispatch]);
 
   const handleApplyFilter = () => {
     // Check if time filter is enabled but only one time is specified
