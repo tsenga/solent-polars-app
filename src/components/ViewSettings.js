@@ -5,9 +5,7 @@ import WindSpeedSelector from './WindSpeedSelector';
 const ViewSettings = ({ 
   windSpeeds, 
   selectedWindSpeeds, 
-  onSelectWindSpeed, 
-  onAddWindSpeed, 
-  onDeleteWindSpeed,
+  onSelectWindSpeed,
   plotAbsoluteTwa,
   onPlotAbsoluteTwaChange
 }) => {
@@ -33,8 +31,6 @@ const ViewSettings = ({
         windSpeeds={windSpeeds}
         selectedWindSpeeds={selectedWindSpeeds}
         onSelectWindSpeed={onSelectWindSpeed}
-        onAddWindSpeed={onAddWindSpeed}
-        onDeleteWindSpeed={onDeleteWindSpeed}
       />
     </Paper>
   );

@@ -15,12 +15,15 @@ const PolarDataTable = ({
   onChangeWindSpeed,
   onUpdateBoatSpeed, 
   onAddAngleEntry, 
-  onDeleteAngleEntry 
+  onDeleteAngleEntry,
+  onAddWindSpeed,
+  onDeleteWindSpeed
 }) => {
   const [newAngle, setNewAngle] = useState('');
   const [newSpeed, setNewSpeed] = useState('');
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [newWindSpeed, setNewWindSpeed] = useState('');
 
   const handleAddEntry = (e) => {
     e.preventDefault();
@@ -45,6 +48,25 @@ const PolarDataTable = ({
     onAddAngleEntry(angleValue, speedValue);
     setNewAngle('');
     setNewSpeed('');
+  };
+
+  const handleAddWindSpeed = (e) => {
+    e.preventDefault();
+    const speedValue = parseInt(newWindSpeed, 10);
+    
+    if (isNaN(speedValue) || speedValue <= 0) {
+      alert('Please enter a valid positive number');
+      return;
+    }
+    
+    onAddWindSpeed(speedValue);
+    setNewWindSpeed('');
+  };
+
+  const handleDeleteWindSpeed = () => {
+    if (window.confirm(`Are you sure you want to delete wind speed ${windSpeed} knots?`)) {
+      onDeleteWindSpeed(windSpeed);
+    }
   };
 
   const startEditing = (angle, currentSpeed) => {
@@ -81,20 +103,31 @@ const PolarDataTable = ({
         <Typography variant="h6" component="h2">
           Polar Data
         </Typography>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel id="edit-wind-speed-label">Editing Wind Speed</InputLabel>
-          <Select
-            labelId="edit-wind-speed-label"
-            id="edit-wind-speed"
-            value={windSpeed}
-            label="Editing Wind Speed"
-            onChange={(e) => onChangeWindSpeed(Number(e.target.value))}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="edit-wind-speed-label">Editing Wind Speed</InputLabel>
+            <Select
+              labelId="edit-wind-speed-label"
+              id="edit-wind-speed"
+              value={windSpeed}
+              label="Editing Wind Speed"
+              onChange={(e) => onChangeWindSpeed(Number(e.target.value))}
+            >
+              {availableWindSpeeds.map(speed => (
+                <MenuItem key={speed} value={speed}>{speed} knots</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <IconButton 
+            size="small" 
+            color="error" 
+            onClick={handleDeleteWindSpeed}
+            disabled={availableWindSpeeds.length <= 1}
+            title="Delete current wind speed"
           >
-            {availableWindSpeeds.map(speed => (
-              <MenuItem key={speed} value={speed}>{speed} knots</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <Delete fontSize="small" />
+          </IconButton>
+        </Box>
       </Box>
             
       <TableContainer sx={{ mb: 3 }}>
@@ -179,7 +212,7 @@ const PolarDataTable = ({
       
       <Box component="form" onSubmit={handleAddEntry} sx={{ mt: 3 }}>
         <Typography variant="h6" component="h3" gutterBottom>
-          Add New Entry
+          Add New Angle Entry
         </Typography>
         
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2, width:'100%' }}>
@@ -205,7 +238,35 @@ const PolarDataTable = ({
           variant="contained" 
           color="primary"
         >
-          Add Entry
+          Add Angle Entry
+        </Button>
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
+      
+      <Box component="form" onSubmit={handleAddWindSpeed} sx={{ mt: 3 }}>
+        <Typography variant="h6" component="h3" gutterBottom>
+          Add New Wind Speed
+        </Typography>
+        
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2, width:'100%' }}>
+          <TextField
+            label="Wind Speed (knots)"
+            value={newWindSpeed}
+            onChange={(e) => setNewWindSpeed(e.target.value)}
+            required
+            fullWidth
+            type="number"
+            inputProps={{ min: 1, step: 1 }}
+          />
+        </Box>
+        
+        <Button 
+          type="submit" 
+          variant="contained" 
+          color="secondary"
+        >
+          Add Wind Speed
         </Button>
       </Box>
     </Paper>

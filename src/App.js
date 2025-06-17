@@ -348,8 +348,6 @@ function AppContent() {
             windSpeeds={polarData.map(data => data.windSpeed)}
             selectedWindSpeeds={selectedWindSpeeds}
             onSelectWindSpeed={setSelectedWindSpeeds}
-            onAddWindSpeed={addWindSpeed}
-            onDeleteWindSpeed={deleteWindSpeed}
             plotAbsoluteTwa={plotAbsoluteTwa}
             onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
           />
@@ -398,6 +396,8 @@ function AppContent() {
             onUpdateBoatSpeed={updateBoatSpeed}
             onAddAngleEntry={addAngleEntry}
             onDeleteAngleEntry={deleteAngleEntry}
+            onAddWindSpeed={addWindSpeed}
+            onDeleteWindSpeed={deleteWindSpeed}
           />
         </div>
         </Box>
