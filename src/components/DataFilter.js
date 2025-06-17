@@ -21,12 +21,14 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
       // Always set default times for placeholders
       setDefaultStartTime(firstTime);
       setDefaultEndTime(lastTime);
+
+      console.log(`Start: ${firstTime}, End: ${lastTime}`)
       
       // Only set actual values if times are currently empty
       if (!startTime && !endTime) {
         setStartTime(firstTime);
         setEndTime(lastTime);
-        setUseTimeFilter(true); // Enable time filter when we set default times
+        //setUseTimeFilter(true); // Enable time filter when we set default times
       }
     }
   }, [parquetData]);
@@ -38,8 +40,21 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
       
       if (type === 'start') {
         setStartTime(formattedTime);
+
+        console.log(`start: ${formattedTime} ${defaultEndTime} ${endTime}`)
+
+        if (!endTime) {
+          setEndTime(defaultEndTime)
+        }
       } else if (type === 'end') {
         setEndTime(formattedTime);
+
+        console.log(`end: ${formattedTime} ${defaultStartTime} ${startTime}`)
+
+
+        if (!startTime) {
+          setStartTime(defaultStartTime)
+        }
       }
       
       // Enable time filter if it's not already enabled

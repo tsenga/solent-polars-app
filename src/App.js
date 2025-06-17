@@ -443,6 +443,7 @@ function App() {
           <DataFilter 
             onFilterChange={handleFilterChange}
             loading={loadingParquetData}
+            parquetData={parquetData}
           />
           <ParquetDataSummary 
             displayedParquetData={displayedParquetData.length}
