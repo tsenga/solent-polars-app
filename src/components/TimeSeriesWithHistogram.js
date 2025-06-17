@@ -279,7 +279,9 @@ const TimeSeriesWithHistogram = ({
       <SimpleHistogram 
         data={histogramData} 
         title={`Distribution`} 
-        color={color} 
+        color={color}
+        valueExtent={valueExtent}
+        chartHeight={height}
       />
     </Box>
   );
