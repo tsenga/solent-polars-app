@@ -96,11 +96,7 @@ const PolarDataTable = ({
           </Select>
         </FormControl>
       </Box>
-      
-      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 2 }}>
-        Only anchor points are shown. The chart displays a smooth curve through these points.
-      </Typography>
-      
+            
       <TableContainer sx={{ mb: 3 }}>
         <Table size="small">
           <TableHead>
@@ -186,17 +182,9 @@ const PolarDataTable = ({
           Add New Entry
         </Typography>
         
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2, width:'100%' }}>
           <TextField
             label="Angle (°)"
-            type="number"
-            InputProps={{ 
-              inputProps: { 
-                min: 0,
-                max: 180,
-                step: 1
-              } 
-            }}
             value={newAngle}
             onChange={(e) => setNewAngle(e.target.value)}
             required
@@ -204,14 +192,7 @@ const PolarDataTable = ({
           />
           
           <TextField
-            label="Boat Speed (knots)"
-            type="number"
-            InputProps={{ 
-              inputProps: { 
-                min: 0,
-                step: 0.1
-              } 
-            }}
+            label="Boat Speed (kt)"
             value={newSpeed}
             onChange={(e) => setNewSpeed(e.target.value)}
             required

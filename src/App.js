@@ -299,7 +299,7 @@ function AppContent() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box component="header" sx={{ mb: 4, textAlign: 'center' }}>
           <Typography variant="h3" component="h1" gutterBottom>
-            Interactive Polar Chart
+            Polar Optimiser
           </Typography>
         </Box>
         <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
