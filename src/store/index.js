@@ -17,5 +17,8 @@ export const store = configureStore({
         // Ignore these paths in the state
         ignoredPaths: ['parquetData.rawData', 'parquetData.filteredData', 'parquetData.displayedData'],
       },
+      immutableCheck: {
+        ignoredPaths: ['parquetData.rawData', 'parquetData.filteredData', 'parquetData.displayedData']
+      }
     }),
 });
