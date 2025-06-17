@@ -26,7 +26,7 @@ const NavigationDrawer = ({
   onSectionChange,
   children 
 }) => {
-  const drawerWidth = 400;
+  const drawerWidth = 600;
 
   const menuItems = [
     {

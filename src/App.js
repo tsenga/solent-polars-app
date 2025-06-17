@@ -369,7 +369,7 @@ function AppContent() {
       </NavigationDrawer>
       <Box
         sx={{
-          marginLeft: drawerOpen ? '400px' : 0,
+          marginLeft: drawerOpen ? '600px' : 0,
           transition: 'margin-left 0.3s ease',
           minHeight: '100vh',
         }}
