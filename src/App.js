@@ -307,6 +307,7 @@ function AppContent() {
           <DataFilter />
           <ParquetDataSummary 
             editingWindSpeed={editingWindSpeed}
+            polarData={polarData}
           />
           <FileSelector 
             onFileLoad={handleFileLoad} 

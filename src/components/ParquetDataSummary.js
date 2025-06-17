@@ -5,7 +5,7 @@ import { setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
 import { setTimeFilterFromSummary } from '../store/filterSlice';
 import TimeSeriesCharts from './TimeSeriesCharts';
 
-const ParquetDataSummary = ({ editingWindSpeed }) => {
+const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
   const dispatch = useDispatch();
   const { rawData, filteredData, displayedData } = useSelector((state) => state.parquetData);
   
@@ -70,24 +70,24 @@ const ParquetDataSummary = ({ editingWindSpeed }) => {
     return filtered;
   };
 
-  // Update filtered data when raw data changes
+  // Update filtered data when raw data or polar data changes
   useEffect(() => {
-    if (rawData.length > 0) {
-      // For now, we'll use some default TWS bands - this should come from polar data
-      const twsBands = [5, 10, 15, 20]; // Default bands
+    if (rawData.length > 0 && polarData && polarData.length > 0) {
+      // Use actual wind speeds from polar data
+      const twsBands = polarData.map(data => data.windSpeed);
       const twsBandFiltered = applyTwsBandFiltering(rawData, twsBands);
       dispatch(setFilteredData(twsBandFiltered));
     }
-  }, [rawData, dispatch]);
+  }, [rawData, polarData, dispatch]);
 
   // Update displayed data when editing wind speed changes
   useEffect(() => {
-    if (filteredData.length > 0 && editingWindSpeed) {
-      const twsBands = [5, 10, 15, 20]; // Default bands - should come from polar data
+    if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
+      const twsBands = polarData.map(data => data.windSpeed);
       const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, twsBands);
       dispatch(setDisplayedData(displayedForWindSpeed));
     }
-  }, [editingWindSpeed, filteredData, dispatch]);
+  }, [editingWindSpeed, filteredData, polarData, dispatch]);
   
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
