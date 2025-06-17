@@ -139,25 +139,25 @@ const DataFilter = () => {
         <TextField
           label="Start Time"
           type="datetime-local"
-          value={filter.timeFilterMode === 'custom' ? filter.startTime : (filter.timeFilterMode === 'race' ? filter.startTime : filter.defaultStartTime)}
+          value={filter.timeFilterMode !== 'none' ? filter.startTime : filter.defaultStartTime}
           onChange={(e) => dispatch(setStartTime(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
-          disabled={filter.timeFilterMode === 'none'}
+          disabled={filter.timeFilterMode === 'none' || filter.timeFilterMode === 'race'}
           placeholder={filter.defaultStartTime}
         />
         <TextField
           label="End Time"
           type="datetime-local"
-          value={filter.timeFilterMode === 'custom' ? filter.endTime : (filter.timeFilterMode === 'race' ? filter.endTime : filter.defaultEndTime)}
+          value={filter.timeFilterMode !== 'none' ? filter.endTime : filter.defaultEndTime}
           onChange={(e) => dispatch(setEndTime(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
-          disabled={filter.timeFilterMode === 'none'}
+          disabled={filter.timeFilterMode === 'none' || filter.timeFilterMode === 'race'}
           placeholder={filter.defaultEndTime}
         />
         <TextField
