@@ -64,6 +64,17 @@ const filterSlice = createSlice({
       const { startTime, endTime } = action.payload;
       state.defaultStartTime = startTime;
       state.defaultEndTime = endTime;
+      // Only set actual times if they're not already set by race selection
+      if (!state.startTime && !state.endTime && !state.useTimeFilter) {
+        state.startTime = startTime;
+        state.endTime = endTime;
+      }
+    },
+    setRaceTimeFilter: (state, action) => {
+      const { startTime, endTime } = action.payload;
+      state.startTime = startTime;
+      state.endTime = endTime;
+      state.useTimeFilter = true;
     },
   },
 });
@@ -79,6 +90,7 @@ export const {
   setTimeFilterFromSummary,
   clearFilter,
   resetToDefaults,
+  setRaceTimeFilter,
 } = filterSlice.actions;
 
 export default filterSlice.reducer;
