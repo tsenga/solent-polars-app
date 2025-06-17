@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import './WindSpeedSelector.css';
 import { 
   Box, Typography, Button, TextField, Paper,
-  Chip, IconButton, Dialog, DialogTitle,
+  Chip, Dialog, DialogTitle,
   DialogContent, DialogActions
 } from '@mui/material';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 
 const WindSpeedSelector = ({ 
   windSpeeds, 
