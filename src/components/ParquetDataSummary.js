@@ -90,9 +90,9 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
   }, [editingWindSpeed, filteredData, polarData, dispatch]);
   
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Parquet Data Summary
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="subtitle1" gutterBottom>
+        Data Summary
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
         <Chip 
@@ -128,7 +128,7 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
           </Box>
         </>
       )}
-    </Paper>
+    </Box>
   );
 };
 

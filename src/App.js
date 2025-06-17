@@ -7,8 +7,7 @@ import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
-import DataFilter from './components/DataFilter';
-import ParquetDataSummary from './components/ParquetDataSummary';
+import DataSourceSelection from './components/DataSourceSelection';
 import ViewSettings from './components/ViewSettings';
 
 // Sample initial data with anchor points
@@ -304,8 +303,7 @@ function AppContent() {
         </Box>
         <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
         <div className="file-section">
-          <DataFilter />
-          <ParquetDataSummary 
+          <DataSourceSelection 
             editingWindSpeed={editingWindSpeed}
             polarData={polarData}
           />

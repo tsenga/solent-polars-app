@@ -96,9 +96,9 @@ const DataFilter = () => {
   }, [dispatch]);
 
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Data Filter
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="subtitle1" gutterBottom>
+        Filter Settings
       </Typography>
       <Box sx={{ mb: 2 }}>
         <FormControlLabel
@@ -176,7 +176,7 @@ const DataFilter = () => {
           Clear
         </Button>
       </Box>
-    </Paper>
+    </Box>
   );
 };
 
