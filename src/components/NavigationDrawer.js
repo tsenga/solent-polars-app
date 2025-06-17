@@ -43,11 +43,6 @@ const NavigationDrawer = ({
       id: 'raceDetails',
       label: 'Race Details',
       icon: <SettingsIcon />
-    },
-    {
-      id: 'viewSettings',
-      label: 'View Settings',
-      icon: <SettingsIcon />
     }
   ];
 

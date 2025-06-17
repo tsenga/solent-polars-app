@@ -344,16 +344,6 @@ function AppContent() {
         );
       case 'raceDetails':
         return <RaceDetailsManager />;
-      case 'viewSettings':
-        return (
-          <ViewSettings 
-            windSpeeds={polarData.map(data => data.windSpeed)}
-            selectedWindSpeeds={selectedWindSpeeds}
-            onSelectWindSpeed={setSelectedWindSpeeds}
-            plotAbsoluteTwa={plotAbsoluteTwa}
-            onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
-          />
-        );
       default:
         return null;
     }
@@ -385,6 +375,13 @@ function AppContent() {
           </Box>
           <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
             <div className="chart-container">
+              <ViewSettings 
+                windSpeeds={polarData.map(data => data.windSpeed)}
+                selectedWindSpeeds={selectedWindSpeeds}
+                onSelectWindSpeed={setSelectedWindSpeeds}
+                plotAbsoluteTwa={plotAbsoluteTwa}
+                onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
+              />
               <LinePolarChart 
                 polarData={polarData}
                 selectedWindSpeeds={selectedWindSpeeds}
