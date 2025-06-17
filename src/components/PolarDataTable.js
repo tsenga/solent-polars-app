@@ -4,9 +4,10 @@ import {
   Paper, Typography, Box, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, IconButton,
   TextField, Button, FormControl, InputLabel, Select,
-  MenuItem, Divider
+  MenuItem, Divider, Dialog, DialogTitle, DialogContent,
+  DialogActions
 } from '@mui/material';
-import { Edit, Delete, Save, Cancel } from '@mui/icons-material';
+import { Edit, Delete, Save, Cancel, Add } from '@mui/icons-material';
 
 const PolarDataTable = ({ 
   data, 
@@ -24,6 +25,7 @@ const PolarDataTable = ({
   const [editingCell, setEditingCell] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [newWindSpeed, setNewWindSpeed] = useState('');
+  const [showAddWindSpeedDialog, setShowAddWindSpeedDialog] = useState(false);
 
   const handleAddEntry = (e) => {
     e.preventDefault();
@@ -61,6 +63,7 @@ const PolarDataTable = ({
     
     onAddWindSpeed(speedValue);
     setNewWindSpeed('');
+    setShowAddWindSpeedDialog(false);
   };
 
   const handleDeleteWindSpeed = () => {
@@ -118,6 +121,14 @@ const PolarDataTable = ({
               ))}
             </Select>
           </FormControl>
+          <IconButton 
+            size="small" 
+            color="success" 
+            onClick={() => setShowAddWindSpeedDialog(true)}
+            title="Add new wind speed"
+          >
+            <Add fontSize="small" />
+          </IconButton>
           <IconButton 
             size="small" 
             color="error" 
@@ -242,33 +253,35 @@ const PolarDataTable = ({
         </Button>
       </Box>
 
-      <Divider sx={{ my: 2 }} />
       
-      <Box component="form" onSubmit={handleAddWindSpeed} sx={{ mt: 3 }}>
-        <Typography variant="h6" component="h3" gutterBottom>
-          Add New Wind Speed
-        </Typography>
-        
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2, width:'100%' }}>
-          <TextField
-            label="Wind Speed (knots)"
-            value={newWindSpeed}
-            onChange={(e) => setNewWindSpeed(e.target.value)}
-            required
-            fullWidth
-            type="number"
-            inputProps={{ min: 1, step: 1 }}
-          />
-        </Box>
-        
-        <Button 
-          type="submit" 
-          variant="contained" 
-          color="secondary"
-        >
-          Add Wind Speed
-        </Button>
-      </Box>
+      {/* Add Wind Speed Dialog */}
+      <Dialog open={showAddWindSpeedDialog} onClose={() => setShowAddWindSpeedDialog(false)}>
+        <DialogTitle>Add New Wind Speed</DialogTitle>
+        <form onSubmit={handleAddWindSpeed}>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Wind Speed (knots)"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={newWindSpeed}
+              onChange={(e) => setNewWindSpeed(e.target.value)}
+              inputProps={{ min: 1, step: 1 }}
+              required
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowAddWindSpeedDialog(false)} color="inherit">
+              Cancel
+            </Button>
+            <Button type="submit" color="primary" variant="contained">
+              Add
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
     </Paper>
   );
 };
