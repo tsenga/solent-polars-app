@@ -5,7 +5,7 @@ const initialState = {
   endTime: '',
   maxTws: '',
   useMockData: true,
-  useTimeFilter: false,
+  timeFilterMode: 'none', // 'none', 'race', 'custom'
   defaultStartTime: '',
   defaultEndTime: '',
 };
@@ -26,8 +26,13 @@ const filterSlice = createSlice({
     setUseMockData: (state, action) => {
       state.useMockData = action.payload;
     },
-    setUseTimeFilter: (state, action) => {
-      state.useTimeFilter = action.payload;
+    setTimeFilterMode: (state, action) => {
+      state.timeFilterMode = action.payload;
+      // Clear times when switching to 'none'
+      if (action.payload === 'none') {
+        state.startTime = '';
+        state.endTime = '';
+      }
     },
     setDefaultStartTime: (state, action) => {
       state.defaultStartTime = action.payload;
@@ -50,22 +55,22 @@ const filterSlice = createSlice({
           state.startTime = state.defaultStartTime;
         }
       }
-      if (!state.useTimeFilter) {
-        state.useTimeFilter = true;
+      if (state.timeFilterMode === 'none') {
+        state.timeFilterMode = 'custom';
       }
     },
     clearFilter: (state) => {
       state.startTime = '';
       state.endTime = '';
       state.maxTws = '';
-      state.useTimeFilter = false;
+      state.timeFilterMode = 'none';
     },
     resetToDefaults: (state, action) => {
       const { startTime, endTime } = action.payload;
       state.defaultStartTime = startTime;
       state.defaultEndTime = endTime;
       // Only set actual times if they're not already set by race selection
-      if (!state.startTime && !state.endTime && !state.useTimeFilter) {
+      if (!state.startTime && !state.endTime && state.timeFilterMode === 'none') {
         state.startTime = startTime;
         state.endTime = endTime;
       }
@@ -74,7 +79,7 @@ const filterSlice = createSlice({
       const { startTime, endTime } = action.payload;
       state.startTime = startTime;
       state.endTime = endTime;
-      state.useTimeFilter = true;
+      state.timeFilterMode = 'race';
     },
   },
 });
@@ -84,7 +89,7 @@ export const {
   setEndTime,
   setMaxTws,
   setUseMockData,
-  setUseTimeFilter,
+  setTimeFilterMode,
   setDefaultStartTime,
   setDefaultEndTime,
   setTimeFilterFromSummary,

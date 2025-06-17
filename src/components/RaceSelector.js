@@ -19,7 +19,7 @@ import {
 import {
   setStartTime,
   setEndTime,
-  setUseTimeFilter,
+  setTimeFilterMode,
 } from '../store/filterSlice';
 
 const RaceSelector = () => {
@@ -44,13 +44,13 @@ const RaceSelector = () => {
       
       dispatch(setStartTime(startTime));
       dispatch(setEndTime(endTime));
-      dispatch(setUseTimeFilter(true));
+      dispatch(setTimeFilterMode('race'));
     }
   };
 
   const handleClearRaceSelection = () => {
     dispatch(selectRace(null));
-    dispatch(setUseTimeFilter(false));
+    dispatch(setTimeFilterMode('none'));
     dispatch(setStartTime(''));
     dispatch(setEndTime(''));
   };

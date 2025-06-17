@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch, Checkbox } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch, Radio, RadioGroup } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setStartTime,
   setEndTime,
   setMaxTws,
   setUseMockData,
-  setUseTimeFilter,
+  setTimeFilterMode,
   setTimeFilterFromSummary,
   clearFilter,
   resetToDefaults,
@@ -34,14 +34,14 @@ const DataFilter = () => {
 
 
   const handleApplyFilter = () => {
-    // Check if time filter is enabled but only one time is specified
-    if (filter.useTimeFilter && ((filter.startTime && !filter.endTime) || (!filter.startTime && filter.endTime))) {
-      alert('Please specify both start and end times when using time filter');
+    // Check if custom time filter is enabled but only one time is specified
+    if (filter.timeFilterMode === 'custom' && ((filter.startTime && !filter.endTime) || (!filter.startTime && filter.endTime))) {
+      alert('Please specify both start and end times when using custom time filter');
       return;
     }
     
     // Check if start time is before end time when both are specified
-    if (filter.useTimeFilter && filter.startTime && filter.endTime && new Date(filter.startTime) >= new Date(filter.endTime)) {
+    if ((filter.timeFilterMode === 'custom' || filter.timeFilterMode === 'race') && filter.startTime && filter.endTime && new Date(filter.startTime) >= new Date(filter.endTime)) {
       alert('Start time must be before end time');
       return;
     }
@@ -50,8 +50,8 @@ const DataFilter = () => {
       useMockData: filter.useMockData
     };
 
-    // Only add time filters if time filter is enabled and both times are specified
-    if (filter.useTimeFilter && filter.startTime && filter.endTime) {
+    // Only add time filters if time filter mode is not 'none' and both times are specified
+    if ((filter.timeFilterMode === 'custom' || filter.timeFilterMode === 'race') && filter.startTime && filter.endTime) {
       filterData.startTime = new Date(filter.startTime).toISOString();
       filterData.endTime = new Date(filter.endTime).toISOString();
     }
@@ -78,7 +78,7 @@ const DataFilter = () => {
       useMockData: newUseMockData
     };
     
-    if (filter.useTimeFilter && filter.startTime && filter.endTime) {
+    if ((filter.timeFilterMode === 'custom' || filter.timeFilterMode === 'race') && filter.startTime && filter.endTime) {
       currentFilter.startTime = new Date(filter.startTime).toISOString();
       currentFilter.endTime = new Date(filter.endTime).toISOString();
     }
@@ -114,40 +114,43 @@ const DataFilter = () => {
       </Box>
       
       <Box sx={{ mb: 2 }}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filter.useTimeFilter}
-              onChange={(e) => dispatch(setUseTimeFilter(e.target.checked))}
-            />
-          }
-          label="Use time filter"
-        />
+        <Typography variant="body2" gutterBottom>
+          Time Filter Mode:
+        </Typography>
+        <RadioGroup
+          value={filter.timeFilterMode}
+          onChange={(e) => dispatch(setTimeFilterMode(e.target.value))}
+          row
+        >
+          <FormControlLabel value="none" control={<Radio />} label="No Time Filter" />
+          <FormControlLabel value="race" control={<Radio />} label="Race Selection" />
+          <FormControlLabel value="custom" control={<Radio />} label="Custom Time" />
+        </RadioGroup>
       </Box>
       
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           label="Start Time"
           type="datetime-local"
-          value={filter.useTimeFilter ? filter.startTime : filter.defaultStartTime}
+          value={filter.timeFilterMode === 'custom' ? filter.startTime : (filter.timeFilterMode === 'race' ? filter.startTime : filter.defaultStartTime)}
           onChange={(e) => dispatch(setStartTime(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
-          disabled={!filter.useTimeFilter}
+          disabled={filter.timeFilterMode === 'none'}
           placeholder={filter.defaultStartTime}
         />
         <TextField
           label="End Time"
           type="datetime-local"
-          value={filter.useTimeFilter ? filter.endTime : filter.defaultEndTime}
+          value={filter.timeFilterMode === 'custom' ? filter.endTime : (filter.timeFilterMode === 'race' ? filter.endTime : filter.defaultEndTime)}
           onChange={(e) => dispatch(setEndTime(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
-          disabled={!filter.useTimeFilter}
+          disabled={filter.timeFilterMode === 'none'}
           placeholder={filter.defaultEndTime}
         />
         <TextField
