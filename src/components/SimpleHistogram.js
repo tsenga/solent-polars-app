@@ -5,9 +5,9 @@ const SimpleHistogram = ({ data, title, color = '#1976d2', valueExtent, chartHei
   if (!data || data.length === 0) return null;
   
   const maxCount = Math.max(...data.map(d => d.count));
-  const width = 180;
+  const width = 200;
   const height = chartHeight; // Match the time series chart height
-  const margin = { top: 10, right: 10, bottom: 20, left: 60 };
+  const margin = { top: 10, right: 15, bottom: 20, left: 70 };
   const plotHeight = height - margin.top - margin.bottom;
   const plotWidth = width - margin.left - margin.right;
   const barHeight = plotHeight / data.length;

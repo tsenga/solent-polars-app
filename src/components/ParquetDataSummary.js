@@ -94,7 +94,7 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
       <Typography variant="subtitle1" gutterBottom>
         Data Summary
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap', mb: 2 }}>
         <Chip 
           label={`Total Points: ${totalParquetData}`}
           color="default"
@@ -114,7 +114,7 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
       
       {filteredData.length > 0 && (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 3 }}>
             <TimeSeriesCharts 
               data={rawData} 
               onSetTimeFilter={(type, timestamp) => {

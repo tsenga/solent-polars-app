@@ -79,7 +79,7 @@ const TimeSeriesCharts = ({ data, onSetTimeFilter }) => {
  
   
   return (
-    <Box sx={{ textAlign: 'center', mb: 2 }}>
+    <Box sx={{ textAlign: 'left', mb: 2 }}>
       <Typography variant="subtitle1" gutterBottom>Time Series</Typography>
       <TimeSeriesWithHistogram 
         data={data} 
