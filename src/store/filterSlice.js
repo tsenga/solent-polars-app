@@ -36,6 +36,8 @@ const filterSlice = createSlice({
       state.defaultEndTime = action.payload;
     },
     setTimeFilterFromSummary: (state, action) => {
+      console.log('setTimeFilterFromSummary');
+
       const { type, formattedTime } = action.payload;
       if (type === 'start') {
         state.startTime = formattedTime;
@@ -62,10 +64,6 @@ const filterSlice = createSlice({
       const { startTime, endTime } = action.payload;
       state.defaultStartTime = startTime;
       state.defaultEndTime = endTime;
-      if (!state.startTime && !state.endTime) {
-        state.startTime = startTime;
-        state.endTime = endTime;
-      }
     },
   },
 });
