@@ -119,6 +119,15 @@ const TimeSeriesWithHistogram = ({
   
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1, gap: 2 }}>
+      {/* Histogram */}
+      <SimpleHistogram 
+        data={histogramData} 
+        title={`Distribution`} 
+        color={color}
+        valueExtent={valueExtent}
+        chartHeight={height}
+      />
+      
       {/* Time series chart */}
       <Box sx={{ textAlign: 'center' }}>
         <Typography variant="subtitle2" gutterBottom>{title}</Typography>
@@ -274,15 +283,6 @@ const TimeSeriesWithHistogram = ({
           </g>
         </svg>
       </Box>
-      
-      {/* Histogram */}
-      <SimpleHistogram 
-        data={histogramData} 
-        title={`Distribution`} 
-        color={color}
-        valueExtent={valueExtent}
-        chartHeight={height}
-      />
     </Box>
   );
 };
