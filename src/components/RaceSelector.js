@@ -69,11 +69,7 @@ const RaceSelector = () => {
   };
 
   return (
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="subtitle1" gutterBottom>
-        Race Selection
-      </Typography>
-      
+    <Box>
       {races.length > 0 ? (
         <Box>
           <FormControl size="small" sx={{ mb: 2, minWidth: 250 }}>

@@ -8,7 +8,6 @@ const DataSourceSelection = ({ editingWindSpeed, polarData }) => {
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
       <Box sx={{ mt: 2 }}>
-        <RaceSelector />
         <DataFilter />
         <ParquetDataSummary 
           editingWindSpeed={editingWindSpeed}
