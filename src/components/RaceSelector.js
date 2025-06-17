@@ -76,7 +76,7 @@ const RaceSelector = () => {
       
       {races.length > 0 ? (
         <Box>
-          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+          <FormControl size="small" sx={{ mb: 2, minWidth: 250 }}>
             <InputLabel>Select Race for Time Filter</InputLabel>
             <Select
               value={selectedRace?.id || ''}

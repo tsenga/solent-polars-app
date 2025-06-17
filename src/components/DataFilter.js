@@ -120,7 +120,6 @@ const DataFilter = () => {
         <RadioGroup
           value={filter.timeFilterMode}
           onChange={(e) => dispatch(setTimeFilterMode(e.target.value))}
-          row
         >
           <FormControlLabel value="none" control={<Radio />} label="No Time Filter" />
           <FormControlLabel value="race" control={<Radio />} label="Race Selection" />
