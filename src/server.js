@@ -65,6 +65,59 @@ app.get('/api/files/:filename', (req, res) => {
   });
 });
 
+// API endpoint to get race details
+app.get('/api/race-details', (req, res) => {
+  const raceDetailsPath = path.join(__dirname, '..', 'data', 'race-details.json');
+  
+  // Create data directory if it doesn't exist
+  const dataDir = path.dirname(raceDetailsPath);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  
+  // Create empty race details file if it doesn't exist
+  if (!fs.existsSync(raceDetailsPath)) {
+    const initialData = { races: [] };
+    fs.writeFileSync(raceDetailsPath, JSON.stringify(initialData, null, 2));
+  }
+  
+  fs.readFile(raceDetailsPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading race details:', err);
+      return res.status(500).json({ error: 'Failed to read race details' });
+    }
+    
+    try {
+      const raceDetails = JSON.parse(data);
+      res.json(raceDetails);
+    } catch (parseErr) {
+      console.error('Error parsing race details:', parseErr);
+      res.status(500).json({ error: 'Failed to parse race details' });
+    }
+  });
+});
+
+// API endpoint to save race details
+app.post('/api/race-details', (req, res) => {
+  const raceDetailsPath = path.join(__dirname, '..', 'data', 'race-details.json');
+  const raceDetails = req.body;
+  
+  // Create data directory if it doesn't exist
+  const dataDir = path.dirname(raceDetailsPath);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  
+  fs.writeFile(raceDetailsPath, JSON.stringify(raceDetails, null, 2), 'utf8', (err) => {
+    if (err) {
+      console.error('Error saving race details:', err);
+      return res.status(500).json({ error: 'Failed to save race details' });
+    }
+    
+    res.json({ success: true });
+  });
+});
+
 // API endpoint to get parquet data with filtering
 app.post('/api/parquet-data', async (req, res) => {
   try {

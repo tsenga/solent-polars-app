@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -19,6 +19,8 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Chip,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,9 +36,14 @@ import {
   deleteRace,
   selectRace,
   setIsEditing,
+  loadRaceDetails,
+  saveRaceDetails,
   selectAllRaces,
   selectSelectedRace,
   selectIsEditing,
+  selectLoading,
+  selectError,
+  clearError,
 } from '../store/raceDetailsSlice';
 
 const RaceDetailsManager = () => {
@@ -44,6 +51,8 @@ const RaceDetailsManager = () => {
   const races = useSelector(selectAllRaces);
   const selectedRace = useSelector(selectSelectedRace);
   const isEditing = useSelector(selectIsEditing);
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
@@ -51,6 +60,18 @@ const RaceDetailsManager = () => {
     startDateTime: '',
     finishDateTime: '',
   });
+
+  // Load race details on component mount
+  useEffect(() => {
+    dispatch(loadRaceDetails());
+  }, [dispatch]);
+
+  // Auto-save when races change
+  useEffect(() => {
+    if (races.length > 0) {
+      dispatch(saveRaceDetails({ races }));
+    }
+  }, [races, dispatch]);
 
   const handleAddRace = () => {
     setFormData({
@@ -61,7 +82,7 @@ const RaceDetailsManager = () => {
     setShowAddDialog(true);
   };
 
-  const handleSaveNewRace = () => {
+  const handleSaveNewRace = async () => {
     if (!formData.name || !formData.startDateTime || !formData.finishDateTime) {
       alert('Please fill in all fields');
       return;
@@ -88,7 +109,7 @@ const RaceDetailsManager = () => {
     }
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!formData.name || !formData.startDateTime || !formData.finishDateTime) {
       alert('Please fill in all fields');
       return;
@@ -158,10 +179,29 @@ const RaceDetailsManager = () => {
           startIcon={<AddIcon />}
           onClick={handleAddRace}
           size="small"
+          disabled={loading}
         >
           Add Race
         </Button>
       </Box>
+
+      {/* Loading indicator */}
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      )}
+
+      {/* Error display */}
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 2 }}
+          onClose={() => dispatch(clearError())}
+        >
+          {error}
+        </Alert>
+      )}
 
       {/* Race Selection */}
       {races.length > 0 && (
