@@ -23,9 +23,10 @@ const NavigationDrawer = ({
   isOpen, 
   onToggle, 
   activeSection, 
-  onSectionChange 
+  onSectionChange,
+  children 
 }) => {
-  const drawerWidth = 280;
+  const drawerWidth = 400;
 
   const menuItems = [
     {
@@ -80,42 +81,54 @@ const NavigationDrawer = ({
           },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-          <Typography variant="h6" component="div">
-            Navigation
-          </Typography>
-          <IconButton onClick={onToggle}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </Box>
-        <Divider />
-        <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.id} disablePadding>
-              <ListItemButton
-                selected={activeSection === item.id}
-                onClick={() => onSectionChange(item.id)}
-                sx={{
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.light',
-                    '&:hover': {
-                      backgroundColor: 'primary.light',
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          {/* Header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
+            <Typography variant="h6" component="div">
+              Navigation
+            </Typography>
+            <IconButton onClick={onToggle}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </Box>
+          <Divider />
+          
+          {/* Navigation Menu */}
+          <List sx={{ flexShrink: 0 }}>
+            {menuItems.map((item) => (
+              <ListItem key={item.id} disablePadding>
+                <ListItemButton
+                  selected={activeSection === item.id}
+                  onClick={() => onSectionChange(item.id)}
                   sx={{
-                    color: activeSection === item.id ? 'primary.main' : 'inherit',
+                    '&.Mui-selected': {
+                      backgroundColor: 'primary.light',
+                      '&:hover': {
+                        backgroundColor: 'primary.light',
+                      },
+                    },
                   }}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+                  <ListItemIcon
+                    sx={{
+                      color: activeSection === item.id ? 'primary.main' : 'inherit',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          
+          <Divider />
+          
+          {/* Content Area */}
+          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+            {children}
+          </Box>
+        </Box>
       </Drawer>
     </>
   );

@@ -364,10 +364,12 @@ function AppContent() {
         onToggle={() => setDrawerOpen(!drawerOpen)}
         activeSection={activeSection}
         onSectionChange={setActiveSection}
-      />
+      >
+        {renderSectionContent()}
+      </NavigationDrawer>
       <Box
         sx={{
-          marginLeft: drawerOpen ? '280px' : 0,
+          marginLeft: drawerOpen ? '400px' : 0,
           transition: 'margin-left 0.3s ease',
           minHeight: '100vh',
         }}
@@ -379,9 +381,6 @@ function AppContent() {
             </Typography>
           </Box>
           <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
-            <div className="file-section">
-              {renderSectionContent()}
-            </div>
             <div className="chart-container">
               <LinePolarChart 
                 polarData={polarData}
