@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box } from '@mui/material';
+import { Provider } from 'react-redux';
+import { store } from './store';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
@@ -129,14 +131,10 @@ const theme = createTheme({
   },
 });
 
-function App() {
+function AppContent() {
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
-  const [parquetData, setParquetData] = useState([]);
-  const [filteredParquetData, setFilteredParquetData] = useState([]);
-  const [displayedParquetData, setDisplayedParquetData] = useState([]);
-  const [loadingParquetData, setLoadingParquetData] = useState(false);
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   
   // Find the data for the selected wind speeds and the one being edited
@@ -294,140 +292,6 @@ function App() {
     }
   };
 
-  // Fetch parquet data based on current filters
-  const fetchParquetData = async (filter = null) => {
-    setLoadingParquetData(true);
-    try {
-      const response = await fetch('/api/parquet-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          startTime: filter?.startTime,
-          endTime: filter?.endTime,
-          maxTws: filter?.maxTws,
-          useMockData: filter?.useMockData !== undefined ? filter.useMockData : true
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch parquet data');
-      }
-
-      const result = await response.json();
-      setParquetData(result.data);
-      
-      // Apply TWS band filtering in the browser
-      const twsBands = polarData.map(data => data.windSpeed);
-      const twsBandFiltered = applyTwsBandFiltering(result.data, twsBands);
-      setFilteredParquetData(twsBandFiltered);
-      
-      // Filter data for the currently editing wind speed
-      filterParquetDataForEditingWindSpeed(twsBandFiltered, editingWindSpeed, twsBands);
-      
-    } catch (error) {
-      console.error('Error fetching parquet data:', error);
-      alert('Failed to load parquet data: ' + error.message);
-    } finally {
-      setLoadingParquetData(false);
-    }
-  };
-
-  // Apply TWS band filtering in the browser
-  const applyTwsBandFiltering = (data, twsBands) => {
-    if (!data || data.length === 0 || !twsBands || twsBands.length === 0) {
-      return data || [];
-    }
-
-    console.log(`Applying TWS band filtering for bands: [${twsBands.join(', ')}]`);
-    console.log(`Total parquet points before TWS band filtering: ${data.length}`);
-
-    const filtered = data.filter(point => {
-      // Find the closest TWS band
-      const closestBand = twsBands.reduce((closest, band) => {
-        const currentDiff = Math.abs(point.tws - band);
-        const closestDiff = Math.abs(point.tws - closest);
-        return currentDiff < closestDiff ? band : closest;
-      });
-      
-      // Only include if within reasonable range of the band (±2.5 knots)
-      return Math.abs(point.tws - closestBand) <= 2.5;
-    });
-
-    console.log(`Parquet points after TWS band filtering: ${filtered.length}`);
-    return filtered;
-  };
-
-  // Filter parquet data for the currently editing wind speed band
-  const filterParquetDataForEditingWindSpeed = (data, windSpeed, twsBands) => {
-    if (!data || data.length === 0) {
-      console.log(`No parquet data to filter for wind speed ${windSpeed}`);
-      setDisplayedParquetData([]);
-      return;
-    }
-
-    console.log(`Filtering parquet data for editing wind speed: ${windSpeed}`);
-    console.log(`Available TWS bands: [${twsBands.join(', ')}]`);
-    console.log(`Total parquet points to filter: ${data.length}`);
-
-    // Find the closest TWS band to the editing wind speed
-    const filtered = data.filter(point => {
-      const closestBand = twsBands.reduce((closest, band) => {
-        const currentDiff = Math.abs(point.tws - band);
-        const closestDiff = Math.abs(point.tws - closest);
-        return currentDiff < closestDiff ? band : closest;
-      });
-      
-      return closestBand === windSpeed;
-    });
-
-    console.log(`Filtered parquet points for TWS ${windSpeed}: ${filtered.length}`);
-    console.log('Sample filtered points:', filtered.slice(0, 5).map(p => ({
-      twa: p.twa,
-      bsp: p.bsp,
-      tws: p.tws
-    })));
-
-    setDisplayedParquetData(filtered);
-  };
-
-  // Handle filter changes
-  const handleFilterChange = (filter) => {
-    fetchParquetData(filter);
-  };
-
-  // Expose time filter function globally for ParquetDataSummary
-  React.useEffect(() => {
-    window.setTimeFilter = (type, formattedTime) => {
-      // Find the DataFilter component and update its state
-      // This is a workaround since we need to communicate between components
-      const event = new CustomEvent('setTimeFilter', {
-        detail: { type, formattedTime }
-      });
-      window.dispatchEvent(event);
-    };
-    
-    return () => {
-      delete window.setTimeFilter;
-    };
-  }, []);
-
-  // Update filtered parquet data when editing wind speed changes
-  useEffect(() => {
-    if (parquetData.length > 0) {
-      console.log(`Wind speed selection changed to: ${editingWindSpeed}`);
-      const twsBands = polarData.map(data => data.windSpeed);
-      filterParquetDataForEditingWindSpeed(parquetData, editingWindSpeed, twsBands);
-    }
-  }, [editingWindSpeed, parquetData, polarData]);
-
-  // Initial load of parquet data
-  useEffect(() => {
-    fetchParquetData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -440,15 +304,8 @@ function App() {
         </Box>
         <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
         <div className="file-section">
-          <DataFilter 
-            onFilterChange={handleFilterChange}
-            loading={loadingParquetData}
-            parquetData={parquetData}
-          />
+          <DataFilter />
           <ParquetDataSummary 
-            displayedParquetData={displayedParquetData.length}
-            rawParquetData={parquetData}
-            filteredData={filteredParquetData}
             editingWindSpeed={editingWindSpeed}
           />
           <FileSelector 
@@ -502,7 +359,6 @@ function App() {
             polarData={polarData}
             selectedWindSpeeds={selectedWindSpeeds}
             editingWindSpeed={editingWindSpeed}
-            parquetData={displayedParquetData}
             plotAbsoluteTwa={plotAbsoluteTwa}
             onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
               setPolarData(prevData => {
@@ -547,6 +403,14 @@ function App() {
         </Box>
       </Container>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 }
 

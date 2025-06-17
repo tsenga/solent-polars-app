@@ -1,131 +1,109 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch, Checkbox } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setStartTime,
+  setEndTime,
+  setMaxTws,
+  setUseMockData,
+  setUseTimeFilter,
+  setTimeFilterFromSummary,
+  clearFilter,
+  resetToDefaults,
+} from '../store/filterSlice';
+import { fetchParquetData, setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
 
-const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [maxTws, setMaxTws] = useState('');
-  const [useMockData, setUseMockData] = useState(true);
-  const [useTimeFilter, setUseTimeFilter] = useState(false);
-  const [defaultStartTime, setDefaultStartTime] = useState('');
-  const [defaultEndTime, setDefaultEndTime] = useState('');
+const DataFilter = () => {
+  const dispatch = useDispatch();
+  const filter = useSelector((state) => state.filter);
+  const { rawData: parquetData, loading } = useSelector((state) => state.parquetData);
 
   // Set default start and end times from parquet data
-  React.useEffect(() => {
+  useEffect(() => {
     if (parquetData && parquetData.length > 0) {
       // Sort data by timestamp to find first and last
       const sortedData = [...parquetData].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       const firstTime = new Date(sortedData[0].timestamp).toISOString().slice(0, 16);
       const lastTime = new Date(sortedData[sortedData.length - 1].timestamp).toISOString().slice(0, 16);
       
-      // Always set default times for placeholders
-      setDefaultStartTime(firstTime);
-      setDefaultEndTime(lastTime);
-
-      console.log(`Start: ${firstTime}, End: ${lastTime}`)
+      console.log(`Start: ${firstTime}, End: ${lastTime}`);
       
-      // Only set actual values if times are currently empty
-      if (!startTime && !endTime) {
-        setStartTime(firstTime);
-        setEndTime(lastTime);
-        //setUseTimeFilter(true); // Enable time filter when we set default times
-      }
+      dispatch(resetToDefaults({ startTime: firstTime, endTime: lastTime }));
     }
-  }, [parquetData]);
+  }, [parquetData, dispatch]);
 
   // Listen for time filter events from ParquetDataSummary
-  React.useEffect(() => {
+  useEffect(() => {
     const handleSetTimeFilter = (event) => {
       const { type, formattedTime } = event.detail;
-      
-      if (type === 'start') {
-        setStartTime(formattedTime);
-
-        console.log(`start: ${formattedTime} ${defaultEndTime} ${endTime}`)
-
-        if (!endTime) {
-          setEndTime(defaultEndTime)
-        }
-      } else if (type === 'end') {
-        setEndTime(formattedTime);
-
-        console.log(`end: ${formattedTime} ${defaultStartTime} ${startTime}`)
-
-
-        if (!startTime) {
-          setStartTime(defaultStartTime)
-        }
-      }
-      
-      // Enable time filter if it's not already enabled
-      if (!useTimeFilter) {
-        setUseTimeFilter(true);
-      }
+      dispatch(setTimeFilterFromSummary({ type, formattedTime }));
     };
 
     window.addEventListener('setTimeFilter', handleSetTimeFilter);
     return () => window.removeEventListener('setTimeFilter', handleSetTimeFilter);
-  }, [useTimeFilter]);
+  }, [dispatch]);
 
   const handleApplyFilter = () => {
     // Check if time filter is enabled but only one time is specified
-    if (useTimeFilter && ((startTime && !endTime) || (!startTime && endTime))) {
+    if (filter.useTimeFilter && ((filter.startTime && !filter.endTime) || (!filter.startTime && filter.endTime))) {
       alert('Please specify both start and end times when using time filter');
       return;
     }
     
     // Check if start time is before end time when both are specified
-    if (useTimeFilter && startTime && endTime && new Date(startTime) >= new Date(endTime)) {
+    if (filter.useTimeFilter && filter.startTime && filter.endTime && new Date(filter.startTime) >= new Date(filter.endTime)) {
       alert('Start time must be before end time');
       return;
     }
 
     const filterData = {
-      useMockData: useMockData
+      useMockData: filter.useMockData
     };
 
     // Only add time filters if time filter is enabled and both times are specified
-    if (useTimeFilter && startTime && endTime) {
-      filterData.startTime = new Date(startTime).toISOString();
-      filterData.endTime = new Date(endTime).toISOString();
+    if (filter.useTimeFilter && filter.startTime && filter.endTime) {
+      filterData.startTime = new Date(filter.startTime).toISOString();
+      filterData.endTime = new Date(filter.endTime).toISOString();
     }
 
     // Add max TWS filter if specified
-    if (maxTws) {
-      filterData.maxTws = parseFloat(maxTws);
+    if (filter.maxTws) {
+      filterData.maxTws = parseFloat(filter.maxTws);
     }
 
-    onFilterChange(filterData);
+    dispatch(fetchParquetData(filterData));
   };
 
   const handleClearFilter = () => {
-    setStartTime('');
-    setEndTime('');
-    setMaxTws('');
-    setUseTimeFilter(false);
-    onFilterChange({ useMockData: useMockData });
+    dispatch(clearFilter());
+    dispatch(fetchParquetData({ useMockData: filter.useMockData }));
   };
 
   const handleToggleDataSource = (event) => {
     const newUseMockData = event.target.checked;
-    setUseMockData(newUseMockData);
+    dispatch(setUseMockData(newUseMockData));
     
     // Immediately apply the data source change
     const currentFilter = {
       useMockData: newUseMockData
     };
     
-    if (useTimeFilter && startTime && endTime) {
-      currentFilter.startTime = new Date(startTime).toISOString();
-      currentFilter.endTime = new Date(endTime).toISOString();
+    if (filter.useTimeFilter && filter.startTime && filter.endTime) {
+      currentFilter.startTime = new Date(filter.startTime).toISOString();
+      currentFilter.endTime = new Date(filter.endTime).toISOString();
     }
     
-    if (maxTws) {
-      currentFilter.maxTws = parseFloat(maxTws);
+    if (filter.maxTws) {
+      currentFilter.maxTws = parseFloat(filter.maxTws);
     }
     
-    onFilterChange(currentFilter);
+    dispatch(fetchParquetData(currentFilter));
   };
+
+  // Initial load of parquet data
+  useEffect(() => {
+    dispatch(fetchParquetData({ useMockData: filter.useMockData }));
+  }, [dispatch]);
 
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
@@ -136,12 +114,12 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
         <FormControlLabel
           control={
             <Switch
-              checked={useMockData}
+              checked={filter.useMockData}
               onChange={handleToggleDataSource}
               disabled={loading}
             />
           }
-          label={useMockData ? "Using Mock Data" : "Using Real Parquet Data (S3)"}
+          label={filter.useMockData ? "Using Mock Data" : "Using Real Parquet Data (S3)"}
         />
       </Box>
       
@@ -149,8 +127,8 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
         <FormControlLabel
           control={
             <Checkbox
-              checked={useTimeFilter}
-              onChange={(e) => setUseTimeFilter(e.target.checked)}
+              checked={filter.useTimeFilter}
+              onChange={(e) => dispatch(setUseTimeFilter(e.target.checked))}
             />
           }
           label="Use time filter"
@@ -161,32 +139,32 @@ const DataFilter = ({ onFilterChange, loading, parquetData = [] }) => {
         <TextField
           label="Start Time"
           type="datetime-local"
-          value={useTimeFilter ? startTime : defaultStartTime}
-          onChange={(e) => setStartTime(e.target.value)}
+          value={filter.useTimeFilter ? filter.startTime : filter.defaultStartTime}
+          onChange={(e) => dispatch(setStartTime(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
-          disabled={!useTimeFilter}
-          placeholder={defaultStartTime}
+          disabled={!filter.useTimeFilter}
+          placeholder={filter.defaultStartTime}
         />
         <TextField
           label="End Time"
           type="datetime-local"
-          value={useTimeFilter ? endTime : defaultEndTime}
-          onChange={(e) => setEndTime(e.target.value)}
+          value={filter.useTimeFilter ? filter.endTime : filter.defaultEndTime}
+          onChange={(e) => dispatch(setEndTime(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}
           size="small"
-          disabled={!useTimeFilter}
-          placeholder={defaultEndTime}
+          disabled={!filter.useTimeFilter}
+          placeholder={filter.defaultEndTime}
         />
         <TextField
           label="Max TWS (knots)"
           type="number"
-          value={maxTws}
-          onChange={(e) => setMaxTws(e.target.value)}
+          value={filter.maxTws}
+          onChange={(e) => dispatch(setMaxTws(e.target.value))}
           InputLabelProps={{
             shrink: true,
           }}

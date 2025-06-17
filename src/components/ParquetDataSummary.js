@@ -1,15 +1,92 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography, Paper, Chip } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
 import TimeSeriesCharts from './TimeSeriesCharts';
 
-const ParquetDataSummary = ({ 
-  displayedParquetData, 
-  filteredData = [],
-  rawParquetData = [],
-  editingWindSpeed 
-}) => {
-  const totalParquetData = rawParquetData.length;
+const ParquetDataSummary = ({ editingWindSpeed }) => {
+  const dispatch = useDispatch();
+  const { rawData, filteredData, displayedData } = useSelector((state) => state.parquetData);
+  
+  const totalParquetData = rawData.length;
   const filteredParquetData = filteredData.length;
+  const displayedParquetDataCount = displayedData.length;
+
+  // Apply TWS band filtering in the browser
+  const applyTwsBandFiltering = (data, twsBands) => {
+    if (!data || data.length === 0 || !twsBands || twsBands.length === 0) {
+      return data || [];
+    }
+
+    console.log(`Applying TWS band filtering for bands: [${twsBands.join(', ')}]`);
+    console.log(`Total parquet points before TWS band filtering: ${data.length}`);
+
+    const filtered = data.filter(point => {
+      // Find the closest TWS band
+      const closestBand = twsBands.reduce((closest, band) => {
+        const currentDiff = Math.abs(point.tws - band);
+        const closestDiff = Math.abs(point.tws - closest);
+        return currentDiff < closestDiff ? band : closest;
+      });
+      
+      // Only include if within reasonable range of the band (±2.5 knots)
+      return Math.abs(point.tws - closestBand) <= 2.5;
+    });
+
+    console.log(`Parquet points after TWS band filtering: ${filtered.length}`);
+    return filtered;
+  };
+
+  // Filter parquet data for the currently editing wind speed band
+  const filterParquetDataForEditingWindSpeed = (data, windSpeed, twsBands) => {
+    if (!data || data.length === 0) {
+      console.log(`No parquet data to filter for wind speed ${windSpeed}`);
+      return [];
+    }
+
+    console.log(`Filtering parquet data for editing wind speed: ${windSpeed}`);
+    console.log(`Available TWS bands: [${twsBands.join(', ')}]`);
+    console.log(`Total parquet points to filter: ${data.length}`);
+
+    // Find the closest TWS band to the editing wind speed
+    const filtered = data.filter(point => {
+      const closestBand = twsBands.reduce((closest, band) => {
+        const currentDiff = Math.abs(point.tws - band);
+        const closestDiff = Math.abs(point.tws - closest);
+        return currentDiff < closestDiff ? band : closest;
+      });
+      
+      return closestBand === windSpeed;
+    });
+
+    console.log(`Filtered parquet points for TWS ${windSpeed}: ${filtered.length}`);
+    console.log('Sample filtered points:', filtered.slice(0, 5).map(p => ({
+      twa: p.twa,
+      bsp: p.bsp,
+      tws: p.tws
+    })));
+
+    return filtered;
+  };
+
+  // Update filtered data when raw data changes
+  useEffect(() => {
+    if (rawData.length > 0) {
+      // For now, we'll use some default TWS bands - this should come from polar data
+      const twsBands = [5, 10, 15, 20]; // Default bands
+      const twsBandFiltered = applyTwsBandFiltering(rawData, twsBands);
+      dispatch(setFilteredData(twsBandFiltered));
+    }
+  }, [rawData, dispatch]);
+
+  // Update displayed data when editing wind speed changes
+  useEffect(() => {
+    if (filteredData.length > 0 && editingWindSpeed) {
+      const twsBands = [5, 10, 15, 20]; // Default bands - should come from polar data
+      const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, twsBands);
+      dispatch(setDisplayedData(displayedForWindSpeed));
+    }
+  }, [editingWindSpeed, filteredData, dispatch]);
   
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
@@ -28,7 +105,7 @@ const ParquetDataSummary = ({
           variant="outlined"
         />
         <Chip 
-          label={`Displayed (TWS ${editingWindSpeed}): ${displayedParquetData}`}
+          label={`Displayed (TWS ${editingWindSpeed}): ${displayedParquetDataCount}`}
           color="secondary"
           variant="filled"
         />
@@ -38,7 +115,7 @@ const ParquetDataSummary = ({
         <>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
             <TimeSeriesCharts 
-              data={rawParquetData} 
+              data={rawData} 
               onSetTimeFilter={(type, timestamp) => {
                 // Format timestamp for datetime-local input
                 const formattedTime = new Date(timestamp).toISOString().slice(0, 16);
