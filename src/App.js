@@ -371,6 +371,7 @@ function AppContent() {
             <Tab label="Polar Files" />
             <Tab label="Data Source" />
             <Tab label="View Settings" />
+            <Tab label="Race Details" />
           </Tabs>
         </Box>
         
