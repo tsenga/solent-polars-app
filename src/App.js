@@ -380,9 +380,9 @@ function AppContent() {
           {renderTabContent()}
         </Box>
         
-        {/* Two Column Layout */}
+        {/* Three Column Layout */}
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <LinePolarChart 
               polarData={polarData}
               selectedWindSpeeds={selectedWindSpeeds}
@@ -411,7 +411,7 @@ function AppContent() {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <PolarDataTable 
               data={selectedData.angles}
               windSpeed={editingWindSpeed}
@@ -429,6 +429,9 @@ function AppContent() {
               onAddWindSpeed={addWindSpeed}
               onDeleteWindSpeed={deleteWindSpeed}
             />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <RaceDetailsManager />
           </Grid>
         </Grid>
       </Container>
