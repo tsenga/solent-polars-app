@@ -375,14 +375,21 @@ function AppContent() {
           </Tabs>
         </Box>
         
-        {/* Tab Content */}
-        <Box sx={{ mb: 3 }}>
-          {renderTabContent()}
-        </Box>
-        
-        {/* Three Column Layout */}
-        <Grid container spacing={3}>
+        {/* Tab Content and Race Details Row */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={8}>
+            <Box>
+              {renderTabContent()}
+            </Box>
+          </Grid>
           <Grid item xs={12} md={4}>
+            <RaceDetailsManager />
+          </Grid>
+        </Grid>
+        
+        {/* Two Column Layout for Charts */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
             <LinePolarChart 
               polarData={polarData}
               selectedWindSpeeds={selectedWindSpeeds}
