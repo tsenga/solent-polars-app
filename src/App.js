@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import LinePolarChart from './components/LinePolarChart';
@@ -10,7 +10,6 @@ import FileSelector from './components/FileSelector';
 import DataSourceSelection from './components/DataSourceSelection';
 import ViewSettings from './components/ViewSettings';
 import RaceDetailsManager from './components/RaceDetailsManager';
-import NavigationDrawer from './components/NavigationDrawer';
 
 // Sample initial data with anchor points
 const initialPolarData = [
@@ -137,8 +136,7 @@ function AppContent() {
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('dataSource');
+  const [activeTab, setActiveTab] = useState(0);
   
   // Find the data for the selected wind speeds and the one being edited
   const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
@@ -296,16 +294,26 @@ function AppContent() {
   };
 
 
-  const renderSectionContent = () => {
-    switch (activeSection) {
-      case 'dataSource':
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 0: // View Settings
+        return (
+          <ViewSettings 
+            windSpeeds={polarData.map(data => data.windSpeed)}
+            selectedWindSpeeds={selectedWindSpeeds}
+            onSelectWindSpeed={setSelectedWindSpeeds}
+            plotAbsoluteTwa={plotAbsoluteTwa}
+            onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
+          />
+        );
+      case 1: // Data Source
         return (
           <DataSourceSelection 
             editingWindSpeed={editingWindSpeed}
             polarData={polarData}
           />
         );
-      case 'files':
+      case 2: // Files
         return (
           <FileSelector 
             onFileLoad={handleFileLoad} 
@@ -342,7 +350,7 @@ function AppContent() {
             }}
           />
         );
-      case 'raceDetails':
+      case 3: // Race Details
         return <RaceDetailsManager />;
       default:
         return null;
@@ -352,86 +360,80 @@ function AppContent() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <NavigationDrawer
-        isOpen={drawerOpen}
-        onToggle={() => setDrawerOpen(!drawerOpen)}
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-      >
-        {renderSectionContent()}
-      </NavigationDrawer>
-      <Box
-        sx={{
-          marginLeft: drawerOpen ? '600px' : 0,
-          transition: 'margin-left 0.3s ease',
-          minHeight: '100vh',
-        }}
-      >
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Box component="header" sx={{ mb: 4, textAlign: 'center' }}>
-            <Typography variant="h3" component="h1" gutterBottom>
-              Polar Optimiser
-            </Typography>
-          </Box>
-          <Box component="main" sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flexWrap: 'wrap', gap: 3 }}>
-            <div className="chart-container">
-              <ViewSettings 
-                windSpeeds={polarData.map(data => data.windSpeed)}
-                selectedWindSpeeds={selectedWindSpeeds}
-                onSelectWindSpeed={setSelectedWindSpeeds}
-                plotAbsoluteTwa={plotAbsoluteTwa}
-                onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
-              />
-              <LinePolarChart 
-                polarData={polarData}
-                selectedWindSpeeds={selectedWindSpeeds}
-                editingWindSpeed={editingWindSpeed}
-                plotAbsoluteTwa={plotAbsoluteTwa}
-                onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
-                  setPolarData(prevData => {
-                    return prevData.map(windData => {
-                      if (windData.windSpeed === windSpeed) {
-                        // Find the anchor point with the old angle
-                        const updatedAnchorPoints = windData.anchorPoints.map(point => {
-                          if (Math.abs(point.angle - oldAngle) < 0.1) { // Small threshold for floating point comparison
-                            return { angle: newAngle, boatSpeed: newSpeed };
-                          }
-                          return point;
-                        });
-                        
-                        return {
-                          ...windData,
-                          anchorPoints: updatedAnchorPoints.sort((a, b) => a.angle - b.angle)
-                        };
-                      }
-                      return windData;
-                    });
+      <Container maxWidth="xl" sx={{ py: 2 }}>
+        <Box component="header" sx={{ mb: 3, textAlign: 'center' }}>
+          <Typography variant="h3" component="h1" gutterBottom>
+            Polar Optimiser
+          </Typography>
+        </Box>
+        
+        {/* Tabbed Interface */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+          <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
+            <Tab label="View Settings" />
+            <Tab label="Data Source" />
+            <Tab label="Polar Files" />
+            <Tab label="Race Details" />
+          </Tabs>
+        </Box>
+        
+        {/* Tab Content */}
+        <Box sx={{ mb: 3 }}>
+          {renderTabContent()}
+        </Box>
+        
+        {/* Two Column Layout */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <LinePolarChart 
+              polarData={polarData}
+              selectedWindSpeeds={selectedWindSpeeds}
+              editingWindSpeed={editingWindSpeed}
+              plotAbsoluteTwa={plotAbsoluteTwa}
+              onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                setPolarData(prevData => {
+                  return prevData.map(windData => {
+                    if (windData.windSpeed === windSpeed) {
+                      // Find the anchor point with the old angle
+                      const updatedAnchorPoints = windData.anchorPoints.map(point => {
+                        if (Math.abs(point.angle - oldAngle) < 0.1) { // Small threshold for floating point comparison
+                          return { angle: newAngle, boatSpeed: newSpeed };
+                        }
+                        return point;
+                      });
+                      
+                      return {
+                        ...windData,
+                        anchorPoints: updatedAnchorPoints.sort((a, b) => a.angle - b.angle)
+                      };
+                    }
+                    return windData;
                   });
-                }}
-              />
-            </div>
-            <div className="data-table">
-              <PolarDataTable 
-                data={selectedData.angles}
-                windSpeed={editingWindSpeed}
-                availableWindSpeeds={polarData.map(data => data.windSpeed)}
-                onChangeWindSpeed={(newWindSpeed) => {
-                  setEditingWindSpeed(newWindSpeed);
-                  // If the new wind speed is not in the selected wind speeds, add it
-                  if (!selectedWindSpeeds.includes(newWindSpeed)) {
-                    setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
-                  }
-                }}
-                onUpdateBoatSpeed={updateBoatSpeed}
-                onAddAngleEntry={addAngleEntry}
-                onDeleteAngleEntry={deleteAngleEntry}
-                onAddWindSpeed={addWindSpeed}
-                onDeleteWindSpeed={deleteWindSpeed}
-              />
-            </div>
-          </Box>
-        </Container>
-      </Box>
+                });
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <PolarDataTable 
+              data={selectedData.angles}
+              windSpeed={editingWindSpeed}
+              availableWindSpeeds={polarData.map(data => data.windSpeed)}
+              onChangeWindSpeed={(newWindSpeed) => {
+                setEditingWindSpeed(newWindSpeed);
+                // If the new wind speed is not in the selected wind speeds, add it
+                if (!selectedWindSpeeds.includes(newWindSpeed)) {
+                  setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
+                }
+              }}
+              onUpdateBoatSpeed={updateBoatSpeed}
+              onAddAngleEntry={addAngleEntry}
+              onDeleteAngleEntry={deleteAngleEntry}
+              onAddWindSpeed={addWindSpeed}
+              onDeleteWindSpeed={deleteWindSpeed}
+            />
+          </Grid>
+        </Grid>
+      </Container>
     </ThemeProvider>
   );
 }
