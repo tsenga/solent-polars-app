@@ -296,24 +296,7 @@ function AppContent() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 0: // View Settings
-        return (
-          <ViewSettings 
-            windSpeeds={polarData.map(data => data.windSpeed)}
-            selectedWindSpeeds={selectedWindSpeeds}
-            onSelectWindSpeed={setSelectedWindSpeeds}
-            plotAbsoluteTwa={plotAbsoluteTwa}
-            onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
-          />
-        );
-      case 1: // Data Source
-        return (
-          <DataSourceSelection 
-            editingWindSpeed={editingWindSpeed}
-            polarData={polarData}
-          />
-        );
-      case 2: // Files
+      case 0: // Polar Files
         return (
           <FileSelector 
             onFileLoad={handleFileLoad} 
@@ -350,8 +333,23 @@ function AppContent() {
             }}
           />
         );
-      case 3: // Race Details
-        return <RaceDetailsManager />;
+      case 1: // Data Source
+        return (
+          <DataSourceSelection 
+            editingWindSpeed={editingWindSpeed}
+            polarData={polarData}
+          />
+        );
+      case 2: // View Settings
+        return (
+          <ViewSettings 
+            windSpeeds={polarData.map(data => data.windSpeed)}
+            selectedWindSpeeds={selectedWindSpeeds}
+            onSelectWindSpeed={setSelectedWindSpeeds}
+            plotAbsoluteTwa={plotAbsoluteTwa}
+            onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
+          />
+        );
       default:
         return null;
     }
@@ -370,10 +368,9 @@ function AppContent() {
         {/* Tabbed Interface */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
           <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
-            <Tab label="View Settings" />
-            <Tab label="Data Source" />
             <Tab label="Polar Files" />
-            <Tab label="Race Details" />
+            <Tab label="Data Source" />
+            <Tab label="View Settings" />
           </Tabs>
         </Box>
         
