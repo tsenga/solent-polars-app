@@ -330,7 +330,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
   return (
     <div className="line-polar-chart" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
       <h2>Polar Chart for Selected Wind Speeds</h2>
-      <div className="chart-container" style={{ width: '70%', aspectRatio: '1', maxWidth: '500px' }}>
+      <div className="chart-container" style={{ width: '90%', aspectRatio: '1' }}>
         <svg ref={svgRef} width="100%" height="100%"></svg>
         <div ref={tooltipRef} className="tooltip"></div>
       </div>
