@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
-import { Provider } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
+import { setFilteredData, setDisplayedData } from './store/parquetDataSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
@@ -132,12 +133,94 @@ const theme = createTheme({
 });
 
 function AppContent() {
+  const dispatch = useDispatch();
+  const { rawData, filteredData } = useSelector((state) => state.parquetData);
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   
+  // Apply TWS band filtering in the browser
+  const applyTwsBandFiltering = (data, twsBands) => {
+    if (!data || data.length === 0 || !twsBands || twsBands.length === 0) {
+      return data || [];
+    }
+
+    console.log(`Applying TWS band filtering for bands: [${twsBands.join(', ')}]`);
+    console.log(`Total parquet points before TWS band filtering: ${data.length}`);
+
+    const filtered = data.filter(point => {
+      // Find the closest TWS band
+      const closestBand = twsBands.reduce((closest, band) => {
+        const currentDiff = Math.abs(point.tws - band);
+        const closestDiff = Math.abs(point.tws - closest);
+        return currentDiff < closestDiff ? band : closest;
+      });
+      
+      // Only include if within reasonable range of the band (±2.5 knots)
+      return Math.abs(point.tws - closestBand) <= 2.5;
+    });
+
+    console.log(`Parquet points after TWS band filtering: ${filtered.length}`);
+    return filtered;
+  };
+
+  // Filter parquet data for the currently editing wind speed band
+  const filterParquetDataForEditingWindSpeed = (data, windSpeed, twsBands) => {
+    if (!data || data.length === 0) {
+      console.log(`No parquet data to filter for wind speed ${windSpeed}`);
+      return [];
+    }
+
+    console.log(`Filtering parquet data for editing wind speed: ${windSpeed}`);
+    console.log(`Available TWS bands: [${twsBands.join(', ')}]`);
+    console.log(`Total parquet points to filter: ${data.length}`);
+
+    // Filter points that are within ±2.5 knots of the editing wind speed
+    const filtered = data.filter(point => {
+      const twsDiff = Math.abs(point.tws - windSpeed);
+      return twsDiff <= 2.5;
+    });
+
+    console.log(`Filtered parquet points for TWS ${windSpeed} (±2.5): ${filtered.length}`);
+    console.log('Sample filtered points:', filtered.slice(0, 5).map(p => ({
+      twa: p.twa,
+      bsp: p.bsp,
+      tws: p.tws
+    })));
+
+    return filtered;
+  };
+
+  // Update filtered data when raw data or polar data changes
+  useEffect(() => {
+    if (rawData.length > 0 && polarData && polarData.length > 0) {
+      // Use actual wind speeds from polar data
+      const twsBands = polarData.map(data => data.windSpeed);
+      const twsBandFiltered = applyTwsBandFiltering(rawData, twsBands);
+      dispatch(setFilteredData(twsBandFiltered));
+    }
+  }, [rawData, polarData, dispatch]);
+
+  // Update displayed data when editing wind speed changes
+  useEffect(() => {
+    console.log(`App: editingWindSpeed changed to ${editingWindSpeed}`);
+    if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
+      const twsBands = polarData.map(data => data.windSpeed);
+      console.log(`App: Filtering parquet data for editing wind speed: ${editingWindSpeed}`);
+      const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, twsBands);
+      console.log(`App: Dispatching ${displayedForWindSpeed.length} points for display`);
+      dispatch(setDisplayedData(displayedForWindSpeed));
+    } else {
+      console.log('App: Conditions not met for filtering:', {
+        filteredDataLength: filteredData.length,
+        editingWindSpeed,
+        polarDataLength: polarData?.length || 0
+      });
+    }
+  }, [editingWindSpeed, filteredData, polarData, dispatch]);
+
   // Find the data for the selected wind speeds and the one being edited
   const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
                       (selectedWindSpeeds.length > 0 ? 
