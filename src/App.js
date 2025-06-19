@@ -350,6 +350,8 @@ function AppContent() {
             onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
           />
         );
+      case 3: // Race Details
+        return <RaceDetailsManager />;
       default:
         return null;
     }
