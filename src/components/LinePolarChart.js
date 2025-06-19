@@ -298,7 +298,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
       // We'll create a legend instead of adding labels directly to the chart
     });
     
-  }, [selectedData, editingWindSpeed, parquetData, plotAbsoluteTwa, onUpdateAnchorPoint]);
+  }, [selectedData, editingWindSpeed, parquetData, plotAbsoluteTwa, onUpdateAnchorPoint, editingWindSpeed]);
 
   // Create a legend for the wind speeds
   const renderLegend = () => {
