@@ -126,6 +126,115 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
       .style('box-shadow', '0 2px 5px rgba(0,0,0,0.2)')
       .style('z-index', '1000')
       .style('pointer-events', 'none');
+
+    // Create wind speed histogram overlay
+    if (parquetData && parquetData.length > 0) {
+      // Create histogram data for wind speeds (1 knot bins)
+      const windSpeeds = parquetData.map(d => d.tws);
+      const minTws = Math.floor(Math.min(...windSpeeds));
+      const maxTws = Math.ceil(Math.max(...windSpeeds));
+      
+      // Create bins for each knot
+      const bins = [];
+      for (let tws = minTws; tws <= maxTws; tws++) {
+        const count = windSpeeds.filter(ws => ws >= tws && ws < tws + 1).length;
+        if (count > 0) {
+          bins.push({ tws, count });
+        }
+      }
+      
+      if (bins.length > 0) {
+        const histogramWidth = 150;
+        const histogramHeight = 100;
+        const histogramMargin = { top: 10, right: 10, bottom: 20, left: 30 };
+        const histogramInnerWidth = histogramWidth - histogramMargin.left - histogramMargin.right;
+        const histogramInnerHeight = histogramHeight - histogramMargin.top - histogramMargin.bottom;
+        
+        // Position histogram in top-left corner
+        const histogramGroup = svg.append('g')
+          .attr('class', 'wind-speed-histogram')
+          .attr('transform', `translate(${-width/2 + 20}, ${-height/2 + 20})`);
+        
+        // Add background
+        histogramGroup.append('rect')
+          .attr('width', histogramWidth)
+          .attr('height', histogramHeight)
+          .attr('fill', 'rgba(255, 255, 255, 0.9)')
+          .attr('stroke', '#ccc')
+          .attr('stroke-width', 1)
+          .attr('rx', 4);
+        
+        // Create scales for histogram
+        const xScale = d3.scaleBand()
+          .domain(bins.map(d => d.tws))
+          .range([histogramMargin.left, histogramMargin.left + histogramInnerWidth])
+          .padding(0.1);
+        
+        const yScale = d3.scaleLinear()
+          .domain([0, d3.max(bins, d => d.count)])
+          .range([histogramMargin.top + histogramInnerHeight, histogramMargin.top]);
+        
+        // Color scale for wind speed bars
+        const colorScale = d3.scaleSequential(d3.interpolateViridis)
+          .domain([minTws, maxTws]);
+        
+        // Add bars
+        histogramGroup.selectAll('.histogram-bar')
+          .data(bins)
+          .enter()
+          .append('rect')
+          .attr('class', 'histogram-bar')
+          .attr('x', d => xScale(d.tws))
+          .attr('y', d => yScale(d.count))
+          .attr('width', xScale.bandwidth())
+          .attr('height', d => histogramMargin.top + histogramInnerHeight - yScale(d.count))
+          .attr('fill', d => colorScale(d.tws))
+          .attr('stroke', 'white')
+          .attr('stroke-width', 0.5)
+          .on('mouseover', function(event, d) {
+            // Show tooltip for histogram bar
+            tooltip
+              .style('visibility', 'visible')
+              .html(`<strong>Wind Speed:</strong> ${d.tws}-${d.tws + 1} knots<br>
+                     <strong>Count:</strong> ${d.count} points`)
+              .style('left', `${event.pageX + 10}px`)
+              .style('top', `${event.pageY - 28}px`);
+          })
+          .on('mouseout', function() {
+            tooltip.style('visibility', 'hidden');
+          });
+        
+        // Add title
+        histogramGroup.append('text')
+          .attr('x', histogramWidth / 2)
+          .attr('y', 12)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '10px')
+          .attr('font-weight', 'bold')
+          .text('Wind Speed Distribution');
+        
+        // Add x-axis labels (every other tick to avoid crowding)
+        histogramGroup.selectAll('.x-axis-label')
+          .data(bins.filter((d, i) => i % 2 === 0))
+          .enter()
+          .append('text')
+          .attr('class', 'x-axis-label')
+          .attr('x', d => xScale(d.tws) + xScale.bandwidth() / 2)
+          .attr('y', histogramMargin.top + histogramInnerHeight + 12)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '8px')
+          .text(d => d.tws);
+        
+        // Add y-axis label
+        histogramGroup.append('text')
+          .attr('x', 8)
+          .attr('y', histogramHeight / 2)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '8px')
+          .attr('transform', `rotate(-90, 8, ${histogramHeight / 2})`)
+          .text('Count');
+      }
+    }
     
     // Add parquet data scatter points
     if (parquetData && parquetData.length > 0) {
