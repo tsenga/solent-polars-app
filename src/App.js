@@ -367,25 +367,22 @@ function AppContent() {
         
         {/* Tabbed Interface */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
-            <Tab label="Polar Files" />
-            <Tab label="Data Source" />
-            <Tab label="View Settings" />
-            <Tab label="Race Details" />
-          </Tabs>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
+              <Tab label="Polar Files" />
+              <Tab label="Data Source" />
+              <Tab label="View Settings" />
+            </Tabs>
+            <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
+              <Tab label="Race Details" value={3} />
+            </Tabs>
+          </Box>
         </Box>
         
-        {/* Tab Content and Race Details Row */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={8}>
-            <Box>
-              {renderTabContent()}
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <RaceDetailsManager />
-          </Grid>
-        </Grid>
+        {/* Tab Content Row */}
+        <Box sx={{ mb: 3 }}>
+          {renderTabContent()}
+        </Box>
         
         {/* Two Column Layout for Charts */}
         <Grid container spacing={3}>
