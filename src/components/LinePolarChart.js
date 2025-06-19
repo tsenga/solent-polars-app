@@ -238,6 +238,13 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
     
     // Add parquet data scatter points
     if (parquetData && parquetData.length > 0) {
+      // Create color scale for parquet dots (same as histogram)
+      const windSpeeds = parquetData.map(d => d.tws);
+      const minTws = Math.floor(Math.min(...windSpeeds));
+      const maxTws = Math.ceil(Math.max(...windSpeeds));
+      const parquetColorScale = d3.scaleSequential(d3.interpolateViridis)
+        .domain([minTws, maxTws]);
+
       // Create a highlight circle that will be shown on hover
       const highlightCircle = svg.append('circle')
         .attr('class', 'parquet-highlight')
@@ -261,9 +268,10 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
           return -rScale(d.bsp) * Math.cos(angleScale(twa));
         })
         .attr('r', 2)
-        .attr('fill', 'rgba(255, 0, 0, 0.6)')
+        .attr('fill', d => parquetColorScale(d.tws))
         .attr('stroke', 'rgba(255, 255, 255, 0.8)')
         .attr('stroke-width', 0.5)
+        .attr('opacity', 0.7)
         .on('mouseover', function(event, d) {
           const rect = svgRef.current.getBoundingClientRect();
           const twa = plotAbsoluteTwa ? Math.abs(d.twa) : d.twa;
