@@ -17,6 +17,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
   );
 
   useEffect(() => {
+    console.log(`LinePolarChart: Re-rendering with ${parquetData?.length || 0} parquet points for editing wind speed ${editingWindSpeed}`);
     if (!selectedData.length) return;
 
     // Clear previous chart

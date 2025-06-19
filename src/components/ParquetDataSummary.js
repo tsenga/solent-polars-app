@@ -82,10 +82,19 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
 
   // Update displayed data when editing wind speed changes
   useEffect(() => {
+    console.log(`ParquetDataSummary: editingWindSpeed changed to ${editingWindSpeed}`);
     if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
       const twsBands = polarData.map(data => data.windSpeed);
+      console.log(`Filtering parquet data for editing wind speed: ${editingWindSpeed}`);
       const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, twsBands);
+      console.log(`Dispatching ${displayedForWindSpeed.length} points for display`);
       dispatch(setDisplayedData(displayedForWindSpeed));
+    } else {
+      console.log('Conditions not met for filtering:', {
+        filteredDataLength: filteredData.length,
+        editingWindSpeed,
+        polarDataLength: polarData?.length || 0
+      });
     }
   }, [editingWindSpeed, filteredData, polarData, dispatch]);
   
