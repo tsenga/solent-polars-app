@@ -388,7 +388,7 @@ function AppContent() {
         
         {/* Two Column Layout for Charts */}
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={8}>
             <LinePolarChart 
               polarData={polarData}
               selectedWindSpeeds={selectedWindSpeeds}
@@ -435,9 +435,6 @@ function AppContent() {
               onAddWindSpeed={addWindSpeed}
               onDeleteWindSpeed={deleteWindSpeed}
             />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <RaceDetailsManager />
           </Grid>
         </Grid>
       </Container>
