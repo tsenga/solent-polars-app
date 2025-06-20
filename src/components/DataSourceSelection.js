@@ -15,6 +15,7 @@ const DataSourceSelection = ({ editingWindSpeed, polarData }) => {
               Data Filters
             </Typography>
             <DataFilter />
+            <RaceSelector />
           </Box>
         </Grid>
         
