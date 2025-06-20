@@ -2,7 +2,6 @@ import React from 'react';
 import { Paper, Typography, Box, Grid } from '@mui/material';
 import DataFilter from './DataFilter';
 import ParquetDataSummary from './ParquetDataSummary';
-import RaceSelector from './RaceSelector';
 
 const DataSourceSelection = ({ editingWindSpeed, polarData }) => {
   return (
