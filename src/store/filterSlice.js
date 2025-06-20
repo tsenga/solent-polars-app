@@ -5,7 +5,7 @@ const initialState = {
   endTime: '',
   maxTws: '',
   useMockData: true,
-  timeFilterMode: 'none', // 'none', 'race', 'custom'
+  timeFilterMode: 'race', // 'none', 'race', 'custom'
   defaultStartTime: '',
   defaultEndTime: '',
 };

@@ -12,6 +12,7 @@ import {
   resetToDefaults,
 } from '../store/filterSlice';
 import { fetchParquetData, setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
+import RaceSelector from './RaceSelector';
 
 const DataFilter = () => {
   const dispatch = useDispatch();
@@ -100,17 +101,10 @@ const DataFilter = () => {
       <Typography variant="subtitle1" gutterBottom>
         Filter Settings
       </Typography>
+      
+      {/* Race Selector at the top */}
       <Box sx={{ mb: 2 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={filter.useMockData}
-              onChange={handleToggleDataSource}
-              disabled={loading}
-            />
-          }
-          label={filter.useMockData ? "Using Mock Data" : "Using Real Parquet Data (S3)"}
-        />
+        <RaceSelector />
       </Box>
       
       <Box sx={{ mb: 2 }}>
@@ -121,9 +115,9 @@ const DataFilter = () => {
           value={filter.timeFilterMode}
           onChange={(e) => dispatch(setTimeFilterMode(e.target.value))}
         >
-          <FormControlLabel value="none" control={<Radio />} label="No Time Filter" />
           <FormControlLabel value="race" control={<Radio />} label="Race Selection" />
           <FormControlLabel value="custom" control={<Radio />} label="Custom Time" />
+          <FormControlLabel value="none" control={<Radio />} label="No Time Filter" />
         </RadioGroup>
       </Box>
       
@@ -177,6 +171,20 @@ const DataFilter = () => {
         >
           Clear
         </Button>
+      </Box>
+      
+      {/* Mock Data Selector at the bottom */}
+      <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #eee' }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={filter.useMockData}
+              onChange={handleToggleDataSource}
+              disabled={loading}
+            />
+          }
+          label={filter.useMockData ? "Using Mock Data" : "Using Real Parquet Data (S3)"}
+        />
       </Box>
     </Box>
   );
