@@ -12,7 +12,6 @@ import {
   resetToDefaults,
 } from '../store/filterSlice';
 import { fetchParquetData, setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
-import RaceSelector from './RaceSelector';
 
 const DataFilter = () => {
   const dispatch = useDispatch();
@@ -118,21 +117,14 @@ const DataFilter = () => {
         <Typography variant="body2" gutterBottom>
           Time Filter Mode:
         </Typography>
-        <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
-          <RadioGroup
-            value={filter.timeFilterMode}
-            onChange={(e) => dispatch(setTimeFilterMode(e.target.value))}
-          >
-            <FormControlLabel value="none" control={<Radio />} label="No Time Filter" />
-            <FormControlLabel value="race" control={<Radio />} label="Race Selection" />
-            <FormControlLabel value="custom" control={<Radio />} label="Custom Time" />
-          </RadioGroup>
-          {filter.timeFilterMode === 'race' && (
-            <Box sx={{ minWidth: 250 }}>
-              <RaceSelector />
-            </Box>
-          )}
-        </Box>
+        <RadioGroup
+          value={filter.timeFilterMode}
+          onChange={(e) => dispatch(setTimeFilterMode(e.target.value))}
+        >
+          <FormControlLabel value="none" control={<Radio />} label="No Time Filter" />
+          <FormControlLabel value="race" control={<Radio />} label="Race Selection" />
+          <FormControlLabel value="custom" control={<Radio />} label="Custom Time" />
+        </RadioGroup>
       </Box>
       
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
