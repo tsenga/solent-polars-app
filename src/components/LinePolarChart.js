@@ -16,8 +16,56 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
     selectedWindSpeeds.includes(data.windSpeed)
   );
 
+  // Calculate wind speed range for filtering parquet data based on editingWindSpeed
+  const calculateWindSpeedRange = (editingWindSpeed, polarData) => {
+    if (!editingWindSpeed || !polarData || polarData.length === 0) {
+      return { minTws: 0, maxTws: Infinity };
+    }
+
+    // Get all wind speeds from polar data and sort them
+    const allWindSpeeds = polarData.map(data => data.windSpeed).sort((a, b) => a - b);
+    
+    // Find the index of the editing wind speed
+    const editingIndex = allWindSpeeds.indexOf(editingWindSpeed);
+    
+    if (editingIndex === -1) {
+      // If editing wind speed is not in polar data, return full range
+      return { minTws: 0, maxTws: Infinity };
+    }
+
+    let minTws, maxTws;
+
+    // Calculate lower bound
+    if (editingIndex === 0) {
+      // This is the lowest wind speed, so lower bound is 0
+      minTws = 0;
+    } else {
+      // Mid-point between editing wind speed and the next lower wind speed
+      const lowerWindSpeed = allWindSpeeds[editingIndex - 1];
+      minTws = (lowerWindSpeed + editingWindSpeed) / 2;
+    }
+
+    // Calculate upper bound
+    if (editingIndex === allWindSpeeds.length - 1) {
+      // This is the highest wind speed, so upper bound is infinity
+      maxTws = Infinity;
+    } else {
+      // Mid-point between editing wind speed and the next higher wind speed
+      const higherWindSpeed = allWindSpeeds[editingIndex + 1];
+      maxTws = (editingWindSpeed + higherWindSpeed) / 2;
+    }
+
+    return { minTws, maxTws };
+  };
+
+  // Filter parquet data based on wind speed range
+  const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
+  const filteredParquetData = parquetData ? parquetData.filter(point => {
+    return point.tws >= windSpeedRange.minTws && point.tws <= windSpeedRange.maxTws;
+  }) : [];
+
   useEffect(() => {
-    console.log(`LinePolarChart: Re-rendering with ${parquetData?.length || 0} parquet points for editing wind speed ${editingWindSpeed}`);
+    console.log(`LinePolarChart: Re-rendering with ${parquetData?.length || 0} parquet points (${filteredParquetData?.length || 0} filtered) for editing wind speed ${editingWindSpeed} (range: ${windSpeedRange.minTws.toFixed(1)}-${windSpeedRange.maxTws === Infinity ? '∞' : windSpeedRange.maxTws.toFixed(1)} knots)`);
     if (!selectedData.length) return;
 
     // Clear previous chart
@@ -128,9 +176,9 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
       .style('pointer-events', 'none');
 
     // Create wind speed histogram overlay
-    if (parquetData && parquetData.length > 0) {
+    if (filteredParquetData && filteredParquetData.length > 0) {
       // Create histogram data for wind speeds (1 knot bins)
-      const windSpeeds = parquetData.map(d => d.tws);
+      const windSpeeds = filteredParquetData.map(d => d.tws);
       const minTws = Math.floor(Math.min(...windSpeeds));
       const maxTws = Math.ceil(Math.max(...windSpeeds));
       
@@ -237,9 +285,9 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
     }
     
     // Add parquet data scatter points
-    if (parquetData && parquetData.length > 0) {
+    if (filteredParquetData && filteredParquetData.length > 0) {
       // Create color scale for parquet dots (same as histogram)
-      const windSpeeds = parquetData.map(d => d.tws);
+      const windSpeeds = filteredParquetData.map(d => d.tws);
       const minTws = Math.floor(Math.min(...windSpeeds));
       const maxTws = Math.ceil(Math.max(...windSpeeds));
       const parquetColorScale = d3.scaleSequential(d3.interpolateViridis)
@@ -255,7 +303,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
         .style('visibility', 'hidden');
 
       svg.selectAll('.parquet-dot')
-        .data(parquetData)
+        .data(filteredParquetData)
         .enter()
         .append('circle')
         .attr('class', 'parquet-dot')
@@ -416,7 +464,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
       // We'll create a legend instead of adding labels directly to the chart
     });
     
-  }, [selectedData, editingWindSpeed, parquetData, plotAbsoluteTwa, onUpdateAnchorPoint]);
+  }, [selectedData, editingWindSpeed, filteredParquetData, plotAbsoluteTwa, onUpdateAnchorPoint, windSpeedRange]);
 
   // Create a legend for the wind speeds
   const renderLegend = () => {
