@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import filterReducer, { setRaceTimeFilter } from './filterSlice';
-import parquetDataReducer from './parquetDataSlice';
+import parquetDataReducer, { fetchParquetData } from './parquetDataSlice';
 import raceDetailsReducer from './raceDetailsSlice';
 import { loadRaceDetails } from './raceDetailsSlice';
 
@@ -35,6 +35,35 @@ const autoSetFilterTimesMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
+// Middleware to automatically fetch parquet data when filter changes
+const autoFetchDataMiddleware = (store) => (next) => (action) => {
+  const result = next(action);
+  
+  // List of filter actions that should trigger data fetch
+  const filterActions = [
+    'filter/setStartTime',
+    'filter/setEndTime',
+    'filter/setMinTws',
+    'filter/setMaxTws',
+    'filter/setUseMockData',
+    'filter/setRaceTimeFilter',
+    'filter/clearFilter'
+  ];
+  
+  // Check if this action should trigger a data fetch
+  if (filterActions.includes(action.type)) {
+    const state = store.getState();
+    const filterData = state.filter;
+    
+    // Only fetch if we have meaningful filter data or are using mock data
+    if (filterData.useMockData || filterData.startTime || filterData.endTime || filterData.minTws || filterData.maxTws) {
+      store.dispatch(fetchParquetData(filterData));
+    }
+  }
+  
+  return result;
+};
+
 export const store = configureStore({
   reducer: {
     filter: filterReducer,
@@ -54,5 +83,5 @@ export const store = configureStore({
       immutableCheck: {
         ignoredPaths: ['parquetData.rawData', 'parquetData.filteredData', 'parquetData.displayedData']
       }
-    }).concat(autoSetFilterTimesMiddleware),
+    }).concat(autoSetFilterTimesMiddleware, autoFetchDataMiddleware),
 });
