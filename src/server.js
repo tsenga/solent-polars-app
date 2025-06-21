@@ -543,24 +543,30 @@ function processHistogramData(histogramRows) {
   const twaHist = {};
   
   histogramRows.forEach(row => {
-    // Group by TWS bins
+    // Group by TWS bins - convert BigInt to Number
     if (row.tws_bin !== null) {
-      twsHist[row.tws_bin] = (twsHist[row.tws_bin] || 0) + row.tws_count;
+      const bin = Number(row.tws_bin);
+      const count = Number(row.tws_count);
+      twsHist[bin] = (twsHist[bin] || 0) + count;
     }
-    // Group by BSP bins
+    // Group by BSP bins - convert BigInt to Number
     if (row.bsp_bin !== null) {
-      bspHist[row.bsp_bin] = (bspHist[row.bsp_bin] || 0) + row.bsp_count;
+      const bin = Number(row.bsp_bin);
+      const count = Number(row.bsp_count);
+      bspHist[bin] = (bspHist[bin] || 0) + count;
     }
-    // Group by TWA bins
+    // Group by TWA bins - convert BigInt to Number
     if (row.twa_bin !== null) {
-      twaHist[row.twa_bin] = (twaHist[row.twa_bin] || 0) + row.twa_count;
+      const bin = Number(row.twa_bin);
+      const count = Number(row.twa_count);
+      twaHist[bin] = (twaHist[bin] || 0) + count;
     }
   });
   
   return {
-    tws: Object.entries(twsHist).map(([bin, count]) => ({ bin: parseInt(bin), count })),
-    bsp: Object.entries(bspHist).map(([bin, count]) => ({ bin: parseInt(bin), count })),
-    twa: Object.entries(twaHist).map(([bin, count]) => ({ bin: parseInt(bin), count }))
+    tws: Object.entries(twsHist).map(([bin, count]) => ({ bin: parseInt(bin), count: Number(count) })),
+    bsp: Object.entries(bspHist).map(([bin, count]) => ({ bin: parseInt(bin), count: Number(count) })),
+    twa: Object.entries(twaHist).map(([bin, count]) => ({ bin: parseInt(bin), count: Number(count) }))
   };
 }
 

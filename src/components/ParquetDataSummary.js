@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
-import { Box, Typography, Paper, Chip, Grid, Card, CardContent } from '@mui/material';
+import React from 'react';
+import { Box, Typography, Chip, Grid, Card, CardContent } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
 import { setTimeFilterFromSummary } from '../store/filterSlice';
 import TimeSeriesCharts from './TimeSeriesCharts';
 
