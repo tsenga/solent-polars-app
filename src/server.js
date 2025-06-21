@@ -271,21 +271,21 @@ app.post('/api/parquet-data-summary', async (req, res) => {
         db.close();
         
         const summary = {
-          totalPoints: summaryRows[0]?.total_points || 0,
+          totalPoints: Number(summaryRows[0]?.total_points || 0),
           bsp: {
-            min: summaryRows[0]?.min_bsp || 0,
-            max: summaryRows[0]?.max_bsp || 0,
-            avg: summaryRows[0]?.avg_bsp || 0
+            min: Number(summaryRows[0]?.min_bsp || 0),
+            max: Number(summaryRows[0]?.max_bsp || 0),
+            avg: Number(summaryRows[0]?.avg_bsp || 0)
           },
           twa: {
-            min: summaryRows[0]?.min_twa || 0,
-            max: summaryRows[0]?.max_twa || 0,
-            avg: summaryRows[0]?.avg_twa || 0
+            min: Number(summaryRows[0]?.min_twa || 0),
+            max: Number(summaryRows[0]?.max_twa || 0),
+            avg: Number(summaryRows[0]?.avg_twa || 0)
           },
           tws: {
-            min: summaryRows[0]?.min_tws || 0,
-            max: summaryRows[0]?.max_tws || 0,
-            avg: summaryRows[0]?.avg_tws || 0
+            min: Number(summaryRows[0]?.min_tws || 0),
+            max: Number(summaryRows[0]?.max_tws || 0),
+            avg: Number(summaryRows[0]?.avg_tws || 0)
           },
           timeRange: {
             start: summaryRows[0]?.start_time,
