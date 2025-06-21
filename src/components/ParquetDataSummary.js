@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Typography, Chip, Grid, Card, CardContent } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { setTimeFilterFromSummary } from '../store/filterSlice';
-import TimeSeriesCharts from './TimeSeriesCharts';
 
 const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
   const dispatch = useDispatch();
@@ -21,6 +20,52 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
   const formatDateTime = (dateTime) => {
     if (!dateTime) return 'N/A';
     return new Date(dateTime).toLocaleString();
+  };
+
+  const renderHistogram = (data, title, unit, color = '#1976d2') => {
+    if (!data || data.length === 0) return null;
+
+    const maxCount = Math.max(...data.map(d => d.count));
+    const maxBarHeight = 80;
+
+    return (
+      <Card variant="outlined" sx={{ height: '100%' }}>
+        <CardContent>
+          <Typography variant="subtitle2" gutterBottom>
+            {title}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'end', gap: 1, height: maxBarHeight + 20, overflow: 'auto' }}>
+            {data.slice(0, 10).map((item, index) => {
+              const barHeight = (item.count / maxCount) * maxBarHeight;
+              return (
+                <Box key={index} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 30 }}>
+                  <Typography variant="caption" sx={{ mb: 0.5, fontSize: '10px' }}>
+                    {item.count}
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: barHeight,
+                      backgroundColor: color,
+                      borderRadius: '2px 2px 0 0',
+                      opacity: 0.8,
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '9px', transform: 'rotate(-45deg)', transformOrigin: 'center' }}>
+                    {item.bin}{unit}
+                  </Typography>
+                </Box>
+              );
+            })}
+            {data.length > 10 && (
+              <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', ml: 1 }}>
+                +{data.length - 10} more
+              </Typography>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
@@ -158,95 +203,27 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
 
           {/* Histograms */}
           {summary.histograms && (
-            <Grid item xs={12}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Data Distribution
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {summary.histograms.tws && summary.histograms.tws.length > 0 && (
-                      <Grid item xs={12} sm={4}>
-                        <Typography variant="body2" gutterBottom>
-                          Wind Speed Distribution:
-                        </Typography>
-                        <Box sx={{ maxHeight: 100, overflow: 'auto' }}>
-                          {summary.histograms.tws.slice(0, 5).map((item, index) => (
-                            <Typography key={index} variant="caption" display="block">
-                              {item.bin} kts: {item.count} points
-                            </Typography>
-                          ))}
-                          {summary.histograms.tws.length > 5 && (
-                            <Typography variant="caption" color="text.secondary">
-                              ...and {summary.histograms.tws.length - 5} more
-                            </Typography>
-                          )}
-                        </Box>
-                      </Grid>
-                    )}
-                    
-                    {summary.histograms.bsp && summary.histograms.bsp.length > 0 && (
-                      <Grid item xs={12} sm={4}>
-                        <Typography variant="body2" gutterBottom>
-                          Boat Speed Distribution:
-                        </Typography>
-                        <Box sx={{ maxHeight: 100, overflow: 'auto' }}>
-                          {summary.histograms.bsp.slice(0, 5).map((item, index) => (
-                            <Typography key={index} variant="caption" display="block">
-                              {item.bin} kts: {item.count} points
-                            </Typography>
-                          ))}
-                          {summary.histograms.bsp.length > 5 && (
-                            <Typography variant="caption" color="text.secondary">
-                              ...and {summary.histograms.bsp.length - 5} more
-                            </Typography>
-                          )}
-                        </Box>
-                      </Grid>
-                    )}
-                    
-                    {summary.histograms.twa && summary.histograms.twa.length > 0 && (
-                      <Grid item xs={12} sm={4}>
-                        <Typography variant="body2" gutterBottom>
-                          Wind Angle Distribution:
-                        </Typography>
-                        <Box sx={{ maxHeight: 100, overflow: 'auto' }}>
-                          {summary.histograms.twa.slice(0, 5).map((item, index) => (
-                            <Typography key={index} variant="caption" display="block">
-                              {item.bin}°: {item.count} points
-                            </Typography>
-                          ))}
-                          {summary.histograms.twa.length > 5 && (
-                            <Typography variant="caption" color="text.secondary">
-                              ...and {summary.histograms.twa.length - 5} more
-                            </Typography>
-                          )}
-                        </Box>
-                      </Grid>
-                    )}
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
+            <>
+              {summary.histograms.tws && summary.histograms.tws.length > 0 && (
+                <Grid item xs={12} sm={4}>
+                  {renderHistogram(summary.histograms.tws, 'Wind Speed Distribution', ' kts', '#2196f3')}
+                </Grid>
+              )}
+              
+              {summary.histograms.bsp && summary.histograms.bsp.length > 0 && (
+                <Grid item xs={12} sm={4}>
+                  {renderHistogram(summary.histograms.bsp, 'Boat Speed Distribution', ' kts', '#4caf50')}
+                </Grid>
+              )}
+              
+              {summary.histograms.twa && summary.histograms.twa.length > 0 && (
+                <Grid item xs={12} sm={4}>
+                  {renderHistogram(summary.histograms.twa, 'Wind Angle Distribution', '°', '#ff9800')}
+                </Grid>
+              )}
+            </>
           )}
         </Grid>
-      )}
-      
-      {filteredData.length > 0 && (
-        <>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 3 }}>
-            <TimeSeriesCharts 
-              data={rawData} 
-              onSetTimeFilter={(type, timestamp) => {
-                // Format timestamp for datetime-local input
-                const formattedTime = new Date(timestamp).toISOString().slice(0, 16);
-                
-                // Dispatch Redux action to update the filter
-                dispatch(setTimeFilterFromSummary({ type, formattedTime }));
-              }}
-            />
-          </Box>
-        </>
       )}
     </Box>
   );
