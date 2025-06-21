@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   setStartTime,
   setEndTime,
+  setMinTws,
   setMaxTws,
   setUseMockData,
   setTimeFilterMode,
@@ -11,7 +12,7 @@ import {
   clearFilter,
   resetToDefaults,
 } from '../store/filterSlice';
-import { fetchParquetData, setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
+import { setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
 import RaceSelector from './RaceSelector';
 
 const DataFilter = () => {
@@ -34,67 +35,14 @@ const DataFilter = () => {
   }, [parquetData, dispatch]);
 
 
-  const handleApplyFilter = () => {
-    // Check if custom time filter is enabled but only one time is specified
-    if (filter.timeFilterMode === 'custom' && ((filter.startTime && !filter.endTime) || (!filter.startTime && filter.endTime))) {
-      alert('Please specify both start and end times when using custom time filter');
-      return;
-    }
-    
-    // Check if start time is before end time when both are specified
-    if ((filter.timeFilterMode === 'custom' || filter.timeFilterMode === 'race') && filter.startTime && filter.endTime && new Date(filter.startTime) >= new Date(filter.endTime)) {
-      alert('Start time must be before end time');
-      return;
-    }
-
-    const filterData = {
-      useMockData: filter.useMockData
-    };
-
-    // Only add time filters if time filter mode is not 'none' and both times are specified
-    if ((filter.timeFilterMode === 'custom' || filter.timeFilterMode === 'race') && filter.startTime && filter.endTime) {
-      filterData.startTime = new Date(filter.startTime).toISOString();
-      filterData.endTime = new Date(filter.endTime).toISOString();
-    }
-
-    // Add max TWS filter if specified
-    if (filter.maxTws) {
-      filterData.maxTws = parseFloat(filter.maxTws);
-    }
-
-    dispatch(fetchParquetData(filterData));
-  };
-
   const handleClearFilter = () => {
     dispatch(clearFilter());
-    dispatch(fetchParquetData({ useMockData: filter.useMockData }));
   };
 
   const handleToggleDataSource = (event) => {
     const newUseMockData = event.target.checked;
     dispatch(setUseMockData(newUseMockData));
-    
-    // Immediately apply the data source change
-    const currentFilter = {
-      useMockData: newUseMockData
-    };
-    
-    if ((filter.timeFilterMode === 'custom' || filter.timeFilterMode === 'race') && filter.startTime && filter.endTime) {
-      currentFilter.startTime = new Date(filter.startTime).toISOString();
-      currentFilter.endTime = new Date(filter.endTime).toISOString();
-    }
-    
-    if (filter.maxTws) {
-      currentFilter.maxTws = parseFloat(filter.maxTws);
-    }
-    
-    dispatch(fetchParquetData(currentFilter));
   };
-
-  // Initial load of parquet data
-  useEffect(() => {
-    dispatch(fetchParquetData({ useMockData: filter.useMockData }));
-  }, [dispatch]);
 
   return (
     <Box sx={{ mb: 2 }}>      
@@ -141,6 +89,17 @@ const DataFilter = () => {
           size="small"
           disabled={filter.timeFilterMode === 'none' || filter.timeFilterMode === 'race'}
           placeholder={filter.defaultEndTime}
+        />
+        <TextField
+          label="Min TWS (knots)"
+          type="number"
+          value={filter.minTws}
+          onChange={(e) => dispatch(setMinTws(e.target.value))}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          size="small"
+          inputProps={{ min: 0, step: 0.1 }}
         />
         <TextField
           label="Max TWS (knots)"
