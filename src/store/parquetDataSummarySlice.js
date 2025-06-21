@@ -5,12 +5,18 @@ export const fetchParquetDataSummary = createAsyncThunk(
   'parquetDataSummary/fetchParquetDataSummary',
   async (filterData, { rejectWithValue }) => {
     try {
+      // Add default histogramBuckets if not specified
+      const requestData = {
+        histogramBuckets: 10,
+        ...filterData
+      };
+
       const response = await fetch('/api/parquet-data-summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(filterData),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
