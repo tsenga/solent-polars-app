@@ -97,11 +97,7 @@ const DataFilter = () => {
   }, [dispatch]);
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle1" gutterBottom>
-        Filter Settings
-      </Typography>
-      
+    <Box sx={{ mb: 2 }}>      
       {/* Race Selector at the top */}
       <Box sx={{ mb: 2 }}>
         <RaceSelector />
@@ -157,6 +153,9 @@ const DataFilter = () => {
           size="small"
           inputProps={{ min: 0, step: 0.1 }}
         />
+        
+      </Box>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mt: 3 }}>
         <Button 
           variant="contained" 
           onClick={handleApplyFilter}
