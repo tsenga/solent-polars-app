@@ -27,6 +27,7 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
 
     const maxCount = Math.max(...data.map(d => d.count));
     const maxBarHeight = 80;
+    const sortedData = [...data].sort((a, b) => a.bin - b.bin);
 
     return (
       <Card variant="outlined" sx={{ height: '100%' }}>
@@ -34,34 +35,60 @@ const ParquetDataSummary = ({ editingWindSpeed, polarData }) => {
           <Typography variant="subtitle2" gutterBottom>
             {title}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'end', gap: 1, height: maxBarHeight + 20, overflow: 'auto' }}>
-            {data.slice(0, 10).map((item, index) => {
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'end', 
+            height: maxBarHeight + 40, 
+            overflow: 'auto',
+            gap: 0.2,
+            px: 1
+          }}>
+            {sortedData.map((item, index) => {
               const barHeight = (item.count / maxCount) * maxBarHeight;
+              const barWidth = Math.max(8, Math.min(20, 200 / sortedData.length));
+              
               return (
-                <Box key={index} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 30 }}>
-                  <Typography variant="caption" sx={{ mb: 0.5, fontSize: '10px' }}>
+                <Box 
+                  key={index} 
+                  sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center',
+                    minWidth: barWidth,
+                    flex: '1 1 auto'
+                  }}
+                >
+                  <Typography variant="caption" sx={{ 
+                    mb: 0.5, 
+                    fontSize: '8px',
+                    lineHeight: 1,
+                    textAlign: 'center'
+                  }}>
                     {item.count}
                   </Typography>
                   <Box
                     sx={{
-                      width: 20,
-                      height: barHeight,
+                      width: barWidth,
+                      height: Math.max(2, barHeight),
                       backgroundColor: color,
-                      borderRadius: '2px 2px 0 0',
                       opacity: 0.8,
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}
                   />
-                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '9px', transform: 'rotate(-45deg)', transformOrigin: 'center' }}>
+                  <Typography variant="caption" sx={{ 
+                    mt: 0.5, 
+                    fontSize: '7px',
+                    lineHeight: 1,
+                    textAlign: 'center',
+                    transform: sortedData.length > 15 ? 'rotate(-45deg)' : 'none',
+                    transformOrigin: 'center',
+                    whiteSpace: 'nowrap'
+                  }}>
                     {item.bin}{unit}
                   </Typography>
                 </Box>
               );
             })}
-            {data.length > 10 && (
-              <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', ml: 1 }}>
-                +{data.length - 10} more
-              </Typography>
-            )}
           </Box>
         </CardContent>
       </Card>
