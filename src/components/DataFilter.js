@@ -114,18 +114,11 @@ const DataFilter = () => {
       </Box>
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mt: 3 }}>
         <Button 
-          variant="contained" 
-          onClick={handleApplyFilter}
-          disabled={loading}
-        >
-          Apply Filter
-        </Button>
-        <Button 
           variant="outlined" 
           onClick={handleClearFilter}
           disabled={loading}
         >
-          Clear
+          Clear Filter
         </Button>
       </Box>
       
