@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import filterReducer, { setRaceTimeFilter } from './filterSlice';
 import parquetDataReducer, { fetchParquetData } from './parquetDataSlice';
+import parquetDataSummaryReducer, { fetchParquetDataSummary } from './parquetDataSummarySlice';
 import raceDetailsReducer from './raceDetailsSlice';
 import { loadRaceDetails } from './raceDetailsSlice';
 
@@ -58,6 +59,7 @@ const autoFetchDataMiddleware = (store) => (next) => (action) => {
     // Only fetch if we have meaningful filter data or are using mock data
     if (filterData.useMockData || filterData.startTime || filterData.endTime || filterData.minTws || filterData.maxTws) {
       store.dispatch(fetchParquetData(filterData));
+      store.dispatch(fetchParquetDataSummary(filterData));
     }
   }
   
@@ -68,6 +70,7 @@ export const store = configureStore({
   reducer: {
     filter: filterReducer,
     parquetData: parquetDataReducer,
+    parquetDataSummary: parquetDataSummaryReducer,
     raceDetails: raceDetailsReducer,
   },
   middleware: (getDefaultMiddleware) =>
