@@ -121,9 +121,9 @@ app.post('/api/race-details', (req, res) => {
 // API endpoint to get parquet data summary with filtering
 app.post('/api/parquet-data-summary', async (req, res) => {
   try {
-    const { startTime, endTime, minTws, maxTws, useMockData = true } = req.body;
+    const { startTime, endTime, minTws, maxTws, useMockData = true, histogramBuckets = 10 } = req.body;
     
-    console.log('Fetching parquet data summary with filters:', { startTime, endTime, minTws, maxTws, useMockData });
+    console.log('Fetching parquet data summary with filters:', { startTime, endTime, minTws, maxTws, useMockData, histogramBuckets });
     
     if (useMockData) {
       // Generate mock summary data
