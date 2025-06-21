@@ -121,9 +121,9 @@ app.post('/api/race-details', (req, res) => {
 // API endpoint to get parquet data with filtering
 app.post('/api/parquet-data', async (req, res) => {
   try {
-    const { startTime, endTime, maxTws, useMockData = true } = req.body;
+    const { startTime, endTime, minTws, maxTws, useMockData = true } = req.body;
     
-    console.log('Fetching parquet data with filters:', { startTime, endTime, maxTws, useMockData });
+    console.log('Fetching parquet data with filters:', { startTime, endTime, minTws, maxTws, useMockData });
     
     if (useMockData) {
       // Generate mock data
@@ -135,7 +135,10 @@ app.post('/api/parquet-data', async (req, res) => {
         const bsp = Math.random() * 8 + 2; // Random boat speed 2-10 knots
         const tws = Math.random() * 20 + 5; // Random TWS 5-25 knots
         
-        // Apply max TWS filter if provided
+        // Apply TWS filters if provided
+        if (minTws && tws < minTws) {
+          continue;
+        }
         if (maxTws && tws > maxTws) {
           continue;
         }
@@ -214,7 +217,10 @@ app.post('/api/parquet-data', async (req, res) => {
           sqlQuery += ` AND utc >= '${startTime}' AND utc <= '${endTime}'`;
         }
         
-        // Add max TWS filter if provided
+        // Add TWS filters if provided
+        if (minTws) {
+          sqlQuery += ` AND tws >= ${minTws}`;
+        }
         if (maxTws) {
           sqlQuery += ` AND tws <= ${maxTws}`;
         }

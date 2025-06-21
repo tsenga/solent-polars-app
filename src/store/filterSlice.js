@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   startTime: '',
   endTime: '',
+  minTws: '',
   maxTws: '',
   useMockData: true,
   timeFilterMode: 'race', // 'none', 'race', 'custom'
@@ -19,6 +20,9 @@ const filterSlice = createSlice({
     },
     setEndTime: (state, action) => {
       state.endTime = action.payload;
+    },
+    setMinTws: (state, action) => {
+      state.minTws = action.payload;
     },
     setMaxTws: (state, action) => {
       state.maxTws = action.payload;
@@ -62,6 +66,7 @@ const filterSlice = createSlice({
     clearFilter: (state) => {
       state.startTime = '';
       state.endTime = '';
+      state.minTws = '';
       state.maxTws = '';
       state.timeFilterMode = 'none';
     },
@@ -87,6 +92,7 @@ const filterSlice = createSlice({
 export const {
   setStartTime,
   setEndTime,
+  setMinTws,
   setMaxTws,
   setUseMockData,
   setTimeFilterMode,
