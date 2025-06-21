@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper, FormControlLabel, Switch, Radio, RadioGroup } from '@mui/material';
+import { Box, TextField, Button, Typography, FormControlLabel, Switch, Radio, RadioGroup } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setStartTime,
@@ -8,11 +8,9 @@ import {
   setMaxTws,
   setUseMockData,
   setTimeFilterMode,
-  setTimeFilterFromSummary,
   clearFilter,
   resetToDefaults,
 } from '../store/filterSlice';
-import { setFilteredData, setDisplayedData } from '../store/parquetDataSlice';
 import RaceSelector from './RaceSelector';
 
 const DataFilter = () => {
