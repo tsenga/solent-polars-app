@@ -214,7 +214,16 @@ app.post('/api/parquet-data', async (req, res) => {
         
         // Add time filter if provided
         if (startTime && endTime) {
-          sqlQuery += ` AND utc >= '${startTime}' AND utc <= '${endTime}'`;
+          // Convert datetime-local format to DuckDB timestamp format
+          const formatTimestamp = (dateTimeLocal) => {
+            // Convert from "YYYY-MM-DDTHH:MM" to "YYYY-MM-DD HH:MM:SS"
+            return dateTimeLocal.replace('T', ' ') + ':00';
+          };
+          
+          const formattedStartTime = formatTimestamp(startTime);
+          const formattedEndTime = formatTimestamp(endTime);
+          
+          sqlQuery += ` AND utc >= '${formattedStartTime}' AND utc <= '${formattedEndTime}'`;
         }
         
         // Add TWS filters if provided
