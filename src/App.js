@@ -449,7 +449,7 @@ function AppContent() {
       
       // If we're deleting the wind speed being edited, switch to another one
       if (windSpeed === editingWindSpeed) {
-        setEditingWindSpeed(newData[0].windSpeed);
+        dispatch(updateEditingWindSpeed(newData[0].windSpeed));
       }
       return newData;
     });
