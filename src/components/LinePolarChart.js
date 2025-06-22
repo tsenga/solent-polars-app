@@ -65,7 +65,7 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
   const filteredParquetData = parquetData || [];
 
   useEffect(() => {
-    console.log(`LinePolarChart: Re-rendering with ${parquetData?.length || 0} parquet points (${filteredParquetData?.length || 0} filtered) for editing wind speed ${editingWindSpeed} (range: ${windSpeedRange.minTws.toFixed(1)}-${windSpeedRange.maxTws === Infinity ? '∞' : windSpeedRange.maxTws.toFixed(1)} knots)`);
+    console.log(`LinePolarChart: Re-rendering with ${filteredParquetData?.length || 0} parquet points for editing wind speed ${editingWindSpeed}`);
     if (!selectedData.length) return;
 
     // Clear previous chart
