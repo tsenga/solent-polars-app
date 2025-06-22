@@ -294,24 +294,14 @@ function AppContent() {
     return { minTws, maxTws };
   };
 
-  // Set TWS filters when switching to real parquet data
+  // Handle switching to real parquet data
   useEffect(() => {
-    if (!useMockData && editingWindSpeed && polarData && polarData.length > 0) {
-      console.log('App: Switching to real parquet data, setting TWS filters for editing wind speed:', editingWindSpeed);
-      
-      const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
-      console.log('App: Calculated wind speed range:', windSpeedRange);
-      
-      // Set the min and max TWS filters
-      const minTwsValue = windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString();
-      const maxTwsValue = windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString();
-      
-      dispatch(setMinTws(minTwsValue));
-      dispatch(setMaxTws(maxTwsValue));
-      
-      console.log('App: Set TWS filters - Min:', minTwsValue, 'Max:', maxTwsValue);
+    if (!useMockData) {
+      console.log('App: Switched to real parquet data');
+      // Don't automatically set TWS filters - let the user's existing filters be preserved
+      // The middleware will handle fetching data with whatever filters are currently set
     }
-  }, [useMockData, editingWindSpeed, polarData, dispatch]);
+  }, [useMockData]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
