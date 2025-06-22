@@ -3,7 +3,7 @@ import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
-import { setFilteredData, setDisplayedData } from './store/parquetDataSlice';
+import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction } from './store/parquetDataSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
@@ -206,6 +206,13 @@ function AppContent() {
   // Update displayed data when editing wind speed changes
   useEffect(() => {
     console.log(`App: editingWindSpeed changed to ${editingWindSpeed}`);
+    
+    // Dispatch Redux action to trigger server data fetch for new wind speed range
+    if (editingWindSpeed && polarData && polarData.length > 0) {
+      console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
+      dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
+    }
+    
     if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
       const twsBands = polarData.map(data => data.windSpeed);
       console.log(`App: Filtering parquet data for editing wind speed: ${editingWindSpeed}`);

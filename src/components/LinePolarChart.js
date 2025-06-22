@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEditingWindSpeed } from '../store/parquetDataSlice';
 import * as d3 from 'd3';
 import './LinePolarChart.css';
 
