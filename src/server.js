@@ -152,7 +152,7 @@ app.post('/api/parquet-data-summary', async (req, res) => {
       }
       
       // Calculate summary statistics
-      const summary = calculateDataSummary(mockData);
+      const summary = calculateDataSummary(mockData, histogramBuckets);
       console.log(`Returning summary for ${mockData.length} mock records`);
       res.json({ summary });
     } else {
