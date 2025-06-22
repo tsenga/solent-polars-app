@@ -462,7 +462,7 @@ function AppContent() {
       // Select the first wind speed by default
       const firstWindSpeed = loadedPolarData[0].windSpeed;
       setSelectedWindSpeeds([firstWindSpeed]);
-      setEditingWindSpeed(firstWindSpeed);
+      dispatch(updateEditingWindSpeed(firstWindSpeed));
     }
   };
 
