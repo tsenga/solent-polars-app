@@ -4,10 +4,8 @@ import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Ta
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
 import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction, updateEditingWindSpeed } from './store/parquetDataSlice';
-import { setMinTws, setMaxTws } from './store/filterSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
-import WindSpeedSelector from './components/WindSpeedSelector';
 import FileSelector from './components/FileSelector';
 import DataSourceSelection from './components/DataSourceSelection';
 import ViewSettings from './components/ViewSettings';
@@ -428,7 +426,7 @@ function AppContent() {
     });
     
     setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
-    setEditingWindSpeed(newWindSpeed);
+    dispatch(updateEditingWindSpeed(newWindSpeed));
   };
 
   // Delete a wind speed
@@ -596,7 +594,7 @@ function AppContent() {
               windSpeed={editingWindSpeed}
               availableWindSpeeds={polarData.map(data => data.windSpeed)}
               onChangeWindSpeed={(newWindSpeed) => {
-                setEditingWindSpeed(newWindSpeed);
+                dispatch(updateEditingWindSpeed(newWindSpeed));
                 // If the new wind speed is not in the selected wind speeds, add it
                 if (!selectedWindSpeeds.includes(newWindSpeed)) {
                   setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
