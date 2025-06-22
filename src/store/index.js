@@ -97,15 +97,11 @@ const autoFetchDataMiddleware = (store) => (next) => (action) => {
 // Track last wind speed range fetch to avoid duplicates
 let lastWindSpeedRangeParams = null;
 let lastWindSpeedFetchTime = 0;
+let windSpeedChangeTimeout = null;
 
 // Middleware to fetch wind speed range data when editing wind speed changes
 const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
   const result = next(action);
-  
-  // Debug: Log all actions to see what's happening
-  if (action.type.includes('EditingWindSpeed') || action.type.includes('setEditingWindSpeed')) {
-    console.log('Middleware: Detected editing wind speed action:', action.type, action.payload);
-  }
   
   // Check if this is an action that changes the editing wind speed
   if (action.type === setEditingWindSpeed.type) {
@@ -115,32 +111,40 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
     
     console.log('Middleware: setEditingWindSpeed triggered with:', { editingWindSpeed, polarDataLength: polarData?.length });
     
-    // Calculate wind speed range for the editing wind speed
-    const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
-    
-    console.log('Middleware: Calculated wind speed range:', windSpeedRange);
-    
-    // Create filter data with wind speed range
-    const rangeFilterData = {
-      ...filterData,
-      minTws: windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString(),
-      maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
-    };
-    
-    // Check for duplicate wind speed range requests
-    const currentRangeParams = serializeFilterData(rangeFilterData);
-    const currentTime = Date.now();
-    
-    if (currentRangeParams !== lastWindSpeedRangeParams && (currentTime - lastWindSpeedFetchTime) > FETCH_DEBOUNCE_MS) {
-      console.log('Middleware: Fetching parquet data with range filter:', rangeFilterData);
-      lastWindSpeedRangeParams = currentRangeParams;
-      lastWindSpeedFetchTime = currentTime;
-      
-      // Fetch data for the specific wind speed range
-      store.dispatch(fetchParquetData(rangeFilterData));
-    } else {
-      console.log('Middleware: Skipping duplicate wind speed range fetch');
+    // Clear any existing timeout to debounce rapid wind speed changes
+    if (windSpeedChangeTimeout) {
+      clearTimeout(windSpeedChangeTimeout);
     }
+    
+    // Debounce the wind speed change to avoid rapid successive requests
+    windSpeedChangeTimeout = setTimeout(() => {
+      // Calculate wind speed range for the editing wind speed
+      const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
+      
+      console.log('Middleware: Calculated wind speed range:', windSpeedRange);
+      
+      // Create filter data with wind speed range
+      const rangeFilterData = {
+        ...filterData,
+        minTws: windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString(),
+        maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
+      };
+      
+      // Check for duplicate wind speed range requests
+      const currentRangeParams = serializeFilterData(rangeFilterData);
+      const currentTime = Date.now();
+      
+      if (currentRangeParams !== lastWindSpeedRangeParams && (currentTime - lastWindSpeedFetchTime) > FETCH_DEBOUNCE_MS) {
+        console.log('Middleware: Fetching parquet data with range filter:', rangeFilterData);
+        lastWindSpeedRangeParams = currentRangeParams;
+        lastWindSpeedFetchTime = currentTime;
+        
+        // Fetch data for the specific wind speed range
+        store.dispatch(fetchParquetData(rangeFilterData));
+      } else {
+        console.log('Middleware: Skipping duplicate wind speed range fetch');
+      }
+    }, 300); // 300ms debounce delay
   }
   
   return result;

@@ -205,34 +205,47 @@ function AppContent() {
 
   // Track previous editing wind speed to avoid unnecessary dispatches
   const prevEditingWindSpeed = useRef(editingWindSpeed);
+  const windSpeedChangeTimeoutRef = useRef(null);
   
   // Update displayed data when editing wind speed changes
   useEffect(() => {
     console.log(`App: editingWindSpeed changed to ${editingWindSpeed}`);
     
-    // Only dispatch Redux action if editing wind speed actually changed
-    if (editingWindSpeed !== prevEditingWindSpeed.current && editingWindSpeed && polarData && polarData.length > 0) {
-      console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
-      console.log(`App: Previous wind speed was: ${prevEditingWindSpeed.current}`);
-      console.log(`App: Polar data has ${polarData.length} wind speeds:`, polarData.map(p => p.windSpeed));
-      dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
-      prevEditingWindSpeed.current = editingWindSpeed;
-    }
-    
+    // Immediately update displayed data for responsive UI
     if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
       const twsBands = polarData.map(data => data.windSpeed);
       console.log(`App: Filtering parquet data for editing wind speed: ${editingWindSpeed}`);
       const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, twsBands);
       console.log(`App: Dispatching ${displayedForWindSpeed.length} points for display`);
       dispatch(setDisplayedData(displayedForWindSpeed));
-    } else {
-      console.log('App: Conditions not met for filtering:', {
-        filteredDataLength: filteredData.length,
-        editingWindSpeed,
-        polarDataLength: polarData?.length || 0
-      });
+    }
+    
+    // Debounce the server request to avoid blocking the UI
+    if (editingWindSpeed !== prevEditingWindSpeed.current && editingWindSpeed && polarData && polarData.length > 0) {
+      // Clear any existing timeout
+      if (windSpeedChangeTimeoutRef.current) {
+        clearTimeout(windSpeedChangeTimeoutRef.current);
+      }
+      
+      // Debounce the server request
+      windSpeedChangeTimeoutRef.current = setTimeout(() => {
+        console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
+        console.log(`App: Previous wind speed was: ${prevEditingWindSpeed.current}`);
+        console.log(`App: Polar data has ${polarData.length} wind speeds:`, polarData.map(p => p.windSpeed));
+        dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
+        prevEditingWindSpeed.current = editingWindSpeed;
+      }, 500); // 500ms delay for server requests
     }
   }, [editingWindSpeed, filteredData, polarData, dispatch]);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (windSpeedChangeTimeoutRef.current) {
+        clearTimeout(windSpeedChangeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Find the data for the selected wind speeds and the one being edited
   const selectedWindSpeedData = polarData.find(data => data.windSpeed === editingWindSpeed) || 
