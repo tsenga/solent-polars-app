@@ -108,11 +108,11 @@ let lastWindSpeedRangeParams = null;
 let lastWindSpeedFetchTime = 0;
 let windSpeedChangeTimeout = null;
 
-// Middleware to fetch wind speed range data when editing wind speed changes
+// Middleware to fetch wind speed range data when editing wind speed changes or data source changes
 const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
   const result = next(action);
   
-  // Check if this is an action that changes the editing wind speed
+  // Check if this is an action that changes the editing wind speed or data source
   if (action.type === setEditingWindSpeed.type) {
     const state = store.getState();
     const { editingWindSpeed, polarData } = action.payload;
@@ -160,6 +160,24 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
     } else {
       windSpeedChangeTimeout = setTimeout(scheduleWindSpeedFetch, 50); // Reduced to 50ms
     }
+  }
+  
+  return result;
+};
+
+// Middleware to handle data source changes and set TWS filters
+const autoSetTwsFiltersMiddleware = (store) => (next) => (action) => {
+  const result = next(action);
+  
+  // Check if this is switching to real parquet data
+  if (action.type === 'filter/setUseMockData' && action.payload === false) {
+    // Get current state to find editing wind speed and polar data
+    const state = store.getState();
+    
+    // We need to get the current editing wind speed and polar data from the app state
+    // Since this middleware doesn't have direct access to App.js state, we'll need to
+    // trigger this from the App component instead
+    console.log('Middleware: Switched to real parquet data, TWS filters should be set by App component');
   }
   
   return result;
@@ -227,5 +245,5 @@ export const store = configureStore({
       immutableCheck: {
         ignoredPaths: ['parquetData.rawData', 'parquetData.filteredData', 'parquetData.displayedData']
       }
-    }).concat(autoSetFilterTimesMiddleware, autoFetchDataMiddleware, autoFetchWindSpeedRangeMiddleware),
+    }).concat(autoSetFilterTimesMiddleware, autoFetchDataMiddleware, autoFetchWindSpeedRangeMiddleware, autoSetTwsFiltersMiddleware),
 });

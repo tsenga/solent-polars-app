@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Ta
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
 import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction } from './store/parquetDataSlice';
+import { setMinTws, setMaxTws } from './store/filterSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import WindSpeedSelector from './components/WindSpeedSelector';
@@ -135,6 +136,7 @@ const theme = createTheme({
 function AppContent() {
   const dispatch = useDispatch();
   const { rawData, filteredData } = useSelector((state) => state.parquetData);
+  const { useMockData } = useSelector((state) => state.filter);
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
   const [editingWindSpeed, setEditingWindSpeed] = useState(10);
@@ -250,6 +252,67 @@ function AppContent() {
     }
   }, [editingWindSpeed, polarData, dispatch]);
   
+  // Helper function to calculate wind speed range
+  const calculateWindSpeedRange = (editingWindSpeed, polarData) => {
+    if (!editingWindSpeed || !polarData || polarData.length === 0) {
+      return { minTws: 0, maxTws: Infinity };
+    }
+
+    // Get all wind speeds from polar data and sort them
+    const allWindSpeeds = polarData.map(data => data.windSpeed).sort((a, b) => a - b);
+    
+    // Find the index of the editing wind speed
+    const editingIndex = allWindSpeeds.indexOf(editingWindSpeed);
+    
+    if (editingIndex === -1) {
+      // If editing wind speed is not in polar data, return full range
+      return { minTws: 0, maxTws: Infinity };
+    }
+
+    let minTws, maxTws;
+
+    // Calculate lower bound
+    if (editingIndex === 0) {
+      // This is the lowest wind speed, so lower bound is 0
+      minTws = 0;
+    } else {
+      // Mid-point between editing wind speed and the next lower wind speed
+      const lowerWindSpeed = allWindSpeeds[editingIndex - 1];
+      minTws = (lowerWindSpeed + editingWindSpeed) / 2;
+    }
+
+    // Calculate upper bound
+    if (editingIndex === allWindSpeeds.length - 1) {
+      // This is the highest wind speed, so upper bound is infinity
+      maxTws = Infinity;
+    } else {
+      // Mid-point between editing wind speed and the next higher wind speed
+      const higherWindSpeed = allWindSpeeds[editingIndex + 1];
+      maxTws = (editingWindSpeed + higherWindSpeed) / 2;
+    }
+
+    return { minTws, maxTws };
+  };
+
+  // Set TWS filters when switching to real parquet data
+  useEffect(() => {
+    if (!useMockData && editingWindSpeed && polarData && polarData.length > 0) {
+      console.log('App: Switching to real parquet data, setting TWS filters for editing wind speed:', editingWindSpeed);
+      
+      const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
+      console.log('App: Calculated wind speed range:', windSpeedRange);
+      
+      // Set the min and max TWS filters
+      const minTwsValue = windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString();
+      const maxTwsValue = windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString();
+      
+      dispatch(setMinTws(minTwsValue));
+      dispatch(setMaxTws(maxTwsValue));
+      
+      console.log('App: Set TWS filters - Min:', minTwsValue, 'Max:', maxTwsValue);
+    }
+  }, [useMockData, editingWindSpeed, polarData, dispatch]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
