@@ -19,6 +19,114 @@ const s3Client = new S3Client({
   region: 'eu-west-2' // Update this to match your S3 bucket region
 });
 
+// Global DuckDB database instance
+let globalDb = null;
+let isParquetLoaded = false;
+
+// Initialize DuckDB and load parquet data on startup
+async function initializeDatabase() {
+  try {
+    console.log('Initializing DuckDB database...');
+    globalDb = new duckdb.Database(':memory:');
+    
+    const queryAsync = (query) => {
+      return new Promise((resolve, reject) => {
+        globalDb.all(query, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+    
+    // Install and load httpfs extension for S3 access
+    await queryAsync("INSTALL httpfs;");
+    await queryAsync("LOAD httpfs;");
+    
+    // Configure S3 credentials for DuckDB
+    const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+    const awsRegion = process.env.AWS_DEFAULT_REGION || 'eu-west-2';
+    
+    if (awsAccessKeyId && awsSecretAccessKey) {
+      await queryAsync(`SET s3_access_key_id='${awsAccessKeyId}';`);
+      await queryAsync(`SET s3_secret_access_key='${awsSecretAccessKey}';`);
+    }
+    await queryAsync(`SET s3_region='${awsRegion}';`);
+    
+    await queryAsync("SET s3_use_ssl=true;");
+    await queryAsync("SET s3_url_style='path';");
+    await queryAsync("SET http_keep_alive=false;");
+
+    await queryAsync(`
+      CREATE SECRET (
+        TYPE s3,
+        PROVIDER credential_chain
+      );
+    `);
+    
+    // Load parquet data into a table
+    await loadParquetData();
+    
+    console.log('DuckDB database initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize DuckDB database:', error);
+    globalDb = null;
+    isParquetLoaded = false;
+  }
+}
+
+// Function to load parquet data into DuckDB table
+async function loadParquetData() {
+  try {
+    console.log('Loading parquet data into DuckDB table...');
+    
+    const queryAsync = (query) => {
+      return new Promise((resolve, reject) => {
+        globalDb.all(query, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+    
+    // Create table from parquet file
+    await queryAsync(`
+      CREATE OR REPLACE TABLE sailing_data AS 
+      SELECT bsp, twa, tws, utc
+      FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
+      WHERE bsp IS NOT NULL 
+        AND twa IS NOT NULL 
+        AND tws IS NOT NULL
+    `);
+    
+    // Get row count to verify data loaded
+    const countResult = await queryAsync('SELECT COUNT(*) as count FROM sailing_data');
+    const rowCount = countResult[0]?.count || 0;
+    
+    console.log(`Successfully loaded ${rowCount} rows into sailing_data table`);
+    isParquetLoaded = true;
+  } catch (error) {
+    console.error('Failed to load parquet data:', error);
+    isParquetLoaded = false;
+    throw error;
+  }
+}
+
+// Helper function to execute queries on the global database
+function executeQuery(query) {
+  return new Promise((resolve, reject) => {
+    if (!globalDb) {
+      reject(new Error('Database not initialized'));
+      return;
+    }
+    
+    globalDb.all(query, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
 // API endpoint to get list of files in the data directory
 app.get('/api/files', (req, res) => {
   const dataDir = path.join(__dirname, '..', 'data');
@@ -118,6 +226,31 @@ app.post('/api/race-details', (req, res) => {
   });
 });
 
+// API endpoint to refresh parquet data
+app.post('/api/refresh-parquet-data', async (req, res) => {
+  try {
+    console.log('Refreshing parquet data...');
+    
+    if (!globalDb) {
+      await initializeDatabase();
+    } else {
+      await loadParquetData();
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Parquet data refreshed successfully',
+      isLoaded: isParquetLoaded
+    });
+  } catch (error) {
+    console.error('Error refreshing parquet data:', error);
+    res.status(500).json({ 
+      error: 'Failed to refresh parquet data: ' + error.message,
+      isLoaded: isParquetLoaded
+    });
+  }
+});
+
 // API endpoint to get parquet data summary with filtering
 app.post('/api/parquet-data-summary', async (req, res) => {
   try {
@@ -156,46 +289,13 @@ app.post('/api/parquet-data-summary', async (req, res) => {
       console.log(`Returning summary for ${mockData.length} mock records`);
       res.json({ summary });
     } else {
-      // Fetch real parquet data from S3 and calculate summary
-      console.log('Attempting to fetch real parquet data summary from S3...');
+      // Use pre-loaded parquet data from DuckDB
+      console.log('Fetching real parquet data summary from pre-loaded DuckDB table...');
       
       try {
-        console.log('Using DuckDB to query parquet file from S3...');
-        
-        const db = new duckdb.Database(':memory:');
-        
-        const queryAsync = (query) => {
-          return new Promise((resolve, reject) => {
-            db.all(query, (err, rows) => {
-              if (err) reject(err);
-              else resolve(rows);
-            });
-          });
-        };
-        
-        await queryAsync("INSTALL httpfs;");
-        await queryAsync("LOAD httpfs;");
-        
-        const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
-        const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-        const awsRegion = process.env.AWS_DEFAULT_REGION || 'eu-west-2';
-        
-        if (awsAccessKeyId && awsSecretAccessKey) {
-          await queryAsync(`SET s3_access_key_id='${awsAccessKeyId}';`);
-          await queryAsync(`SET s3_secret_access_key='${awsSecretAccessKey}';`);
+        if (!globalDb || !isParquetLoaded) {
+          throw new Error('Parquet data not loaded. Please refresh the data first.');
         }
-        await queryAsync(`SET s3_region='${awsRegion}';`);
-        
-        await queryAsync("SET s3_use_ssl=true;");
-        await queryAsync("SET s3_url_style='path';");
-        await queryAsync("SET http_keep_alive=false;");
-
-        await queryAsync(`
-          CREATE SECRET (
-            TYPE s3,
-            PROVIDER credential_chain
-          );
-          `);
         
         // Build the SQL query for summary statistics
         let sqlQuery = `
@@ -205,10 +305,8 @@ app.post('/api/parquet-data-summary', async (req, res) => {
             MIN(twa) as min_twa, MAX(twa) as max_twa, AVG(twa) as avg_twa,
             MIN(tws) as min_tws, MAX(tws) as max_tws, AVG(tws) as avg_tws,
             MIN(utc) as start_time, MAX(utc) as end_time
-          FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
-          WHERE bsp IS NOT NULL 
-            AND twa IS NOT NULL 
-            AND tws IS NOT NULL
+          FROM sailing_data
+          WHERE 1=1
         `;
         
         // Add time filter if provided
@@ -233,7 +331,7 @@ app.post('/api/parquet-data-summary', async (req, res) => {
         
         console.log('Executing DuckDB summary query:', sqlQuery);
         
-        const summaryRows = await queryAsync(sqlQuery);
+        const summaryRows = await executeQuery(sqlQuery);
         
         // Get histogram data for distributions with dynamic buckets
         let histogramQuery = `
@@ -242,8 +340,8 @@ app.post('/api/parquet-data-summary', async (req, res) => {
               MIN(tws) as min_tws, MAX(tws) as max_tws,
               MIN(bsp) as min_bsp, MAX(bsp) as max_bsp,
               MIN(ABS(twa)) as min_twa, MAX(ABS(twa)) as max_twa
-            FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
-            WHERE bsp IS NOT NULL AND twa IS NOT NULL AND tws IS NOT NULL
+            FROM sailing_data
+            WHERE 1=1
         `;
         
         // Add same filters to the ranges query
@@ -274,8 +372,8 @@ app.post('/api/parquet-data-summary', async (req, res) => {
             COUNT(*) as bsp_count,
             FLOOR((ABS(twa) - dr.min_twa) / ((dr.max_twa - dr.min_twa) / ${histogramBuckets})) * ((dr.max_twa - dr.min_twa) / ${histogramBuckets}) + dr.min_twa as twa_bin,
             COUNT(*) as twa_count
-          FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet'), data_ranges dr
-          WHERE bsp IS NOT NULL AND twa IS NOT NULL AND tws IS NOT NULL
+          FROM sailing_data, data_ranges dr
+          WHERE 1=1
         `;
         
         // Add same filters to histogram query
@@ -299,9 +397,7 @@ app.post('/api/parquet-data-summary', async (req, res) => {
         
         histogramQuery += ` GROUP BY tws_bin, bsp_bin, twa_bin ORDER BY tws_bin, bsp_bin, twa_bin`;
         
-        const histogramRows = await queryAsync(histogramQuery);
-        
-        db.close();
+        const histogramRows = await executeQuery(histogramQuery);
         
         const summary = {
           totalPoints: Number(summaryRows[0]?.total_points || 0),
@@ -382,62 +478,19 @@ app.post('/api/parquet-data', async (req, res) => {
       console.log(`Returning ${mockData.length} mock records`);
       res.json({ data: mockData });
     } else {
-      // Fetch real parquet data from S3
-      console.log('Attempting to fetch real parquet data from S3...');
+      // Use pre-loaded parquet data from DuckDB
+      console.log('Fetching real parquet data from pre-loaded DuckDB table...');
       
       try {
-        console.log('Using DuckDB to query parquet file from S3...');
-        
-        // Create a new DuckDB database instance
-        const db = new duckdb.Database(':memory:');
-        
-        // Create a promise wrapper for DuckDB operations
-        const queryAsync = (query) => {
-          return new Promise((resolve, reject) => {
-            db.all(query, (err, rows) => {
-              if (err) reject(err);
-              else resolve(rows);
-            });
-          });
-        };
-        
-        // Install and load httpfs extension for S3 access
-        await queryAsync("INSTALL httpfs;");
-        await queryAsync("LOAD httpfs;");
-        
-        // Configure S3 credentials for DuckDB
-        // Set AWS credentials from environment variables or use default profile
-        const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
-        const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-        const awsRegion = process.env.AWS_DEFAULT_REGION || 'eu-west-2';
-        
-        if (awsAccessKeyId && awsSecretAccessKey) {
-          await queryAsync(`SET s3_access_key_id='${awsAccessKeyId}';`);
-          await queryAsync(`SET s3_secret_access_key='${awsSecretAccessKey}';`);
+        if (!globalDb || !isParquetLoaded) {
+          throw new Error('Parquet data not loaded. Please refresh the data first.');
         }
-        await queryAsync(`SET s3_region='${awsRegion}';`);
-        
-        // Enable S3 path style access (sometimes needed for certain S3 configurations)
-        await queryAsync("SET s3_use_ssl=true;");
-        await queryAsync("SET s3_url_style='path';");
-        await queryAsync("SET http_keep_alive=false;");
-
-        await queryAsync(`
-          CREATE SECRET (
-            TYPE s3,
-            PROVIDER credential_chain
-          );
-          `);
-
-        console.log(`AWS access_key_id=${awsAccessKeyId} secret_access_key=${awsSecretAccessKey} region=${awsRegion}`)
         
         // Build the SQL query with filters
         let sqlQuery = `
           SELECT bsp, twa, tws, utc
-          FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
-          WHERE bsp IS NOT NULL 
-            AND twa IS NOT NULL 
-            AND tws IS NOT NULL
+          FROM sailing_data
+          WHERE 1=1
         `;
         
         // Add time filter if provided
@@ -465,7 +518,7 @@ app.post('/api/parquet-data', async (req, res) => {
         console.log('Executing DuckDB query:', sqlQuery);
         
         // Execute the query
-        const rows = await queryAsync(sqlQuery);
+        const rows = await executeQuery(sqlQuery);
         
         console.log(`DuckDB returned ${rows.length} rows`);
         
@@ -476,9 +529,6 @@ app.post('/api/parquet-data', async (req, res) => {
           tws: parseFloat(row.tws),
           timestamp: row.utc || new Date().toISOString()
         }));
-        
-        // Close the database connection
-        db.close();
         
         console.log(`Returning ${records.length} filtered records from parquet file`);
         res.json({ data: records });
@@ -649,6 +699,15 @@ function parsePolarFile(fileContent) {
   return polarData;
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Initialize database on startup
+initializeDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Parquet data loaded: ${isParquetLoaded}`);
+  });
+}).catch((error) => {
+  console.error('Failed to initialize database, starting server anyway:', error);
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} (without parquet data)`);
+  });
 });
