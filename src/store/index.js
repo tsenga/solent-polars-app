@@ -76,8 +76,12 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
     const { editingWindSpeed, polarData } = action.payload;
     const filterData = state.filter;
     
+    console.log('Middleware: setEditingWindSpeed triggered with:', { editingWindSpeed, polarDataLength: polarData?.length });
+    
     // Calculate wind speed range for the editing wind speed
     const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
+    
+    console.log('Middleware: Calculated wind speed range:', windSpeedRange);
     
     // Create filter data with wind speed range
     const rangeFilterData = {
@@ -85,6 +89,8 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
       minTws: windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString(),
       maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
     };
+    
+    console.log('Middleware: Fetching parquet data with range filter:', rangeFilterData);
     
     // Fetch data for the specific wind speed range
     store.dispatch(fetchParquetData(rangeFilterData));
