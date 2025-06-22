@@ -36,6 +36,22 @@ const autoSetFilterTimesMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
+// Track last fetch parameters to avoid duplicate requests
+let lastFetchParams = null;
+let lastFetchTime = 0;
+const FETCH_DEBOUNCE_MS = 500; // Minimum time between fetches
+
+// Helper function to serialize filter data for comparison
+const serializeFilterData = (filterData) => {
+  return JSON.stringify({
+    startTime: filterData.startTime,
+    endTime: filterData.endTime,
+    minTws: filterData.minTws,
+    maxTws: filterData.maxTws,
+    useMockData: filterData.useMockData
+  });
+};
+
 // Middleware to automatically fetch parquet data when filter changes
 const autoFetchDataMiddleware = (store) => (next) => (action) => {
   const result = next(action);
@@ -58,13 +74,29 @@ const autoFetchDataMiddleware = (store) => (next) => (action) => {
     
     // Only fetch if we have meaningful filter data or are using mock data
     if (filterData.useMockData || filterData.startTime || filterData.endTime || filterData.minTws || filterData.maxTws) {
-      store.dispatch(fetchParquetData(filterData));
-      store.dispatch(fetchParquetDataSummary(filterData));
+      const currentParams = serializeFilterData(filterData);
+      const currentTime = Date.now();
+      
+      // Check if this is a duplicate request or too soon after last fetch
+      if (currentParams !== lastFetchParams && (currentTime - lastFetchTime) > FETCH_DEBOUNCE_MS) {
+        console.log('AutoFetchDataMiddleware: Fetching data with params:', filterData);
+        lastFetchParams = currentParams;
+        lastFetchTime = currentTime;
+        
+        store.dispatch(fetchParquetData(filterData));
+        store.dispatch(fetchParquetDataSummary(filterData));
+      } else {
+        console.log('AutoFetchDataMiddleware: Skipping duplicate or too-soon fetch');
+      }
     }
   }
   
   return result;
 };
+
+// Track last wind speed range fetch to avoid duplicates
+let lastWindSpeedRangeParams = null;
+let lastWindSpeedFetchTime = 0;
 
 // Middleware to fetch wind speed range data when editing wind speed changes
 const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
@@ -90,10 +122,20 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
       maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
     };
     
-    console.log('Middleware: Fetching parquet data with range filter:', rangeFilterData);
+    // Check for duplicate wind speed range requests
+    const currentRangeParams = serializeFilterData(rangeFilterData);
+    const currentTime = Date.now();
     
-    // Fetch data for the specific wind speed range
-    store.dispatch(fetchParquetData(rangeFilterData));
+    if (currentRangeParams !== lastWindSpeedRangeParams && (currentTime - lastWindSpeedFetchTime) > FETCH_DEBOUNCE_MS) {
+      console.log('Middleware: Fetching parquet data with range filter:', rangeFilterData);
+      lastWindSpeedRangeParams = currentRangeParams;
+      lastWindSpeedFetchTime = currentTime;
+      
+      // Fetch data for the specific wind speed range
+      store.dispatch(fetchParquetData(rangeFilterData));
+    } else {
+      console.log('Middleware: Skipping duplicate wind speed range fetch');
+    }
   }
   
   return result;

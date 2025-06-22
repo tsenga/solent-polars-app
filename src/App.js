@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
 import { Provider, useSelector, useDispatch } from 'react-redux';
@@ -203,14 +203,18 @@ function AppContent() {
     }
   }, [rawData, polarData, dispatch]);
 
+  // Track previous editing wind speed to avoid unnecessary dispatches
+  const prevEditingWindSpeed = useRef(editingWindSpeed);
+  
   // Update displayed data when editing wind speed changes
   useEffect(() => {
     console.log(`App: editingWindSpeed changed to ${editingWindSpeed}`);
     
-    // Dispatch Redux action to trigger server data fetch for new wind speed range
-    if (editingWindSpeed && polarData && polarData.length > 0) {
+    // Only dispatch Redux action if editing wind speed actually changed
+    if (editingWindSpeed !== prevEditingWindSpeed.current && editingWindSpeed && polarData && polarData.length > 0) {
       console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
       dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
+      prevEditingWindSpeed.current = editingWindSpeed;
     }
     
     if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
