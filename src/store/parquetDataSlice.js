@@ -30,6 +30,7 @@ const initialState = {
   rawData: [],
   filteredData: [],
   displayedData: [],
+  editingWindSpeed: 10, // Default editing wind speed
   loading: false,
   error: null,
 };
@@ -47,6 +48,13 @@ const parquetDataSlice = createSlice({
     setEditingWindSpeed: (state, action) => {
       // This action will trigger the middleware to fetch new data
       // The payload should contain { editingWindSpeed, polarData }
+      if (action.payload.editingWindSpeed) {
+        state.editingWindSpeed = action.payload.editingWindSpeed;
+      }
+    },
+    updateEditingWindSpeed: (state, action) => {
+      // Simple action to just update the editing wind speed without triggering middleware
+      state.editingWindSpeed = action.payload;
     },
     clearError: (state) => {
       state.error = null;
@@ -70,6 +78,6 @@ const parquetDataSlice = createSlice({
   },
 });
 
-export const { setFilteredData, setDisplayedData, setEditingWindSpeed, clearError } = parquetDataSlice.actions;
+export const { setFilteredData, setDisplayedData, setEditingWindSpeed, updateEditingWindSpeed, clearError } = parquetDataSlice.actions;
 
 export default parquetDataSlice.reducer;

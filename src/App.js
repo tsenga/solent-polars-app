@@ -3,7 +3,7 @@ import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
-import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction } from './store/parquetDataSlice';
+import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction, updateEditingWindSpeed } from './store/parquetDataSlice';
 import { setMinTws, setMaxTws } from './store/filterSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
@@ -135,11 +135,10 @@ const theme = createTheme({
 
 function AppContent() {
   const dispatch = useDispatch();
-  const { rawData, filteredData } = useSelector((state) => state.parquetData);
+  const { rawData, filteredData, editingWindSpeed } = useSelector((state) => state.parquetData);
   const { useMockData } = useSelector((state) => state.filter);
   const [polarData, setPolarData] = useState(initialPolarData);
   const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
-  const [editingWindSpeed, setEditingWindSpeed] = useState(10);
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   
