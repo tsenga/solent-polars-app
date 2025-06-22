@@ -52,6 +52,15 @@ const serializeFilterData = (filterData) => {
   });
 };
 
+// Helper function to create wind speed range filter data
+const createWindSpeedRangeFilterData = (baseFilterData, windSpeedRange) => {
+  return {
+    ...baseFilterData,
+    minTws: windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString(),
+    maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
+  };
+};
+
 // Middleware to automatically fetch parquet data when filter changes
 const autoFetchDataMiddleware = (store) => (next) => (action) => {
   const result = next(action);
@@ -124,11 +133,7 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
       console.log('Middleware: Calculated wind speed range:', windSpeedRange);
       
       // Create filter data with wind speed range
-      const rangeFilterData = {
-        ...filterData,
-        minTws: windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString(),
-        maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
-      };
+      const rangeFilterData = createWindSpeedRangeFilterData(filterData, windSpeedRange);
       
       // Check for duplicate wind speed range requests
       const currentRangeParams = serializeFilterData(rangeFilterData);
@@ -136,11 +141,14 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
       
       if (currentRangeParams !== lastWindSpeedRangeParams && (currentTime - lastWindSpeedFetchTime) > FETCH_DEBOUNCE_MS) {
         console.log('Middleware: Fetching parquet data with range filter:', rangeFilterData);
+        console.log('Middleware: Wind speed range being applied:', windSpeedRange);
+        console.log('Middleware: Using mock data:', rangeFilterData.useMockData);
         lastWindSpeedRangeParams = currentRangeParams;
         lastWindSpeedFetchTime = currentTime;
         
-        // Fetch data for the specific wind speed range
+        // Fetch both data and summary for the specific wind speed range
         store.dispatch(fetchParquetData(rangeFilterData));
+        store.dispatch(fetchParquetDataSummary(rangeFilterData));
       } else {
         console.log('Middleware: Skipping duplicate wind speed range fetch');
       }
