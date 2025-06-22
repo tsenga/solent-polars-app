@@ -116,8 +116,8 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
       clearTimeout(windSpeedChangeTimeout);
     }
     
-    // Debounce the wind speed change to avoid rapid successive requests
-    windSpeedChangeTimeout = setTimeout(() => {
+    // Use requestIdleCallback or setTimeout with 0 delay to avoid blocking UI
+    const scheduleWindSpeedFetch = () => {
       // Calculate wind speed range for the editing wind speed
       const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
       
@@ -144,7 +144,14 @@ const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
       } else {
         console.log('Middleware: Skipping duplicate wind speed range fetch');
       }
-    }, 300); // 300ms debounce delay
+    };
+
+    // Use requestIdleCallback if available, otherwise setTimeout with minimal delay
+    if (typeof requestIdleCallback !== 'undefined') {
+      windSpeedChangeTimeout = requestIdleCallback(scheduleWindSpeedFetch, { timeout: 100 });
+    } else {
+      windSpeedChangeTimeout = setTimeout(scheduleWindSpeedFetch, 50); // Reduced to 50ms
+    }
   }
   
   return result;

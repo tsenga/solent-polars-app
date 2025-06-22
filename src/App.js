@@ -219,7 +219,10 @@ function AppContent() {
       console.log(`App: Dispatching ${displayedForWindSpeed.length} points for display`);
       dispatch(setDisplayedData(displayedForWindSpeed));
     }
-    
+  }, [editingWindSpeed, filteredData, polarData, dispatch]);
+
+  // Separate effect for server requests to avoid blocking UI
+  useEffect(() => {
     // Debounce the server request to avoid blocking the UI
     if (editingWindSpeed !== prevEditingWindSpeed.current && editingWindSpeed && polarData && polarData.length > 0) {
       // Clear any existing timeout
@@ -227,16 +230,16 @@ function AppContent() {
         clearTimeout(windSpeedChangeTimeoutRef.current);
       }
       
-      // Debounce the server request
+      // Debounce the server request with a longer delay
       windSpeedChangeTimeoutRef.current = setTimeout(() => {
         console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
         console.log(`App: Previous wind speed was: ${prevEditingWindSpeed.current}`);
         console.log(`App: Polar data has ${polarData.length} wind speeds:`, polarData.map(p => p.windSpeed));
         dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
         prevEditingWindSpeed.current = editingWindSpeed;
-      }, 500); // 500ms delay for server requests
+      }, 1000); // Increased to 1000ms delay for server requests
     }
-  }, [editingWindSpeed, filteredData, polarData, dispatch]);
+  }, [editingWindSpeed, polarData, dispatch]);
   
   // Cleanup timeout on unmount
   useEffect(() => {
