@@ -66,6 +66,75 @@ const autoFetchDataMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
+// Middleware to fetch wind speed range data when editing wind speed changes
+const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
+  const result = next(action);
+  
+  // Check if this is an action that changes the editing wind speed
+  if (action.type === 'parquetData/setEditingWindSpeed') {
+    const state = store.getState();
+    const { editingWindSpeed, polarData } = action.payload;
+    const filterData = state.filter;
+    
+    // Calculate wind speed range for the editing wind speed
+    const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
+    
+    // Create filter data with wind speed range
+    const rangeFilterData = {
+      ...filterData,
+      minTws: windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString(),
+      maxTws: windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString()
+    };
+    
+    // Fetch data for the specific wind speed range
+    store.dispatch(fetchParquetData(rangeFilterData));
+  }
+  
+  return result;
+};
+
+// Helper function to calculate wind speed range (same logic as in LinePolarChart)
+const calculateWindSpeedRange = (editingWindSpeed, polarData) => {
+  if (!editingWindSpeed || !polarData || polarData.length === 0) {
+    return { minTws: 0, maxTws: Infinity };
+  }
+
+  // Get all wind speeds from polar data and sort them
+  const allWindSpeeds = polarData.map(data => data.windSpeed).sort((a, b) => a - b);
+  
+  // Find the index of the editing wind speed
+  const editingIndex = allWindSpeeds.indexOf(editingWindSpeed);
+  
+  if (editingIndex === -1) {
+    // If editing wind speed is not in polar data, return full range
+    return { minTws: 0, maxTws: Infinity };
+  }
+
+  let minTws, maxTws;
+
+  // Calculate lower bound
+  if (editingIndex === 0) {
+    // This is the lowest wind speed, so lower bound is 0
+    minTws = 0;
+  } else {
+    // Mid-point between editing wind speed and the next lower wind speed
+    const lowerWindSpeed = allWindSpeeds[editingIndex - 1];
+    minTws = (lowerWindSpeed + editingWindSpeed) / 2;
+  }
+
+  // Calculate upper bound
+  if (editingIndex === allWindSpeeds.length - 1) {
+    // This is the highest wind speed, so upper bound is infinity
+    maxTws = Infinity;
+  } else {
+    // Mid-point between editing wind speed and the next higher wind speed
+    const higherWindSpeed = allWindSpeeds[editingIndex + 1];
+    maxTws = (editingWindSpeed + higherWindSpeed) / 2;
+  }
+
+  return { minTws, maxTws };
+};
+
 export const store = configureStore({
   reducer: {
     filter: filterReducer,
@@ -86,5 +155,5 @@ export const store = configureStore({
       immutableCheck: {
         ignoredPaths: ['parquetData.rawData', 'parquetData.filteredData', 'parquetData.displayedData']
       }
-    }).concat(autoSetFilterTimesMiddleware, autoFetchDataMiddleware),
+    }).concat(autoSetFilterTimesMiddleware, autoFetchDataMiddleware, autoFetchWindSpeedRangeMiddleware),
 });

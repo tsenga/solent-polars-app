@@ -44,6 +44,10 @@ const parquetDataSlice = createSlice({
     setDisplayedData: (state, action) => {
       state.displayedData = action.payload;
     },
+    setEditingWindSpeed: (state, action) => {
+      // This action will trigger the middleware to fetch new data
+      // The payload should contain { editingWindSpeed, polarData }
+    },
     clearError: (state) => {
       state.error = null;
     },
@@ -66,6 +70,6 @@ const parquetDataSlice = createSlice({
   },
 });
 
-export const { setFilteredData, setDisplayedData, clearError } = parquetDataSlice.actions;
+export const { setFilteredData, setDisplayedData, setEditingWindSpeed, clearError } = parquetDataSlice.actions;
 
 export default parquetDataSlice.reducer;

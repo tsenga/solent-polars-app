@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setEditingWindSpeed } from '../store/parquetDataSlice';
 import * as d3 from 'd3';
 import './LinePolarChart.css';
 
@@ -7,9 +8,11 @@ import './LinePolarChart.css';
 const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
 
 const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotAbsoluteTwa = true, onUpdateAnchorPoint }) => {
-  const { displayedData: parquetData } = useSelector((state) => state.parquetData);
+  const dispatch = useDispatch();
+  const { rawData: parquetData } = useSelector((state) => state.parquetData);
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
+  const prevEditingWindSpeed = useRef(editingWindSpeed);
 
   // Find all data for selected wind speeds
   const selectedData = polarData.filter(data => 
