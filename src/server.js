@@ -235,13 +235,46 @@ app.post('/api/parquet-data-summary', async (req, res) => {
         
         const summaryRows = await queryAsync(sqlQuery);
         
-        // Get histogram data for distributions
+        // Get histogram data for distributions with dynamic buckets
         let histogramQuery = `
+          WITH data_ranges AS (
+            SELECT 
+              MIN(tws) as min_tws, MAX(tws) as max_tws,
+              MIN(bsp) as min_bsp, MAX(bsp) as max_bsp,
+              MIN(ABS(twa)) as min_twa, MAX(ABS(twa)) as max_twa
+            FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
+            WHERE bsp IS NOT NULL AND twa IS NOT NULL AND tws IS NOT NULL
+        `;
+        
+        // Add same filters to the ranges query
+        if (startTime && endTime) {
+          const formatTimestamp = (dateTimeLocal) => {
+            return dateTimeLocal.replace('T', ' ') + ':00';
+          };
+          
+          const formattedStartTime = formatTimestamp(startTime);
+          const formattedEndTime = formatTimestamp(endTime);
+          
+          histogramQuery += ` AND utc >= '${formattedStartTime}' AND utc <= '${formattedEndTime}'`;
+        }
+        
+        if (minTws) {
+          histogramQuery += ` AND tws >= ${minTws}`;
+        }
+        if (maxTws) {
+          histogramQuery += ` AND tws <= ${maxTws}`;
+        }
+        
+        histogramQuery += `
+          )
           SELECT 
-            FLOOR(tws) as tws_bin, COUNT(*) as tws_count,
-            FLOOR(bsp) as bsp_bin, COUNT(*) as bsp_count,
-            FLOOR(ABS(twa)/10)*10 as twa_bin, COUNT(*) as twa_count
-          FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet')
+            FLOOR((tws - dr.min_tws) / ((dr.max_tws - dr.min_tws) / ${histogramBuckets})) * ((dr.max_tws - dr.min_tws) / ${histogramBuckets}) + dr.min_tws as tws_bin,
+            COUNT(*) as tws_count,
+            FLOOR((bsp - dr.min_bsp) / ((dr.max_bsp - dr.min_bsp) / ${histogramBuckets})) * ((dr.max_bsp - dr.min_bsp) / ${histogramBuckets}) + dr.min_bsp as bsp_bin,
+            COUNT(*) as bsp_count,
+            FLOOR((ABS(twa) - dr.min_twa) / ((dr.max_twa - dr.min_twa) / ${histogramBuckets})) * ((dr.max_twa - dr.min_twa) / ${histogramBuckets}) + dr.min_twa as twa_bin,
+            COUNT(*) as twa_count
+          FROM read_parquet('s3://sailing-tseng/quailo/exp_logs.parquet'), data_ranges dr
           WHERE bsp IS NOT NULL AND twa IS NOT NULL AND tws IS NOT NULL
         `;
         
@@ -467,7 +500,7 @@ app.post('/api/parquet-data', async (req, res) => {
 });
 
 // Helper function to calculate data summary from raw data
-function calculateDataSummary(data) {
+function calculateDataSummary(data, histogramBuckets = 10) {
   if (!data || data.length === 0) {
     return {
       totalPoints: 0,
@@ -484,27 +517,29 @@ function calculateDataSummary(data) {
   const twsValues = data.map(d => d.tws);
   const timestamps = data.map(d => d.timestamp).sort();
 
-  // Create histograms
-  const createHistogram = (values, binSize = 1) => {
-    const min = Math.floor(Math.min(...values));
-    const max = Math.ceil(Math.max(...values));
-    const bins = {};
+  // Create histograms with specified number of buckets
+  const createHistogram = (values, numBuckets = histogramBuckets) => {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const binWidth = (max - min) / numBuckets;
+    const bins = [];
     
-    for (let i = min; i <= max; i += binSize) {
-      bins[i] = 0;
+    // Initialize bins
+    for (let i = 0; i < numBuckets; i++) {
+      const binStart = min + i * binWidth;
+      bins.push({
+        bin: parseFloat(binStart.toFixed(2)),
+        count: 0
+      });
     }
     
+    // Populate bins
     values.forEach(value => {
-      const bin = Math.floor(value / binSize) * binSize;
-      if (bins[bin] !== undefined) {
-        bins[bin]++;
-      }
+      const binIndex = Math.min(Math.floor((value - min) / binWidth), numBuckets - 1);
+      bins[binIndex].count++;
     });
     
-    return Object.entries(bins).map(([bin, count]) => ({
-      bin: parseInt(bin),
-      count
-    })).filter(item => item.count > 0);
+    return bins;
   };
 
   return {
@@ -529,9 +564,9 @@ function calculateDataSummary(data) {
       end: timestamps[timestamps.length - 1]
     },
     histograms: {
-      tws: createHistogram(twsValues, 1),
-      bsp: createHistogram(bspValues, 0.5),
-      twa: createHistogram(twaValues.map(Math.abs), 10)
+      tws: createHistogram(twsValues, histogramBuckets),
+      bsp: createHistogram(bspValues, histogramBuckets),
+      twa: createHistogram(twaValues.map(Math.abs), histogramBuckets)
     }
   };
 }
