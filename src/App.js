@@ -203,6 +203,15 @@ function AppContent() {
     }
   }, [rawData, polarData, dispatch]);
 
+  // Fetch parquet data for the first wind speed when polar data is loaded
+  useEffect(() => {
+    if (polarData && polarData.length > 0) {
+      const firstWindSpeed = polarData[0].windSpeed;
+      console.log(`App: Fetching initial parquet data for first wind speed: ${firstWindSpeed}`);
+      dispatch(setEditingWindSpeedAction({ editingWindSpeed: firstWindSpeed, polarData }));
+    }
+  }, [polarData, dispatch]);
+
   // Track previous editing wind speed to avoid unnecessary dispatches
   const prevEditingWindSpeed = useRef(editingWindSpeed);
   const windSpeedChangeTimeoutRef = useRef(null);
