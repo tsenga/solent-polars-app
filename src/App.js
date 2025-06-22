@@ -213,6 +213,8 @@ function AppContent() {
     // Only dispatch Redux action if editing wind speed actually changed
     if (editingWindSpeed !== prevEditingWindSpeed.current && editingWindSpeed && polarData && polarData.length > 0) {
       console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
+      console.log(`App: Previous wind speed was: ${prevEditingWindSpeed.current}`);
+      console.log(`App: Polar data has ${polarData.length} wind speeds:`, polarData.map(p => p.windSpeed));
       dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
       prevEditingWindSpeed.current = editingWindSpeed;
     }

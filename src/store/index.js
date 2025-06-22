@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import filterReducer, { setRaceTimeFilter } from './filterSlice';
-import parquetDataReducer, { fetchParquetData } from './parquetDataSlice';
+import parquetDataReducer, { fetchParquetData, setEditingWindSpeed } from './parquetDataSlice';
 import parquetDataSummaryReducer, { fetchParquetDataSummary } from './parquetDataSummarySlice';
 import raceDetailsReducer from './raceDetailsSlice';
 import { loadRaceDetails } from './raceDetailsSlice';
@@ -102,8 +102,13 @@ let lastWindSpeedFetchTime = 0;
 const autoFetchWindSpeedRangeMiddleware = (store) => (next) => (action) => {
   const result = next(action);
   
+  // Debug: Log all actions to see what's happening
+  if (action.type.includes('EditingWindSpeed') || action.type.includes('setEditingWindSpeed')) {
+    console.log('Middleware: Detected editing wind speed action:', action.type, action.payload);
+  }
+  
   // Check if this is an action that changes the editing wind speed
-  if (action.type === 'parquetData/setEditingWindSpeed') {
+  if (action.type === setEditingWindSpeed.type) {
     const state = store.getState();
     const { editingWindSpeed, polarData } = action.payload;
     const filterData = state.filter;
