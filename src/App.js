@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Ta
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
 import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction, updateEditingWindSpeed } from './store/parquetDataSlice';
+import { setMinTws, setMaxTws } from './store/filterSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import FileSelector from './components/FileSelector';
