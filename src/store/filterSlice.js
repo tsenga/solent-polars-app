@@ -27,6 +27,11 @@ const filterSlice = createSlice({
     setMaxTws: (state, action) => {
       state.maxTws = action.payload;
     },
+    setTwsRange: (state, action) => {
+      const { minTws, maxTws } = action.payload;
+      state.minTws = minTws;
+      state.maxTws = maxTws;
+    },
     setUseMockData: (state, action) => {
       state.useMockData = action.payload;
     },
@@ -94,6 +99,7 @@ export const {
   setEndTime,
   setMinTws,
   setMaxTws,
+  setTwsRange,
   setUseMockData,
   setTimeFilterMode,
   setDefaultStartTime,
