@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Ta
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
 import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction, updateEditingWindSpeed } from './store/parquetDataSlice';
-import { setMinTws, setMaxTws } from './store/filterSlice';
+import { setTwsRange } from './store/filterSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import FileSelector from './components/FileSelector';
@@ -304,15 +304,14 @@ function AppContent() {
       const minTwsValue = windSpeedRange.minTws === 0 ? '' : windSpeedRange.minTws.toString();
       const maxTwsValue = windSpeedRange.maxTws === Infinity ? '' : windSpeedRange.maxTws.toString();
       
-      dispatch(setMinTws(minTwsValue));
-      dispatch(setMaxTws(maxTwsValue));
+      dispatch(setTwsRange({minTws: minTwsValue, maxTws: maxTwsValue}));
       
       console.log('App: Set TWS filters - Min:', minTwsValue, 'Max:', maxTwsValue);
     } else if (useMockData) {
       console.log('App: Switched to mock data, clearing TWS filters');
       // Clear TWS filters when switching to mock data
-      dispatch(setMinTws(''));
-      dispatch(setMaxTws(''));
+
+      dispatch(setTwsRange({minTws: '', maxTws: ''}));
     }
   }, [useMockData, editingWindSpeed, polarData, dispatch]);
 
