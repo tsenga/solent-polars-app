@@ -581,6 +581,12 @@ function AppContent() {
               editingWindSpeed={editingWindSpeed}
               plotAbsoluteTwa={plotAbsoluteTwa}
               onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                // Only update if the wind speed matches the current editing wind speed
+                if (windSpeed !== editingWindSpeed) {
+                  console.warn('Attempted to update anchor point for non-editing wind speed:', windSpeed, 'vs', editingWindSpeed);
+                  return;
+                }
+                
                 setPolarData(prevData => {
                   return prevData.map(windData => {
                     if (windData.windSpeed === windSpeed) {
