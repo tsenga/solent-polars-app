@@ -375,6 +375,8 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
           .on('start', function(event, d) {
             d3.select(this).raise().attr('r', 6);
             tooltip.style('visibility', 'hidden');
+            // Store the original angle when dragging starts
+            d.originalAngle = d.angle;
           })
           .on('drag', function(event, d) {
             // Convert mouse position to polar coordinates
@@ -419,10 +421,11 @@ const LinePolarChart = ({ polarData, selectedWindSpeeds, editingWindSpeed, plotA
             
             // Call the update function from parent component
             // We need to pass this function as a prop
-            if (onUpdateAnchorPoint) {                                                                                           
-              const originalAngle = d.angle;                                                                                     
-                                                                                    
-              onUpdateAnchorPoint(windData.windSpeed, originalAngle, finalAngle, finalSpeed);                                                                                                                                                    
+            if (onUpdateAnchorPoint) {
+              // Store the original angle before dragging started
+              const originalAngle = d.originalAngle || d.angle;
+              
+              onUpdateAnchorPoint(windData.windSpeed, originalAngle, finalAngle, finalSpeed);
             }     
           });
         
