@@ -71,6 +71,7 @@ const autoFetchDataMiddleware = (store) => (next) => (action) => {
     'filter/setEndTime',
     'filter/setMinTws',
     'filter/setMaxTws',
+    'filter/setTwsRange',
     'filter/setRaceTimeFilter',
     'filter/clearFilter'
   ];
