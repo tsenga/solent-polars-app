@@ -324,41 +324,6 @@ function AppContent() {
     angles: generateAllPoints(selectedWindSpeedData.anchorPoints)
   };
   
-  // Update boat speed for a specific angle
-  const updateBoatSpeed = (angle, newSpeed) => {
-    setPolarData(prevData => {
-      return prevData.map(windData => {
-        if (windData.windSpeed === editingWindSpeed) {
-          // Find if this angle is already an anchor point
-          const existingAnchorIndex = windData.anchorPoints.findIndex(p => p.angle === angle);
-          
-          if (existingAnchorIndex >= 0) {
-            // Update existing anchor point
-            const updatedAnchorPoints = [...windData.anchorPoints];
-            updatedAnchorPoints[existingAnchorIndex] = {
-              ...updatedAnchorPoints[existingAnchorIndex],
-              boatSpeed: parseFloat(newSpeed)
-            };
-            
-            return {
-              ...windData,
-              anchorPoints: updatedAnchorPoints
-            };
-          } else {
-            // Add a new anchor point
-            return {
-              ...windData,
-              anchorPoints: [
-                ...windData.anchorPoints,
-                { angle, boatSpeed: parseFloat(newSpeed) }
-              ].sort((a, b) => a.angle - b.angle)
-            };
-          }
-        }
-        return windData;
-      });
-    });
-  };
 
   // Add a new anchor point
   const addAngleEntry = (newAngle, newSpeed) => {
