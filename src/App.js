@@ -5,6 +5,18 @@ import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
 import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction, updateEditingWindSpeed } from './store/parquetDataSlice';
 import { setTwsRange } from './store/filterSlice';
+import { 
+  setPolarData, 
+  setSelectedWindSpeeds, 
+  updateBoatSpeed, 
+  addAngleEntry, 
+  deleteAngleEntry, 
+  addWindSpeed, 
+  deleteWindSpeed, 
+  updateAnchorPoint,
+  selectPolarData,
+  selectSelectedWindSpeeds 
+} from './store/polarDataSlice';
 import LinePolarChart from './components/LinePolarChart';
 import PolarDataTable from './components/PolarDataTable';
 import FileSelector from './components/FileSelector';
@@ -12,30 +24,6 @@ import DataSourceSelection from './components/DataSourceSelection';
 import ViewSettings from './components/ViewSettings';
 import RaceDetailsManager from './components/RaceDetailsManager';
 
-// Sample initial data with anchor points
-const initialPolarData = [
-  { windSpeed: 5, anchorPoints: [
-    { angle: 0, boatSpeed: 0 },
-    { angle: 45, boatSpeed: 2.5 },
-    { angle: 90, boatSpeed: 3.8 },
-    { angle: 135, boatSpeed: 3.2 },
-    { angle: 180, boatSpeed: 2.0 }
-  ]},
-  { windSpeed: 10, anchorPoints: [
-    { angle: 0, boatSpeed: 0 },
-    { angle: 45, boatSpeed: 4.2 },
-    { angle: 90, boatSpeed: 6.1 },
-    { angle: 135, boatSpeed: 5.0 },
-    { angle: 180, boatSpeed: 3.5 }
-  ]},
-  { windSpeed: 15, anchorPoints: [
-    { angle: 0, boatSpeed: 0 },
-    { angle: 45, boatSpeed: 5.8 },
-    { angle: 90, boatSpeed: 7.5 },
-    { angle: 135, boatSpeed: 6.3 },
-    { angle: 180, boatSpeed: 4.2 }
-  ]}
-];
 
 // Helper function to interpolate boat speed between two anchor points
 const interpolateBoatSpeed = (anchorPoints, newAngle) => {
@@ -136,8 +124,8 @@ function AppContent() {
   const dispatch = useDispatch();
   const { rawData, filteredData, editingWindSpeed } = useSelector((state) => state.parquetData);
   const { useMockData } = useSelector((state) => state.filter);
-  const [polarData, setPolarData] = useState(initialPolarData);
-  const [selectedWindSpeeds, setSelectedWindSpeeds] = useState([10]);
+  const polarData = useSelector(selectPolarData);
+  const selectedWindSpeeds = useSelector(selectSelectedWindSpeeds);
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   

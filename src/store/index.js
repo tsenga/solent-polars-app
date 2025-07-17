@@ -3,6 +3,7 @@ import filterReducer, { setRaceTimeFilter } from './filterSlice';
 import parquetDataReducer, { fetchParquetData, setEditingWindSpeed } from './parquetDataSlice';
 import parquetDataSummaryReducer, { fetchParquetDataSummary } from './parquetDataSummarySlice';
 import raceDetailsReducer from './raceDetailsSlice';
+import polarDataReducer from './polarDataSlice';
 import { loadRaceDetails } from './raceDetailsSlice';
 
 // Middleware to automatically set filter times when race details are loaded
@@ -231,6 +232,7 @@ export const store = configureStore({
     parquetData: parquetDataReducer,
     parquetDataSummary: parquetDataSummaryReducer,
     raceDetails: raceDetailsReducer,
+    polarData: polarDataReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
