@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './App.css';
 import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
 import { Provider, useSelector, useDispatch } from 'react-redux';
@@ -182,7 +182,9 @@ function AppContent() {
     return filtered;
   };
 
-  const polarWindSpeeds = (polarData && polarData.length > 0) ? polarData.map(data => data.windSpeed) : [];
+  const polarWindSpeeds = useMemo(() => {
+    return (polarData && polarData.length > 0) ? polarData.map(data => data.windSpeed) : [];
+  }, [polarData]);
 
   // Update filtered data when raw data or polar data wind speeds change
   useEffect(() => {
