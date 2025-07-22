@@ -182,9 +182,11 @@ function AppContent() {
     return filtered;
   };
 
+  const polarWindSpeedsKey = polarData.map(data => data.windSpeed).join(',');
+  
   const polarWindSpeeds = useMemo(() => {
     return (polarData && polarData.length > 0) ? polarData.map(data => data.windSpeed) : [];
-  }, [polarData.map(data => data.windSpeed).join(',')]);
+  }, [polarWindSpeedsKey]);
 
   // Update filtered data when raw data or polar data wind speeds change
   useEffect(() => {
