@@ -303,6 +303,57 @@ function AppContent() {
     }
   }, [useMockData, editingWindSpeed, polarData, dispatch]);
 
+  // Update boat speed for a specific angle
+  const handleUpdateBoatSpeed = (angle, newSpeed) => {
+    dispatch(updateBoatSpeed({ 
+      windSpeed: editingWindSpeed, 
+      angle, 
+      newSpeed 
+    }));
+  };
+
+  // Add a new anchor point
+  const handleAddAngleEntry = (newAngle, newSpeed) => {
+    dispatch(addAngleEntry({ 
+      editingWindSpeed, 
+      newAngle, 
+      newSpeed, 
+      interpolateBoatSpeed 
+    }));
+  };
+
+  // Delete an anchor point
+  const handleDeleteAngleEntry = (angle) => {
+    dispatch(deleteAngleEntry({ editingWindSpeed, angle }));
+  };
+
+  // Add a new wind speed
+  const handleAddWindSpeed = (newWindSpeed) => {
+    if (polarData.some(data => data.windSpeed === newWindSpeed)) {
+      alert('This wind speed already exists');
+      return;
+    }
+    
+    dispatch(addWindSpeed({ newWindSpeed }));
+    dispatch(updateEditingWindSpeed(newWindSpeed));
+  };
+
+  // Delete a wind speed
+  const handleDeleteWindSpeed = (windSpeed) => {
+    if (polarData.length <= 1) {
+      alert('Cannot delete the last wind speed entry');
+      return;
+    }
+    
+    // If we're deleting the wind speed being edited, switch to another one
+    if (windSpeed === editingWindSpeed) {
+      const remainingData = polarData.filter(data => data.windSpeed !== windSpeed);
+      dispatch(updateEditingWindSpeed(remainingData[0].windSpeed));
+    }
+    
+    dispatch(deleteWindSpeed({ windSpeed }));
+  };
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
