@@ -1,16 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectSelectedWindSpeeds } from '../store/polarDataSlice';
+import { selectSelectedWindSpeeds, selectPolarData } from '../store/polarDataSlice';
 import * as d3 from 'd3';
 import './LinePolarChart.css';
 
 // Define colors array outside the component for consistency
 const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
 
-const LinePolarChart = ({ polarData, editingWindSpeed, plotAbsoluteTwa = true, onUpdateAnchorPoint }) => {
+const LinePolarChart = ({ editingWindSpeed, plotAbsoluteTwa = true, onUpdateAnchorPoint }) => {
   const dispatch = useDispatch();
   const { rawData: parquetData } = useSelector((state) => state.parquetData);
   const selectedWindSpeeds = useSelector(selectSelectedWindSpeeds);
+  const polarData = useSelector(selectPolarData);
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
   const prevEditingWindSpeed = useRef(editingWindSpeed);
