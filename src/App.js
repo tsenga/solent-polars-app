@@ -392,7 +392,7 @@ function AppContent() {
           <ViewSettings 
             windSpeeds={polarData.map(data => data.windSpeed)}
             selectedWindSpeeds={selectedWindSpeeds}
-            onSelectWindSpeed={setSelectedWindSpeeds}
+            onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
             plotAbsoluteTwa={plotAbsoluteTwa}
             onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
           />
