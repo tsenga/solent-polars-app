@@ -128,6 +128,7 @@ function AppContent() {
   const selectedWindSpeeds = useSelector(selectSelectedWindSpeeds);
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
+  const [isEditingWindSpeedInitialized, setIsEditingWindSpeedInitialized] = useState(false);
   
   // Apply TWS band filtering in the browser
   const applyTwsBandFiltering = (data, twsBands) => {
@@ -193,14 +194,15 @@ function AppContent() {
 
   // Fetch parquet data for the first wind speed when polar data is loaded (only on initial load)
   useEffect(() => {
-    if (polarData && polarData.length > 0 && editingWindSpeed === 10) {
-      // Only set initial wind speed if we're still at the default value
+    if (polarData && polarData.length > 0 && !isEditingWindSpeedInitialized) {
+      // Only set initial wind speed if it hasn't been explicitly set yet
       const firstWindSpeed = polarData[0].windSpeed;
       console.log(`App: Setting initial editing wind speed to first wind speed: ${firstWindSpeed}`);
       dispatch(updateEditingWindSpeed(firstWindSpeed));
       dispatch(setEditingWindSpeedAction({ editingWindSpeed: firstWindSpeed, polarData }));
+      setIsEditingWindSpeedInitialized(true);
     }
-  }, [polarData, dispatch, editingWindSpeed]);
+  }, [polarData, dispatch, isEditingWindSpeedInitialized]);
 
   // Track previous editing wind speed to avoid unnecessary dispatches
   const prevEditingWindSpeed = useRef(editingWindSpeed);
