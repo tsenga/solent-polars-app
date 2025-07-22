@@ -359,8 +359,12 @@ const LinePolarChart = ({ editingWindSpeed, plotAbsoluteTwa = true, onUpdateAnch
       const isBeingEdited = windData.windSpeed === editingWindSpeed;
       const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
       
-      // Sort anchor points by angle
-      const sortedPoints = [...windData.anchorPoints].sort((a, b) => a.angle - b.angle);
+      // Sort anchor points by angle and create mutable copies for drag functionality
+      const sortedPoints = windData.anchorPoints.map(point => ({
+        angle: point.angle,
+        boatSpeed: point.boatSpeed,
+        // Add any other properties that might be needed for dragging
+      })).sort((a, b) => a.angle - b.angle);
       
       // Draw the line
       svg.append('path')
