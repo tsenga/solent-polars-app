@@ -138,12 +138,15 @@ const polarDataSlice = createSlice({
       const windData = state.polarData.find(data => data.windSpeed === windSpeed);
       if (windData) {
         // Find the anchor point with the old angle
-        const anchorPoint = windData.anchorPoints.find(point => 
+        const anchorPointIndex = windData.anchorPoints.findIndex(point => 
           Math.abs(point.angle - oldAngle) < 0.1
         );
-        if (anchorPoint) {
-          anchorPoint.angle = newAngle;
-          anchorPoint.boatSpeed = newSpeed;
+        if (anchorPointIndex !== -1) {
+          // Update the anchor point
+          windData.anchorPoints[anchorPointIndex] = {
+            angle: newAngle,
+            boatSpeed: newSpeed
+          };
           // Re-sort anchor points by angle
           windData.anchorPoints.sort((a, b) => a.angle - b.angle);
         }
