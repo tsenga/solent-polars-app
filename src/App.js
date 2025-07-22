@@ -184,7 +184,7 @@ function AppContent() {
 
   const polarWindSpeeds = useMemo(() => {
     return (polarData && polarData.length > 0) ? polarData.map(data => data.windSpeed) : [];
-  }, [polarData]);
+  }, [polarData.map(data => data.windSpeed).join(',')]);
 
   // Update filtered data when raw data or polar data wind speeds change
   useEffect(() => {
@@ -238,7 +238,7 @@ function AppContent() {
       windSpeedChangeTimeoutRef.current = setTimeout(() => {
         console.log(`App: Dispatching setEditingWindSpeed action for wind speed: ${editingWindSpeed}`);
         console.log(`App: Previous wind speed was: ${prevEditingWindSpeed.current}`);
-        console.log(`App: Polar data has ${polarData.length} wind speeds:`, polarData.map(p => p.windSpeed));
+        console.log(`App: Polar data has ${polarData.length} wind speeds:`, polarWindSpeeds);
         dispatch(setEditingWindSpeedAction({ editingWindSpeed, polarData }));
         prevEditingWindSpeed.current = editingWindSpeed;
       }, 1000); // Increased to 1000ms delay for server requests
@@ -246,13 +246,13 @@ function AppContent() {
   }, [editingWindSpeed, polarData, dispatch]);
   
   // Helper function to calculate wind speed range
-  const calculateWindSpeedRange = (editingWindSpeed, polarData) => {
-    if (!editingWindSpeed || !polarData || polarData.length === 0) {
+  const calculateWindSpeedRange = (editingWindSpeed, polarWindSpeeds) => {
+    if (!editingWindSpeed || polarWindSpeeds.length === 0) {
       return { minTws: 0, maxTws: Infinity };
     }
 
     // Get all wind speeds from polar data and sort them
-    const allWindSpeeds = polarData.map(data => data.windSpeed).sort((a, b) => a - b);
+    const allWindSpeeds = polarWindSpeeds.sort((a, b) => a - b);
     
     // Find the index of the editing wind speed
     const editingIndex = allWindSpeeds.indexOf(editingWindSpeed);
@@ -289,10 +289,10 @@ function AppContent() {
 
   // Handle switching data sources and set TWS filters
   useEffect(() => {
-    if (!useMockData && editingWindSpeed && polarData && polarData.length > 0) {
+    if (!useMockData && editingWindSpeed) {
       console.log('App: Switched to real parquet data, setting TWS filters for editing wind speed:', editingWindSpeed);
       
-      const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarData);
+      const windSpeedRange = calculateWindSpeedRange(editingWindSpeed, polarWindSpeeds);
       console.log('App: Calculated wind speed range:', windSpeedRange);
       
       // Set the min and max TWS filters
@@ -308,7 +308,7 @@ function AppContent() {
 
       dispatch(setTwsRange({minTws: '', maxTws: ''}));
     }
-  }, [useMockData, editingWindSpeed, polarData.map(data => data.windSpeed).join(','), dispatch]);
+  }, [useMockData, editingWindSpeed, polarWindSpeeds, dispatch]);
 
   // Update boat speed for a specific angle
   const handleUpdateBoatSpeed = (angle, newSpeed) => {
@@ -512,7 +512,7 @@ function AppContent() {
             <PolarDataTable 
               data={selectedData.angles}
               windSpeed={editingWindSpeed}
-              availableWindSpeeds={polarData.map(data => data.windSpeed)}
+              availableWindSpeeds={polarWindSpeeds}
               onChangeWindSpeed={(newWindSpeed) => {
                 dispatch(updateEditingWindSpeed(newWindSpeed));
                 // If the new wind speed is not in the selected wind speeds, add it
