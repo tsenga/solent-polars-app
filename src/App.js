@@ -325,109 +325,17 @@ function AppContent() {
   };
   
 
-  // Add a new anchor point
-  const addAngleEntry = (newAngle, newSpeed) => {
-    setPolarData(prevData => {
-      return prevData.map(windData => {
-        // Check if angle already exists in this wind speed data
-        const angleExists = windData.anchorPoints.some(a => a.angle === newAngle);
-        if (angleExists) return windData;
-        
-        if (windData.windSpeed === editingWindSpeed) {
-          // For the wind speed being edited, use the provided boat speed
-          return {
-            ...windData,
-            anchorPoints: [...windData.anchorPoints, { 
-              angle: newAngle, 
-              boatSpeed: parseFloat(newSpeed) 
-            }].sort((a, b) => a.angle - b.angle)
-          };
-        } else {
-          // For other wind speeds, interpolate the boat speed
-          const interpolatedSpeed = interpolateBoatSpeed(windData.anchorPoints, newAngle);
-          
-          return {
-            ...windData,
-            anchorPoints: [...windData.anchorPoints, { 
-              angle: newAngle, 
-              boatSpeed: interpolatedSpeed
-            }].sort((a, b) => a.angle - b.angle)
-          };
-        }
-      });
-    });
-  };
 
-  // Delete an anchor point
-  const deleteAngleEntry = (angle) => {
-    setPolarData(prevData => {
-      return prevData.map(windData => {
-        if (windData.windSpeed === editingWindSpeed) {
-          return {
-            ...windData,
-            anchorPoints: windData.anchorPoints.filter(a => a.angle !== angle)
-          };
-        }
-        return windData;
-      });
-    });
-  };
 
-  // Add a new wind speed
-  const addWindSpeed = (newWindSpeed) => {
-    if (polarData.some(data => data.windSpeed === newWindSpeed)) {
-      alert('This wind speed already exists');
-      return;
-    }
-    
-    setPolarData(prevData => {
-      return [...prevData, {
-        windSpeed: newWindSpeed,
-        anchorPoints: [
-          { angle: 0, boatSpeed: 0 },
-          { angle: 45, boatSpeed: 0 },
-          { angle: 90, boatSpeed: 0 },
-          { angle: 135, boatSpeed: 0 },
-          { angle: 180, boatSpeed: 0 }
-        ]
-      }].sort((a, b) => a.windSpeed - b.windSpeed);
-    });
-    
-    setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
-    dispatch(updateEditingWindSpeed(newWindSpeed));
-  };
 
-  // Delete a wind speed
-  const deleteWindSpeed = (windSpeed) => {
-    if (polarData.length <= 1) {
-      alert('Cannot delete the last wind speed entry');
-      return;
-    }
-    
-    setPolarData(prevData => {
-      const newData = prevData.filter(data => data.windSpeed !== windSpeed);
-      // If we're deleting a currently selected wind speed, remove it from selection
-      setSelectedWindSpeeds(prev => {
-        const newSelection = prev.filter(speed => speed !== windSpeed);
-        // If we removed all selections, select the first available wind speed
-        return newSelection.length > 0 ? newSelection : [newData[0].windSpeed];
-      });
-      
-      // If we're deleting the wind speed being edited, switch to another one
-      if (windSpeed === editingWindSpeed) {
-        dispatch(updateEditingWindSpeed(newData[0].windSpeed));
-      }
-      return newData;
-    });
-  };
 
   // Handle loading polar data from a file
   const handleFileLoad = (loadedPolarData) => {
     if (loadedPolarData && loadedPolarData.length > 0) {
-      setPolarData(loadedPolarData);
+      dispatch(setPolarData(loadedPolarData));
       // Select the first wind speed by default
       const firstWindSpeed = loadedPolarData[0].windSpeed;
-      setSelectedWindSpeeds([firstWindSpeed]);
+      dispatch(setSelectedWindSpeeds([firstWindSpeed]));
       dispatch(updateEditingWindSpeed(firstWindSpeed));
     }
   };
