@@ -182,15 +182,16 @@ function AppContent() {
     return filtered;
   };
 
+  const polarWindSpeeds = (polarData && polarData.length > 0) ? polarData.map(data => data.windSpeed) : [];
+
   // Update filtered data when raw data or polar data wind speeds change
   useEffect(() => {
-    if (rawData.length > 0 && polarData && polarData.length > 0) {
+    if (rawData.length > 0) {
       // Use actual wind speeds from polar data
-      const twsBands = polarData.map(data => data.windSpeed);
-      const twsBandFiltered = applyTwsBandFiltering(rawData, twsBands);
+      const twsBandFiltered = applyTwsBandFiltering(rawData, polarWindSpeeds);
       dispatch(setFilteredData(twsBandFiltered));
     }
-  }, [rawData, polarData.map(data => data.windSpeed).join(','), dispatch]);
+  }, [rawData, polarWindSpeeds, dispatch]);
 
   // Fetch parquet data for the first wind speed when polar data is loaded (only on initial load)
   useEffect(() => {
@@ -207,20 +208,20 @@ function AppContent() {
   // Track previous editing wind speed to avoid unnecessary dispatches
   const prevEditingWindSpeed = useRef(editingWindSpeed);
   const windSpeedChangeTimeoutRef = useRef(null);
+
   
   // Update displayed data when editing wind speed changes
   useEffect(() => {
     console.log(`App: editingWindSpeed changed to ${editingWindSpeed}`);
     
     // Immediately update displayed data for responsive UI
-    if (filteredData.length > 0 && editingWindSpeed && polarData && polarData.length > 0) {
-      const twsBands = polarData.map(data => data.windSpeed);
+    if (filteredData.length > 0 && editingWindSpeed) {
       console.log(`App: Filtering parquet data for editing wind speed: ${editingWindSpeed}`);
-      const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, twsBands);
+      const displayedForWindSpeed = filterParquetDataForEditingWindSpeed(filteredData, editingWindSpeed, polarWindSpeeds);
       console.log(`App: Dispatching ${displayedForWindSpeed.length} points for display`);
       dispatch(setDisplayedData(displayedForWindSpeed));
     }
-  }, [editingWindSpeed, filteredData, polarData, dispatch]);
+  }, [editingWindSpeed, filteredData, polarWindSpeeds, dispatch]);
 
   // Separate effect for server requests to avoid blocking UI
   useEffect(() => {
@@ -305,7 +306,7 @@ function AppContent() {
 
       dispatch(setTwsRange({minTws: '', maxTws: ''}));
     }
-  }, [useMockData, editingWindSpeed, polarData, dispatch]);
+  }, [useMockData, editingWindSpeed, polarData.map(data => data.windSpeed).join(','), dispatch]);
 
   // Update boat speed for a specific angle
   const handleUpdateBoatSpeed = (angle, newSpeed) => {
