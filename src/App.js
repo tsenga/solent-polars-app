@@ -438,7 +438,6 @@ function AppContent() {
           <Grid item xs={12} md={8}>
             <LinePolarChart 
               polarData={polarData}
-              selectedWindSpeeds={selectedWindSpeeds}
               editingWindSpeed={editingWindSpeed}
               plotAbsoluteTwa={plotAbsoluteTwa}
               onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
