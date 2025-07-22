@@ -459,14 +459,14 @@ function AppContent() {
                 dispatch(updateEditingWindSpeed(newWindSpeed));
                 // If the new wind speed is not in the selected wind speeds, add it
                 if (!selectedWindSpeeds.includes(newWindSpeed)) {
-                  setSelectedWindSpeeds(prev => [...prev, newWindSpeed]);
+                  dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
                 }
               }}
-              onUpdateBoatSpeed={updateBoatSpeed}
-              onAddAngleEntry={addAngleEntry}
-              onDeleteAngleEntry={deleteAngleEntry}
-              onAddWindSpeed={addWindSpeed}
-              onDeleteWindSpeed={deleteWindSpeed}
+              onUpdateBoatSpeed={handleUpdateBoatSpeed}
+              onAddAngleEntry={handleAddAngleEntry}
+              onDeleteAngleEntry={handleDeleteAngleEntry}
+              onAddWindSpeed={handleAddWindSpeed}
+              onDeleteWindSpeed={handleDeleteWindSpeed}
             />
           </Grid>
         </Grid>
