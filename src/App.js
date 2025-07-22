@@ -182,7 +182,7 @@ function AppContent() {
     return filtered;
   };
 
-  // Update filtered data when raw data or polar data changes
+  // Update filtered data when raw data or polar data wind speeds change
   useEffect(() => {
     if (rawData.length > 0 && polarData && polarData.length > 0) {
       // Use actual wind speeds from polar data
@@ -190,7 +190,7 @@ function AppContent() {
       const twsBandFiltered = applyTwsBandFiltering(rawData, twsBands);
       dispatch(setFilteredData(twsBandFiltered));
     }
-  }, [rawData, polarData, dispatch]);
+  }, [rawData, polarData.map(data => data.windSpeed).join(','), dispatch]);
 
   // Fetch parquet data for the first wind speed when polar data is loaded (only on initial load)
   useEffect(() => {
