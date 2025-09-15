@@ -27,6 +27,7 @@ const ViewSettings = ({
         windSpeeds={windSpeeds}
         selectedWindSpeeds={selectedWindSpeeds}
         onSelectWindSpeed={onSelectWindSpeed}
+        vertical={true}
       />
     </Paper>
   );
