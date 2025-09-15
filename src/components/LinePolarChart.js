@@ -19,7 +19,6 @@ const LinePolarChart = ({
 }) => {
   const dispatch = useDispatch();
   const { rawData: parquetData } = useSelector((state) => state.parquetData);
-  const selectedWindSpeeds = useSelector(selectSelectedWindSpeeds);
   const polarData = useSelector(selectPolarData);
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
