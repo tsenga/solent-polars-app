@@ -456,17 +456,15 @@ function AppContent() {
             <Box
               sx={{
                 position: 'absolute',
-                top: 0,
-                left: 0,
+                top: 10,
+                left: 10,
                 zIndex: 10,
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(5px)',
                 border: '1px solid rgba(0, 0, 0, 0.1)',
                 borderRadius: 2,
-                p: 2,
-                m: 2,
-                minWidth: 300,
-                maxWidth: 400,
+                p: 1,
+                width: 'fit-content',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
               }}
             >

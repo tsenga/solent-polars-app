@@ -10,18 +10,33 @@ const ViewSettings = ({
   onPlotAbsoluteTwaChange
 }) => {
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>      
-      <Box sx={{ mb: 2 }}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={plotAbsoluteTwa}
-              onChange={(e) => onPlotAbsoluteTwaChange(e.target.checked)}
-            />
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      gap: 1,
+      width: 'fit-content',
+      minWidth: 'fit-content'
+    }}>
+      <Typography variant="subtitle2" sx={{ fontSize: '0.875rem', fontWeight: 600, mb: 0.5 }}>
+        View Settings
+      </Typography>
+      
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={plotAbsoluteTwa}
+            onChange={(e) => onPlotAbsoluteTwaChange(e.target.checked)}
+            size="small"
+          />
+        }
+        label="Plot absolute TWA"
+        sx={{ 
+          mb: 1,
+          '& .MuiFormControlLabel-label': {
+            fontSize: '0.75rem'
           }
-          label="Plot absolute TWA"
-        />
-      </Box>
+        }}
+      />
       
       <WindSpeedSelector 
         windSpeeds={windSpeeds}
@@ -29,7 +44,7 @@ const ViewSettings = ({
         onSelectWindSpeed={onSelectWindSpeed}
         vertical={true}
       />
-    </Paper>
+    </Box>
   );
 };
 
