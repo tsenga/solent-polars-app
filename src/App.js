@@ -451,18 +451,37 @@ function AppContent() {
         );
       case 2: // View Settings
         return (
-          <Box>
-            <ViewSettings 
-              windSpeeds={polarData.map(data => data.windSpeed)}
-              selectedWindSpeeds={selectedWindSpeeds}
-              onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
-              plotAbsoluteTwa={plotAbsoluteTwa}
-              onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
-            />
+          <Box sx={{ position: 'relative', height: '100vh' }}>
+            {/* Overlaid ViewSettings on the left */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: 10,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(5px)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                borderRadius: 2,
+                p: 2,
+                m: 2,
+                minWidth: 300,
+                maxWidth: 400,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <ViewSettings 
+                windSpeeds={polarData.map(data => data.windSpeed)}
+                selectedWindSpeeds={selectedWindSpeeds}
+                onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
+                plotAbsoluteTwa={plotAbsoluteTwa}
+                onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
+              />
+            </Box>
             
-            {/* Two Column Layout for Charts */}
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              <Grid item xs={12} md={8}>
+            {/* Full-width Layout for Charts */}
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={7}>
                 <LinePolarChart 
                   editingWindSpeed={editingWindSpeed}
                   plotAbsoluteTwa={plotAbsoluteTwa}
@@ -477,7 +496,7 @@ function AppContent() {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={5}>
                 <PolarDataTable 
                   data={selectedData.angles}
                   windSpeed={editingWindSpeed}
