@@ -451,32 +451,7 @@ function AppContent() {
         );
       case 2: // View Settings
         return (
-          <Box sx={{ position: 'relative', height: '100vh' }}>
-            {/* Overlaid ViewSettings on the left */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 10,
-                left: 10,
-                zIndex: 10,
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(5px)',
-                border: '1px solid rgba(0, 0, 0, 0.1)',
-                borderRadius: 2,
-                p: 1,
-                width: 'fit-content',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              <ViewSettings 
-                windSpeeds={polarData.map(data => data.windSpeed)}
-                selectedWindSpeeds={selectedWindSpeeds}
-                onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
-                plotAbsoluteTwa={plotAbsoluteTwa}
-                onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
-              />
-            </Box>
-            
+          <Box>
             {/* Full-width Layout for Charts */}
             <Grid container spacing={3}>
               <Grid item xs={12} md={7}>
@@ -495,23 +470,46 @@ function AppContent() {
                 />
               </Grid>
               <Grid item xs={12} md={5}>
-                <PolarDataTable 
-                  data={selectedData.angles}
-                  windSpeed={editingWindSpeed}
-                  availableWindSpeeds={polarWindSpeeds}
-                  onChangeWindSpeed={(newWindSpeed) => {
-                    dispatch(updateEditingWindSpeed(newWindSpeed));
-                    // If the new wind speed is not in the selected wind speeds, add it
-                    if (!selectedWindSpeeds.includes(newWindSpeed)) {
-                      dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
-                    }
-                  }}
-                  onUpdateBoatSpeed={handleUpdateBoatSpeed}
-                  onAddAngleEntry={handleAddAngleEntry}
-                  onDeleteAngleEntry={handleDeleteAngleEntry}
-                  onAddWindSpeed={handleAddWindSpeed}
-                  onDeleteWindSpeed={handleDeleteWindSpeed}
-                />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <PolarDataTable 
+                    data={selectedData.angles}
+                    windSpeed={editingWindSpeed}
+                    availableWindSpeeds={polarWindSpeeds}
+                    onChangeWindSpeed={(newWindSpeed) => {
+                      dispatch(updateEditingWindSpeed(newWindSpeed));
+                      // If the new wind speed is not in the selected wind speeds, add it
+                      if (!selectedWindSpeeds.includes(newWindSpeed)) {
+                        dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
+                      }
+                    }}
+                    onUpdateBoatSpeed={handleUpdateBoatSpeed}
+                    onAddAngleEntry={handleAddAngleEntry}
+                    onDeleteAngleEntry={handleDeleteAngleEntry}
+                    onAddWindSpeed={handleAddWindSpeed}
+                    onDeleteWindSpeed={handleDeleteWindSpeed}
+                  />
+                  
+                  {/* ViewSettings positioned below the table */}
+                  <Box
+                    sx={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(5px)',
+                      border: '1px solid rgba(0, 0, 0, 0.1)',
+                      borderRadius: 2,
+                      p: 1,
+                      width: 'fit-content',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    <ViewSettings 
+                      windSpeeds={polarData.map(data => data.windSpeed)}
+                      selectedWindSpeeds={selectedWindSpeeds}
+                      onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
+                      plotAbsoluteTwa={plotAbsoluteTwa}
+                      onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
+                    />
+                  </Box>
+                </Box>
               </Grid>
             </Grid>
           </Box>
