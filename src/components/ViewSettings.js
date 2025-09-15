@@ -10,11 +10,7 @@ const ViewSettings = ({
   onPlotAbsoluteTwaChange
 }) => {
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        View Settings
-      </Typography>
-      
+    <Paper sx={{ p: 2, mb: 2 }}>      
       <Box sx={{ mb: 2 }}>
         <FormControlLabel
           control={
