@@ -520,19 +520,19 @@ function AppContent() {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            p: 1,
             ml: '80px', // Fixed margin for drawer width
             transition: 'margin-left 0.3s ease',
           }}
         >
-          <Box component="header" sx={{ mb: 3, textAlign: 'center' }}>
+          <Box component="header" sx={{ mb: 2, textAlign: 'center' }}>
             <Typography variant="h3" component="h1" gutterBottom>
               Polar Optimiser
             </Typography>
           </Box>
           
           {/* Tab Content */}
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 1 }}>
             {renderTabContent()}
           </Box>
         </Box>
