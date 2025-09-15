@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './App.css';
-import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Tabs, Tab, Grid } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Container, Typography, Box, Grid } from '@mui/material';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from './store';
 import { setFilteredData, setDisplayedData, setEditingWindSpeed as setEditingWindSpeedAction, updateEditingWindSpeed } from './store/parquetDataSlice';
@@ -23,6 +23,7 @@ import FileSelector from './components/FileSelector';
 import DataSourceSelection from './components/DataSourceSelection';
 import ViewSettings from './components/ViewSettings';
 import RaceDetailsManager from './components/RaceDetailsManager';
+import NavigationDrawer from './components/NavigationDrawer';
 
 
 // Helper function to interpolate boat speed between two anchor points
@@ -129,6 +130,7 @@ function AppContent() {
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [isEditingWindSpeedInitialized, setIsEditingWindSpeedInitialized] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   
   // Apply TWS band filtering in the browser
   const applyTwsBandFiltering = (data, twsBands) => {
@@ -467,70 +469,72 @@ function AppContent() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="xl" sx={{ py: 2 }}>
-        <Box component="header" sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Polar Optimiser
-          </Typography>
-        </Box>
-        
-        {/* Tabbed Interface */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Tabs value={activeTab < 3 ? activeTab : false} onChange={(event, newValue) => setActiveTab(newValue)}>
-              <Tab label="Polar Files" />
-              <Tab label="Data Source" />
-              <Tab label="View Settings" />
-            </Tabs>
-            <Tabs value={activeTab === 3 ? 3 : false} onChange={(event, newValue) => setActiveTab(newValue)}>
-              <Tab label="Race Details" value={3} />
-            </Tabs>
-          </Box>
-        </Box>
-        
-        {/* Tab Content Row */}
-        <Box sx={{ mb: 3 }}>
+      <Box sx={{ display: 'flex' }}>
+        {/* Vertical Navigation Drawer */}
+        <NavigationDrawer
+          isOpen={drawerOpen}
+          onToggle={() => setDrawerOpen(!drawerOpen)}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        >
           {renderTabContent()}
-        </Box>
+        </NavigationDrawer>
         
-        {/* Two Column Layout for Charts */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
-            <LinePolarChart 
-              editingWindSpeed={editingWindSpeed}
-              plotAbsoluteTwa={plotAbsoluteTwa}
-              onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
-                // Only update if the wind speed matches the current editing wind speed
-                if (windSpeed !== editingWindSpeed) {
-                  console.warn('Attempted to update anchor point for non-editing wind speed:', windSpeed, 'vs', editingWindSpeed);
-                  return;
-                }
-                
-                dispatch(updateAnchorPoint({ windSpeed, oldAngle, newAngle, newSpeed }));
-              }}
-            />
+        {/* Main Content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            ml: drawerOpen ? 0 : '80px', // Account for collapsed drawer width
+            transition: 'margin-left 0.3s ease',
+          }}
+        >
+          <Box component="header" sx={{ mb: 3, textAlign: 'center' }}>
+            <Typography variant="h3" component="h1" gutterBottom>
+              Polar Optimiser
+            </Typography>
+          </Box>
+          
+          {/* Two Column Layout for Charts */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <LinePolarChart 
+                editingWindSpeed={editingWindSpeed}
+                plotAbsoluteTwa={plotAbsoluteTwa}
+                onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                  // Only update if the wind speed matches the current editing wind speed
+                  if (windSpeed !== editingWindSpeed) {
+                    console.warn('Attempted to update anchor point for non-editing wind speed:', windSpeed, 'vs', editingWindSpeed);
+                    return;
+                  }
+                  
+                  dispatch(updateAnchorPoint({ windSpeed, oldAngle, newAngle, newSpeed }));
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <PolarDataTable 
+                data={selectedData.angles}
+                windSpeed={editingWindSpeed}
+                availableWindSpeeds={polarWindSpeeds}
+                onChangeWindSpeed={(newWindSpeed) => {
+                  dispatch(updateEditingWindSpeed(newWindSpeed));
+                  // If the new wind speed is not in the selected wind speeds, add it
+                  if (!selectedWindSpeeds.includes(newWindSpeed)) {
+                    dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
+                  }
+                }}
+                onUpdateBoatSpeed={handleUpdateBoatSpeed}
+                onAddAngleEntry={handleAddAngleEntry}
+                onDeleteAngleEntry={handleDeleteAngleEntry}
+                onAddWindSpeed={handleAddWindSpeed}
+                onDeleteWindSpeed={handleDeleteWindSpeed}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <PolarDataTable 
-              data={selectedData.angles}
-              windSpeed={editingWindSpeed}
-              availableWindSpeeds={polarWindSpeeds}
-              onChangeWindSpeed={(newWindSpeed) => {
-                dispatch(updateEditingWindSpeed(newWindSpeed));
-                // If the new wind speed is not in the selected wind speeds, add it
-                if (!selectedWindSpeeds.includes(newWindSpeed)) {
-                  dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
-                }
-              }}
-              onUpdateBoatSpeed={handleUpdateBoatSpeed}
-              onAddAngleEntry={handleAddAngleEntry}
-              onDeleteAngleEntry={handleDeleteAngleEntry}
-              onAddWindSpeed={handleAddWindSpeed}
-              onDeleteWindSpeed={handleDeleteWindSpeed}
-            />
-          </Grid>
-        </Grid>
-      </Container>
+        </Box>
+      </Box>
     </ThemeProvider>
   );
 }

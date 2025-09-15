@@ -13,36 +13,42 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  DataUsage as DataSourceIcon,
   InsertDriveFile as FileIcon,
-  Settings as SettingsIcon,
+  DataUsage as DataSourceIcon,
+  Visibility as ViewIcon,
+  EmojiEvents as RaceIcon,
   ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
 
 const NavigationDrawer = ({ 
   isOpen, 
   onToggle, 
-  activeSection, 
-  onSectionChange,
+  activeTab, 
+  onTabChange,
   children 
 }) => {
-  const drawerWidth = 600;
+  const drawerWidth = 80; // Narrower for icon-only display
 
   const menuItems = [
     {
-      id: 'dataSource',
-      label: 'Data Source Selection',
-      icon: <DataSourceIcon />
-    },
-    {
-      id: 'files',
-      label: 'Polar Data Files',
+      id: 0,
+      label: 'Polar Files',
       icon: <FileIcon />
     },
     {
-      id: 'raceDetails',
+      id: 1,
+      label: 'Data Source',
+      icon: <DataSourceIcon />
+    },
+    {
+      id: 2,
+      label: 'View Settings',
+      icon: <ViewIcon />
+    },
+    {
+      id: 3,
       label: 'Race Details',
-      icon: <SettingsIcon />
+      icon: <RaceIcon />
     }
   ];
 
@@ -98,9 +104,12 @@ const NavigationDrawer = ({
             {menuItems.map((item) => (
               <ListItem key={item.id} disablePadding>
                 <ListItemButton
-                  selected={activeSection === item.id}
-                  onClick={() => onSectionChange(item.id)}
+                  selected={activeTab === item.id}
+                  onClick={() => onTabChange(item.id)}
                   sx={{
+                    minHeight: 64,
+                    justifyContent: 'center',
+                    px: 1,
                     '&.Mui-selected': {
                       backgroundColor: 'primary.light',
                       '&:hover': {
@@ -108,26 +117,22 @@ const NavigationDrawer = ({
                       },
                     },
                   }}
+                  title={item.label}
                 >
                   <ListItemIcon
                     sx={{
-                      color: activeSection === item.id ? 'primary.main' : 'inherit',
+                      minWidth: 0,
+                      justifyContent: 'center',
+                      color: activeTab === item.id ? 'primary.main' : 'inherit',
                     }}
                   >
                     {item.icon}
                   </ListItemIcon>
-                  <ListItemText primary={item.label} />
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
           
-          <Divider />
-          
-          {/* Content Area */}
-          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-            {children}
-          </Box>
         </Box>
       </Drawer>
     </>
