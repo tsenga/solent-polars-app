@@ -451,13 +451,53 @@ function AppContent() {
         );
       case 2: // View Settings
         return (
-          <ViewSettings 
-            windSpeeds={polarData.map(data => data.windSpeed)}
-            selectedWindSpeeds={selectedWindSpeeds}
-            onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
-            plotAbsoluteTwa={plotAbsoluteTwa}
-            onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
-          />
+          <Box>
+            <ViewSettings 
+              windSpeeds={polarData.map(data => data.windSpeed)}
+              selectedWindSpeeds={selectedWindSpeeds}
+              onSelectWindSpeed={(newSelectedWindSpeeds) => dispatch(setSelectedWindSpeeds(newSelectedWindSpeeds))}
+              plotAbsoluteTwa={plotAbsoluteTwa}
+              onPlotAbsoluteTwaChange={setPlotAbsoluteTwa}
+            />
+            
+            {/* Two Column Layout for Charts */}
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              <Grid item xs={12} md={8}>
+                <LinePolarChart 
+                  editingWindSpeed={editingWindSpeed}
+                  plotAbsoluteTwa={plotAbsoluteTwa}
+                  onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
+                    // Only update if the wind speed matches the current editing wind speed
+                    if (windSpeed !== editingWindSpeed) {
+                      console.warn('Attempted to update anchor point for non-editing wind speed:', windSpeed, 'vs', editingWindSpeed);
+                      return;
+                    }
+                    
+                    dispatch(updateAnchorPoint({ windSpeed, oldAngle, newAngle, newSpeed }));
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <PolarDataTable 
+                  data={selectedData.angles}
+                  windSpeed={editingWindSpeed}
+                  availableWindSpeeds={polarWindSpeeds}
+                  onChangeWindSpeed={(newWindSpeed) => {
+                    dispatch(updateEditingWindSpeed(newWindSpeed));
+                    // If the new wind speed is not in the selected wind speeds, add it
+                    if (!selectedWindSpeeds.includes(newWindSpeed)) {
+                      dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
+                    }
+                  }}
+                  onUpdateBoatSpeed={handleUpdateBoatSpeed}
+                  onAddAngleEntry={handleAddAngleEntry}
+                  onDeleteAngleEntry={handleDeleteAngleEntry}
+                  onAddWindSpeed={handleAddWindSpeed}
+                  onDeleteWindSpeed={handleDeleteWindSpeed}
+                />
+              </Grid>
+            </Grid>
+          </Box>
         );
       case 3: // Race Details
         return <RaceDetailsManager />;
@@ -495,44 +535,6 @@ function AppContent() {
               Polar Optimiser
             </Typography>
           </Box>
-          
-          {/* Two Column Layout for Charts */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
-              <LinePolarChart 
-                editingWindSpeed={editingWindSpeed}
-                plotAbsoluteTwa={plotAbsoluteTwa}
-                onUpdateAnchorPoint={(windSpeed, oldAngle, newAngle, newSpeed) => {
-                  // Only update if the wind speed matches the current editing wind speed
-                  if (windSpeed !== editingWindSpeed) {
-                    console.warn('Attempted to update anchor point for non-editing wind speed:', windSpeed, 'vs', editingWindSpeed);
-                    return;
-                  }
-                  
-                  dispatch(updateAnchorPoint({ windSpeed, oldAngle, newAngle, newSpeed }));
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <PolarDataTable 
-                data={selectedData.angles}
-                windSpeed={editingWindSpeed}
-                availableWindSpeeds={polarWindSpeeds}
-                onChangeWindSpeed={(newWindSpeed) => {
-                  dispatch(updateEditingWindSpeed(newWindSpeed));
-                  // If the new wind speed is not in the selected wind speeds, add it
-                  if (!selectedWindSpeeds.includes(newWindSpeed)) {
-                    dispatch(setSelectedWindSpeeds([...selectedWindSpeeds, newWindSpeed]));
-                  }
-                }}
-                onUpdateBoatSpeed={handleUpdateBoatSpeed}
-                onAddAngleEntry={handleAddAngleEntry}
-                onDeleteAngleEntry={handleDeleteAngleEntry}
-                onAddWindSpeed={handleAddWindSpeed}
-                onDeleteWindSpeed={handleDeleteWindSpeed}
-              />
-            </Grid>
-          </Grid>
         </Box>
       </Box>
     </ThemeProvider>
