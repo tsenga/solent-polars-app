@@ -516,9 +516,7 @@ function AppContent() {
           onToggle={() => setDrawerOpen(!drawerOpen)}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-        >
-          {renderTabContent()}
-        </NavigationDrawer>
+        />
         
         {/* Main Content */}
         <Box
@@ -526,7 +524,7 @@ function AppContent() {
           sx={{
             flexGrow: 1,
             p: 3,
-            ml: drawerOpen ? 0 : '80px', // Account for collapsed drawer width
+            ml: drawerOpen ? '80px' : '80px', // Always account for drawer width
             transition: 'margin-left 0.3s ease',
           }}
         >
@@ -534,6 +532,11 @@ function AppContent() {
             <Typography variant="h3" component="h1" gutterBottom>
               Polar Optimiser
             </Typography>
+          </Box>
+          
+          {/* Tab Content */}
+          <Box sx={{ mt: 2 }}>
+            {renderTabContent()}
           </Box>
         </Box>
       </Box>

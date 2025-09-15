@@ -27,7 +27,7 @@ const NavigationDrawer = ({
   onTabChange,
   children 
 }) => {
-  const drawerWidth = 600; // Wider to accommodate content
+  const drawerWidth = 80; // Narrow for icon-only display
 
   const menuItems = [
     {
@@ -133,12 +133,6 @@ const NavigationDrawer = ({
             ))}
           </List>
           
-          <Divider />
-          
-          {/* Content Area */}
-          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-            {children}
-          </Box>
         </Box>
       </Drawer>
     </>
