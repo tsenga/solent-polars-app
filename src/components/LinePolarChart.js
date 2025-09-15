@@ -3,11 +3,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectSelectedWindSpeeds, selectPolarData } from '../store/polarDataSlice';
 import * as d3 from 'd3';
 import './LinePolarChart.css';
+import ViewSettings from './ViewSettings';
 
 // Define colors array outside the component for consistency
 const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
 
-const LinePolarChart = ({ editingWindSpeed, plotAbsoluteTwa = true, onUpdateAnchorPoint }) => {
+const LinePolarChart = ({ 
+  editingWindSpeed, 
+  plotAbsoluteTwa = true, 
+  onUpdateAnchorPoint,
+  windSpeeds,
+  selectedWindSpeeds,
+  onSelectWindSpeed,
+  onPlotAbsoluteTwaChange
+}) => {
   const dispatch = useDispatch();
   const { rawData: parquetData } = useSelector((state) => state.parquetData);
   const selectedWindSpeeds = useSelector(selectSelectedWindSpeeds);
@@ -505,9 +514,35 @@ const LinePolarChart = ({ editingWindSpeed, plotAbsoluteTwa = true, onUpdateAnch
   return (
     <div className="line-polar-chart" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
       <h2>Polar Chart for Selected Wind Speeds</h2>
-      <div className="chart-container" style={{ width: '90%', aspectRatio: '1' }}>
+      <div className="chart-container" style={{ width: '90%', aspectRatio: '1', position: 'relative' }}>
         <svg ref={svgRef} width="100%" height="100%"></svg>
         <div ref={tooltipRef} className="tooltip"></div>
+        
+        {/* ViewSettings positioned below histogram */}
+        {windSpeeds && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '140px', // Position below the histogram (histogram height + margin)
+              left: '20px', // Align with histogram left edge
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(5px)',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              borderRadius: '8px',
+              padding: '8px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              zIndex: 10,
+            }}
+          >
+            <ViewSettings 
+              windSpeeds={windSpeeds}
+              selectedWindSpeeds={selectedWindSpeeds}
+              onSelectWindSpeed={onSelectWindSpeed}
+              plotAbsoluteTwa={plotAbsoluteTwa}
+              onPlotAbsoluteTwaChange={onPlotAbsoluteTwaChange}
+            />
+          </div>
+        )}
       </div>
       {renderLegend()}
       <div className="chart-footer">
