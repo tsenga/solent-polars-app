@@ -146,7 +146,7 @@ const PolarDataTable = ({
           <TableHead>
             <TableRow>
               <TableCell>Angle (°)</TableCell>
-              <TableCell>Boat Speed (knots)</TableCell>
+              <TableCell sx={{ width: '120px' }}>BSP (knots)</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -236,7 +236,7 @@ const PolarDataTable = ({
           />
           
           <TextField
-            label="Boat Speed (kt)"
+            label="BSP (kt)"
             value={newSpeed}
             onChange={(e) => setNewSpeed(e.target.value)}
             required
