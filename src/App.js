@@ -521,7 +521,7 @@ function AppContent() {
           sx={{
             flexGrow: 1,
             p: 1,
-            ml: '80px', // Fixed margin for drawer width
+            ml: '0px', // Remove left margin
             transition: 'margin-left 0.3s ease',
           }}
         >
