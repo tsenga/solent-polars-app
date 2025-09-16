@@ -543,6 +543,29 @@ function AppContent() {
           onTabChange={setActiveTab}
         />
         
+        {/* Title Bar - spans full width */}
+        <Box 
+          component="header" 
+          sx={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 64, // Match navigation drawer icon height
+            display: 'flex',
+            alignItems: 'center',
+            px: 2,
+            backgroundColor: 'primary.main',
+            color: 'white',
+            zIndex: 1200,
+            boxShadow: 1
+          }}
+        >
+          <Typography variant="h5" component="h1" sx={{ ml: '80px' }}>
+            Polar Optimiser
+          </Typography>
+        </Box>
+
         {/* Main Content */}
         <Box
           component="main"
@@ -550,26 +573,9 @@ function AppContent() {
             flexGrow: 1,
             p: 1,
             ml: '80px', // Fixed margin for always-visible drawer
+            mt: '64px', // Account for fixed title bar height
           }}
         >
-          <Box 
-            component="header" 
-            sx={{ 
-              height: 64, // Match navigation drawer icon height
-              display: 'flex',
-              alignItems: 'center',
-              px: 2,
-              mb: 2,
-              backgroundColor: 'primary.main',
-              color: 'white',
-              borderRadius: 1
-            }}
-          >
-            <Typography variant="h6" component="h1">
-              Polar Optimiser
-            </Typography>
-          </Box>
-          
           {/* Tab Content */}
           <Box sx={{ mt: 1 }}>
             {renderTabContent()}
