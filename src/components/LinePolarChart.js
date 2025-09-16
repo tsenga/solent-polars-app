@@ -505,10 +505,10 @@ const LinePolarChart = ({
                 transition: 'border-color 0.2s ease'
               }}
               onMouseEnter={(e) => {
-                e.target.style.borderColor = isSelected ? color : '#ccc';
+                e.currentTarget.style.borderColor = isSelected ? color : '#ccc';
               }}
               onMouseLeave={(e) => {
-                e.target.style.borderColor = 'transparent';
+                e.currentTarget.style.borderColor = 'transparent';
               }}
               onClick={() => {
                 if (isSelected) {
