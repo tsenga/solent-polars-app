@@ -561,7 +561,7 @@ function AppContent() {
             boxShadow: 1
           }}
         >
-          <Typography variant="h5" component="h1" sx={{ ml: '80px' }}>
+          <Typography variant="h6" component="h1" sx={{ ml: '80px' }}>
             Polar Optimiser
           </Typography>
         </Box>

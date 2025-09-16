@@ -64,8 +64,14 @@ const NavigationDrawer = ({
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
-          <MenuIcon sx={{ color: 'primary.main' }} />
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          p: 2,
+          minHeight: 64 // Match the title bar height
+        }}>
+          <MenuIcon sx={{ color: 'primary.main', fontSize: '1.5rem' }} />
         </Box>
         <Divider />
         
