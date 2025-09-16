@@ -7,8 +7,7 @@ const ViewSettings = ({
   selectedWindSpeeds, 
   onSelectWindSpeed,
   plotAbsoluteTwa,
-  onPlotAbsoluteTwaChange,
-  onDownloadPolarFile
+  onPlotAbsoluteTwaChange
 }) => {
   return (
     <Box sx={{ 
@@ -39,15 +38,6 @@ const ViewSettings = ({
         }}
       />
       
-      <Button 
-        variant="contained"
-        color="success"
-        onClick={onDownloadPolarFile}
-        size="small"
-        sx={{ mt: 1, width: 'fit-content' }}
-      >
-        Download
-      </Button>
     </Box>
   );
 };
