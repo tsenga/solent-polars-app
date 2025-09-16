@@ -330,9 +330,6 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
 
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ mb: 1, fontSize: '1rem' }}>
-          Polar Preview
-        </Typography>
         <svg ref={previewSvgRef} style={{ border: '1px solid #ddd', borderRadius: '4px' }}></svg>
       </Box>
     );
@@ -346,7 +343,7 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
         
         <Grid container spacing={2}>
           {/* Left side - File selection */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               <Button 
                 variant="contained"
@@ -440,7 +437,7 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
           </Grid>
           
           {/* Right side - Polar preview */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={8}>
             {previewData ? (
               <PolarPreview data={previewData} />
             ) : (
@@ -448,13 +445,13 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                height: 300,
+                height: 340,
                 border: '1px dashed #ddd',
                 borderRadius: 1,
                 color: 'text.secondary'
               }}>
-                <Typography variant="body2">
-                  Select a file to preview polar data
+                <Typography variant="h6" sx={{ fontSize: '1rem' }}>
+                  Polar Preview
                 </Typography>
               </Box>
             )}
