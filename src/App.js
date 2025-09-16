@@ -552,8 +552,20 @@ function AppContent() {
             ml: '80px', // Fixed margin for always-visible drawer
           }}
         >
-          <Box component="header" sx={{ mb: 2, textAlign: 'center' }}>
-            <Typography variant="h3" component="h1" gutterBottom>
+          <Box 
+            component="header" 
+            sx={{ 
+              height: 64, // Match navigation drawer icon height
+              display: 'flex',
+              alignItems: 'center',
+              px: 2,
+              mb: 2,
+              backgroundColor: 'primary.main',
+              color: 'white',
+              borderRadius: 1
+            }}
+          >
+            <Typography variant="h6" component="h1">
               Polar Optimiser
             </Typography>
           </Box>
