@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, FormControlLabel, Checkbox } from '@mui/material';
+import { Box, Typography, Paper, FormControlLabel, Checkbox, Button } from '@mui/material';
 import WindSpeedSelector from './WindSpeedSelector';
 
 const ViewSettings = ({ 
@@ -7,7 +7,8 @@ const ViewSettings = ({
   selectedWindSpeeds, 
   onSelectWindSpeed,
   plotAbsoluteTwa,
-  onPlotAbsoluteTwaChange
+  onPlotAbsoluteTwaChange,
+  onDownloadPolarFile
 }) => {
   return (
     <Box sx={{ 
@@ -44,6 +45,16 @@ const ViewSettings = ({
         onSelectWindSpeed={onSelectWindSpeed}
         vertical={true}
       />
+      
+      <Button 
+        variant="contained"
+        color="success"
+        onClick={onDownloadPolarFile}
+        size="small"
+        sx={{ mt: 1, width: 'fit-content' }}
+      >
+        Download
+      </Button>
     </Box>
   );
 };

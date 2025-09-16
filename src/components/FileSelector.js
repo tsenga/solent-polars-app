@@ -344,31 +344,20 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
         <Grid container spacing={2}>
           {/* Left side - File selection */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            {/* File List */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="h6">
+                Available Files
+              </Typography>
               <Button 
                 variant="contained"
                 onClick={handleLoadFile}
                 disabled={!selectedFile || loading}
-                sx={{ minWidth: '100px' }}
+                size="small"
               >
                 Load
               </Button>
-              
-              <Button 
-                variant="contained"
-                color="success"
-                onClick={() => onDownloadPolarFile()}
-                title="Download current data as a polar file"
-                sx={{ minWidth: '100px' }}
-              >
-                Download
-              </Button>
             </Box>
-            
-            {/* File List */}
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Available Files
-            </Typography>
             <Paper variant="outlined" sx={{ maxHeight: 200, overflow: 'auto', mb: 2 }}>
               <List dense>
                 {files.length === 0 ? (
@@ -438,23 +427,25 @@ const FileSelector = ({ onFileLoad, onDownloadPolarFile }) => {
           
           {/* Right side - Polar preview */}
           <Grid item xs={12} md={8}>
-            {previewData ? (
-              <PolarPreview data={previewData} />
-            ) : (
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                height: 340,
-                border: '1px dashed #ddd',
-                borderRadius: 1,
-                color: 'text.secondary'
-              }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: 300,
+              width: 300,
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              color: 'text.secondary',
+              bgcolor: 'background.paper'
+            }}>
+              {previewData ? (
+                <PolarPreview data={previewData} />
+              ) : (
                 <Typography variant="h6" sx={{ fontSize: '1rem' }}>
                   Polar Preview
                 </Typography>
-              </Box>
-            )}
+              )}
+            </Box>
           </Grid>
         </Grid>
       </Box>

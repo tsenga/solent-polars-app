@@ -15,7 +15,8 @@ const LinePolarChart = ({
   windSpeeds,
   selectedWindSpeeds,
   onSelectWindSpeed,
-  onPlotAbsoluteTwaChange
+  onPlotAbsoluteTwaChange,
+  onDownloadPolarFile
 }) => {
   const dispatch = useDispatch();
   const { rawData: parquetData } = useSelector((state) => state.parquetData);
@@ -539,6 +540,7 @@ const LinePolarChart = ({
               onSelectWindSpeed={onSelectWindSpeed}
               plotAbsoluteTwa={plotAbsoluteTwa}
               onPlotAbsoluteTwaChange={onPlotAbsoluteTwaChange}
+              onDownloadPolarFile={onDownloadPolarFile}
             />
           </div>
         )}
