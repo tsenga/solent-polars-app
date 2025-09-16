@@ -90,9 +90,7 @@ const NavigationDrawer = ({
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-            <Typography variant="h6" component="div">
-              Navigation
-            </Typography>
+            <MenuIcon sx={{ color: 'primary.main' }} />
             <IconButton onClick={onToggle}>
               <ChevronLeftIcon />
             </IconButton>
