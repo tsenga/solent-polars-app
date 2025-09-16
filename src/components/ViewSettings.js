@@ -39,13 +39,6 @@ const ViewSettings = ({
         }}
       />
       
-      <WindSpeedSelector 
-        windSpeeds={windSpeeds}
-        selectedWindSpeeds={selectedWindSpeeds}
-        onSelectWindSpeed={onSelectWindSpeed}
-        vertical={true}
-      />
-      
       <Button 
         variant="contained"
         color="success"

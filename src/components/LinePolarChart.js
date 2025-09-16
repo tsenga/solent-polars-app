@@ -484,23 +484,44 @@ const LinePolarChart = ({
     
   }, [selectedData, editingWindSpeed, filteredParquetData, plotAbsoluteTwa, onUpdateAnchorPoint]);
 
-  // Create a legend for the wind speeds
+  // Create an interactive legend for all wind speeds
   const renderLegend = () => {
     return (
       <div className="chart-legend">
-        {selectedData.map((windData, index) => {
+        {polarData.map((windData, index) => {
           const isBeingEdited = windData.windSpeed === editingWindSpeed;
+          const isSelected = selectedWindSpeeds.includes(windData.windSpeed);
           const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
           
           return (
-            <div key={windData.windSpeed} className="legend-item">
+            <div 
+              key={windData.windSpeed} 
+              className="legend-item"
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                if (isSelected) {
+                  // Don't allow deselecting if it's the only selected wind speed
+                  if (selectedWindSpeeds.length > 1) {
+                    onSelectWindSpeed(selectedWindSpeeds.filter(ws => ws !== windData.windSpeed));
+                  }
+                } else {
+                  onSelectWindSpeed([...selectedWindSpeeds, windData.windSpeed]);
+                }
+              }}
+            >
               <span 
                 className="legend-color" 
-                style={{ backgroundColor: color }}
+                style={{ 
+                  backgroundColor: isSelected ? color : '#ccc',
+                  opacity: isSelected ? 1 : 0.5
+                }}
               ></span>
               <span 
                 className="legend-label"
-                style={{ fontWeight: isBeingEdited ? 'bold' : 'normal' }}
+                style={{ 
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  color: isSelected ? 'inherit' : '#999'
+                }}
               >
                 {windData.windSpeed} knots{isBeingEdited ? ' (editing)' : ''}
               </span>
