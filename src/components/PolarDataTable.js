@@ -7,7 +7,7 @@ import {
   MenuItem, Divider, Dialog, DialogTitle, DialogContent,
   DialogActions
 } from '@mui/material';
-import { Edit, Delete, Save, Cancel, Add } from '@mui/icons-material';
+import { Edit, Delete, Save, Cancel, Add, Download } from '@mui/icons-material';
 
 const PolarDataTable = ({ 
   data, 
@@ -103,8 +103,7 @@ const PolarDataTable = ({
   return (
     <Paper elevation={2} sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Button 
-          variant="contained"
+        <IconButton 
           color="success"
           onClick={() => {
             // Generate polar file content
@@ -123,9 +122,10 @@ const PolarDataTable = ({
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
           }}
+          title="Download polar data"
         >
-          Download
-        </Button>
+          <Download />
+        </IconButton>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel id="edit-wind-speed-label">Editing Wind Speed</InputLabel>
