@@ -69,7 +69,8 @@ const NavigationDrawer = ({
           alignItems: 'center', 
           justifyContent: 'center', 
           p: 2,
-          minHeight: 64 // Match the title bar height
+          minHeight: 64, // Match the title bar height
+          mt: '64px' // Add top margin to account for fixed title bar
         }}>
           <MenuIcon sx={{ color: 'primary.main', fontSize: '1.5rem' }} />
         </Box>
