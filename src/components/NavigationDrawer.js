@@ -21,11 +21,8 @@ import {
 } from '@mui/icons-material';
 
 const NavigationDrawer = ({ 
-  isOpen, 
-  onToggle, 
   activeTab, 
-  onTabChange,
-  children 
+  onTabChange
 }) => {
   const drawerWidth = 80; // Narrow for icon-only display
 
@@ -53,87 +50,61 @@ const NavigationDrawer = ({
   ];
 
   return (
-    <>
-      {/* Menu button when drawer is closed */}
-      {!isOpen && (
-        <IconButton
-          onClick={onToggle}
-          sx={{
-            position: 'fixed',
-            top: 16,
-            left: 16,
-            zIndex: 1200,
-            backgroundColor: 'primary.main',
-            color: 'white',
-            '&:hover': {
-              backgroundColor: 'primary.dark',
-            },
-          }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
-
-      <Drawer
-        variant="persistent"
-        anchor="left"
-        open={isOpen}
-        sx={{
+    <Drawer
+      variant="permanent"
+      anchor="left"
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
           width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-            <MenuIcon sx={{ color: 'primary.main' }} />
-            <IconButton onClick={onToggle}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Box>
-          <Divider />
-          
-          {/* Navigation Menu */}
-          <List sx={{ flexShrink: 0 }}>
-            {menuItems.map((item) => (
-              <ListItem key={item.id} disablePadding>
-                <ListItemButton
-                  selected={activeTab === item.id}
-                  onClick={() => onTabChange(item.id)}
-                  sx={{
-                    minHeight: 64,
-                    justifyContent: 'center',
-                    px: 1,
-                    '&.Mui-selected': {
-                      backgroundColor: 'primary.light',
-                      '&:hover': {
-                        backgroundColor: 'primary.light',
-                      },
-                    },
-                  }}
-                  title={item.label}
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      justifyContent: 'center',
-                      color: activeTab === item.id ? 'primary.main' : 'inherit',
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          
+          boxSizing: 'border-box',
+        },
+      }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+          <MenuIcon sx={{ color: 'primary.main' }} />
         </Box>
-      </Drawer>
-    </>
+        <Divider />
+        
+        {/* Navigation Menu */}
+        <List sx={{ flexShrink: 0 }}>
+          {menuItems.map((item) => (
+            <ListItem key={item.id} disablePadding>
+              <ListItemButton
+                selected={activeTab === item.id}
+                onClick={() => onTabChange(item.id)}
+                sx={{
+                  minHeight: 64,
+                  justifyContent: 'center',
+                  px: 1,
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.light',
+                    '&:hover': {
+                      backgroundColor: 'primary.light',
+                    },
+                  },
+                }}
+                title={item.label}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    justifyContent: 'center',
+                    color: activeTab === item.id ? 'primary.main' : 'inherit',
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        
+      </Box>
+    </Drawer>
   );
 };
 

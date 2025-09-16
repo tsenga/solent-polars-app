@@ -130,7 +130,6 @@ function AppContent() {
   const [plotAbsoluteTwa, setPlotAbsoluteTwa] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [isEditingWindSpeedInitialized, setIsEditingWindSpeedInitialized] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   
   // Apply TWS band filtering in the browser
   const applyTwsBandFiltering = (data, twsBands) => {
@@ -540,8 +539,6 @@ function AppContent() {
       <Box sx={{ display: 'flex' }}>
         {/* Vertical Navigation Drawer */}
         <NavigationDrawer
-          isOpen={drawerOpen}
-          onToggle={() => setDrawerOpen(!drawerOpen)}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
@@ -552,8 +549,7 @@ function AppContent() {
           sx={{
             flexGrow: 1,
             p: 1,
-            ml: '0px', // Remove left margin
-            transition: 'margin-left 0.3s ease',
+            ml: '80px', // Fixed margin for always-visible drawer
           }}
         >
           <Box component="header" sx={{ mb: 2, textAlign: 'center' }}>
