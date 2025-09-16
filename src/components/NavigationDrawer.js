@@ -70,9 +70,10 @@ const NavigationDrawer = ({
           justifyContent: 'center', 
           p: 2,
           minHeight: 64, // Match the title bar height
-          mt: '64px' // Add top margin to account for fixed title bar
+          backgroundColor: 'primary.main',
+          color: 'white'
         }}>
-          <MenuIcon sx={{ color: 'primary.main', fontSize: '1.5rem' }} />
+          <MenuIcon sx={{ color: 'white', fontSize: '1.5rem' }} />
         </Box>
         <Divider />
         

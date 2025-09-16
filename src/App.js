@@ -543,13 +543,13 @@ function AppContent() {
           onTabChange={setActiveTab}
         />
         
-        {/* Title Bar - spans full width */}
+        {/* Title Bar - positioned next to drawer */}
         <Box 
           component="header" 
           sx={{ 
             position: 'fixed',
             top: 0,
-            left: 0,
+            left: '80px', // Start after the drawer
             right: 0,
             height: 64, // Match navigation drawer icon height
             display: 'flex',
@@ -561,7 +561,7 @@ function AppContent() {
             boxShadow: 1
           }}
         >
-          <Typography variant="h6" component="h1" sx={{ ml: '80px' }}>
+          <Typography variant="h6" component="h1">
             Polar Optimiser
           </Typography>
         </Box>
