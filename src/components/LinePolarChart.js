@@ -497,7 +497,19 @@ const LinePolarChart = ({
             <div 
               key={windData.windSpeed} 
               className="legend-item"
-              style={{ cursor: 'pointer' }}
+              style={{ 
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: '2px solid transparent',
+                transition: 'border-color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = isSelected ? color : '#ccc';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = 'transparent';
+              }}
               onClick={() => {
                 if (isSelected) {
                   // Don't allow deselecting if it's the only selected wind speed
