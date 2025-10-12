@@ -144,7 +144,58 @@ const PolarAnalysisChart = ({
       // Sort anchor points by angle
       const sortedPoints = [...windData.anchorPoints].sort((a, b) => a.angle - b.angle);
       
-      // Draw the line
+      // Calculate first derivative (rate of change of boat speed with respect to angle)
+      const derivativePoints = [];
+      for (let i = 1; i < sortedPoints.length; i++) {
+        const prevPoint = sortedPoints[i - 1];
+        const currPoint = sortedPoints[i];
+        const deltaSpeed = currPoint.boatSpeed - prevPoint.boatSpeed;
+        const deltaAngle = currPoint.angle - prevPoint.angle;
+        const derivative = deltaAngle !== 0 ? deltaSpeed / deltaAngle : 0;
+        
+        // Use the midpoint angle for the derivative point
+        const midAngle = (prevPoint.angle + currPoint.angle) / 2;
+        derivativePoints.push({
+          angle: midAngle,
+          derivative: derivative
+        });
+      }
+      
+      // Find max absolute derivative for scaling
+      const maxDerivative = Math.max(...derivativePoints.map(d => Math.abs(d.derivative)));
+      
+      // Create a separate scale for the derivative (right y-axis)
+      const derivativeScale = d3.scaleLinear()
+        .domain([-maxDerivative, maxDerivative])
+        .range([innerHeight, 0]);
+      
+      // Add right y-axis for derivative
+      const rightAxis = d3.axisRight(derivativeScale)
+        .tickFormat(d => `${d.toFixed(2)}`);
+      
+      g.append('g')
+        .attr('class', 'derivative-y-axis')
+        .attr('transform', `translate(${innerWidth}, 0)`)
+        .call(rightAxis);
+      
+      // Add right y-axis label
+      g.append('text')
+        .attr('class', 'derivative-y-axis-label')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -innerHeight / 2)
+        .attr('y', innerWidth + 40)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .style('fill', '#0066cc')
+        .text('dBSP/dAngle (knots/degree)');
+      
+      // Create line generator for derivative
+      const derivativeLineGenerator = d3.line()
+        .x(d => xScale(d.angle))
+        .y(d => derivativeScale(d.derivative))
+        .curve(d3.curveCardinal);
+      
+      // Draw the main polar line
       g.append('path')
         .datum(sortedPoints)
         .attr('class', 'line')
@@ -152,6 +203,46 @@ const PolarAnalysisChart = ({
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', 3);
+      
+      // Draw the derivative line
+      if (derivativePoints.length > 0) {
+        g.append('path')
+          .datum(derivativePoints)
+          .attr('class', 'derivative-line')
+          .attr('d', derivativeLineGenerator)
+          .attr('fill', 'none')
+          .attr('stroke', '#0066cc')
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', '5,5');
+        
+        // Add dots for derivative points
+        g.selectAll('.derivative-dot')
+          .data(derivativePoints)
+          .enter()
+          .append('circle')
+          .attr('class', 'derivative-dot')
+          .attr('cx', d => xScale(d.angle))
+          .attr('cy', d => derivativeScale(d.derivative))
+          .attr('r', 3)
+          .attr('fill', '#0066cc')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 1)
+          .on('mouseover', function(event, d) {
+            d3.select(this).attr('r', 5);
+            
+            tooltip
+              .style('visibility', 'visible')
+              .html(`<strong>Angle:</strong> ${d.angle.toFixed(1)}°<br>
+                     <strong>Derivative:</strong> ${d.derivative.toFixed(3)} knots/degree<br>
+                     <strong>Wind Speed:</strong> ${windData.windSpeed} knots (derivative)`)
+              .style('left', `${event.pageX + 10}px`)
+              .style('top', `${event.pageY - 28}px`);
+          })
+          .on('mouseout', function() {
+            d3.select(this).attr('r', 3);
+            tooltip.style('visibility', 'hidden');
+          });
+      }
       
       // Add dots for anchor points
       g.selectAll(`.dot-${windData.windSpeed}`)
@@ -184,12 +275,12 @@ const PolarAnalysisChart = ({
     
   }, [selectedData, editingWindSpeed]);
 
-  // Simple legend showing only the editing wind speed
+  // Simple legend showing only the editing wind speed and derivative
   const renderLegend = () => {
     if (!editingWindSpeed) return null;
     
     return (
-      <div className="chart-legend" style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+      <div className="chart-legend" style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
         <div 
           className="legend-item"
           style={{ 
@@ -219,7 +310,40 @@ const PolarAnalysisChart = ({
               fontSize: '12px'
             }}
           >
-            {editingWindSpeed} knots (editing)
+            {editingWindSpeed} knots (BSP)
+          </span>
+        </div>
+        
+        <div 
+          className="legend-item"
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '2px solid #0066cc',
+            margin: '2px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <span 
+            className="legend-color" 
+            style={{ 
+              display: 'inline-block',
+              width: '12px',
+              height: '2px',
+              backgroundColor: '#0066cc',
+              marginRight: '6px',
+              borderRadius: '1px'
+            }}
+          ></span>
+          <span 
+            className="legend-label"
+            style={{ 
+              fontWeight: 'bold',
+              fontSize: '12px'
+            }}
+          >
+            Derivative (dBSP/dAngle)
           </span>
         </div>
       </div>
