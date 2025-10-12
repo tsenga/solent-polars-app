@@ -1,0 +1,268 @@
+import React, { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { selectSelectedWindSpeeds, selectPolarData } from '../store/polarDataSlice';
+import * as d3 from 'd3';
+
+// Define colors array for consistency with LinePolarChart
+const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
+
+const PolarAnalysisChart = ({ 
+  editingWindSpeed, 
+  selectedWindSpeeds,
+  onSelectWindSpeed
+}) => {
+  const polarData = useSelector(selectPolarData);
+  const svgRef = useRef(null);
+  const tooltipRef = useRef(null);
+
+  // Find all data for selected wind speeds
+  const selectedData = polarData.filter(data => 
+    selectedWindSpeeds.includes(data.windSpeed)
+  );
+
+  useEffect(() => {
+    if (!selectedData.length) return;
+
+    // Clear previous chart
+    d3.select(svgRef.current).selectAll('*').remove();
+
+    // Set up dimensions
+    const width = svgRef.current.clientWidth;
+    const height = svgRef.current.clientHeight;
+    const margin = { top: 20, right: 50, bottom: 50, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
+    // Create SVG
+    const svg = d3.select(svgRef.current)
+      .attr('width', width)
+      .attr('height', height);
+
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    
+    // Find max boat speed for scaling
+    const maxBoatSpeed = d3.max(selectedData, windData => 
+      d3.max(windData.anchorPoints, d => d.boatSpeed)
+    ) || 10;
+    
+    // Create scales
+    const xScale = d3.scaleLinear()
+      .domain([0, 180])
+      .range([0, innerWidth]);
+    
+    const yScale = d3.scaleLinear()
+      .domain([0, Math.ceil(maxBoatSpeed)])
+      .range([innerHeight, 0]);
+    
+    // Create axes
+    const xAxis = d3.axisBottom(xScale)
+      .tickValues([0, 30, 60, 90, 120, 150, 180])
+      .tickFormat(d => `${d}°`);
+    
+    const yAxis = d3.axisLeft(yScale)
+      .tickFormat(d => `${d} kts`);
+    
+    // Add axes
+    g.append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0, ${innerHeight})`)
+      .call(xAxis);
+    
+    g.append('g')
+      .attr('class', 'y-axis')
+      .call(yAxis);
+    
+    // Add axis labels
+    g.append('text')
+      .attr('class', 'x-axis-label')
+      .attr('x', innerWidth / 2)
+      .attr('y', innerHeight + 40)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .text('True Wind Angle (degrees)');
+    
+    g.append('text')
+      .attr('class', 'y-axis-label')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', -innerHeight / 2)
+      .attr('y', -40)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .text('Boat Speed (knots)');
+    
+    // Add grid lines
+    g.selectAll('.grid-line-x')
+      .data(xScale.ticks(6))
+      .enter()
+      .append('line')
+      .attr('class', 'grid-line-x')
+      .attr('x1', d => xScale(d))
+      .attr('x2', d => xScale(d))
+      .attr('y1', 0)
+      .attr('y2', innerHeight)
+      .attr('stroke', '#ddd')
+      .attr('stroke-dasharray', '3,3')
+      .attr('opacity', 0.5);
+    
+    g.selectAll('.grid-line-y')
+      .data(yScale.ticks(5))
+      .enter()
+      .append('line')
+      .attr('class', 'grid-line-y')
+      .attr('x1', 0)
+      .attr('x2', innerWidth)
+      .attr('y1', d => yScale(d))
+      .attr('y2', d => yScale(d))
+      .attr('stroke', '#ddd')
+      .attr('stroke-dasharray', '3,3')
+      .attr('opacity', 0.5);
+    
+    // Create line generator
+    const lineGenerator = d3.line()
+      .x(d => xScale(d.angle))
+      .y(d => yScale(d.boatSpeed))
+      .curve(d3.curveCardinal);
+    
+    // Create tooltip
+    const tooltip = d3.select(tooltipRef.current)
+      .style('position', 'absolute')
+      .style('visibility', 'hidden')
+      .style('background-color', 'white')
+      .style('border', '1px solid #ccc')
+      .style('border-radius', '5px')
+      .style('padding', '10px')
+      .style('box-shadow', '0 2px 5px rgba(0,0,0,0.2)')
+      .style('z-index', '1000')
+      .style('pointer-events', 'none');
+
+    // Draw lines for each wind speed
+    selectedData.forEach((windData, index) => {
+      const isBeingEdited = windData.windSpeed === editingWindSpeed;
+      const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
+      
+      // Sort anchor points by angle
+      const sortedPoints = [...windData.anchorPoints].sort((a, b) => a.angle - b.angle);
+      
+      // Draw the line
+      g.append('path')
+        .datum(sortedPoints)
+        .attr('class', 'line')
+        .attr('d', lineGenerator)
+        .attr('fill', 'none')
+        .attr('stroke', color)
+        .attr('stroke-width', isBeingEdited ? 3 : 2);
+      
+      // Add dots for anchor points
+      g.selectAll(`.dot-${windData.windSpeed}`)
+        .data(sortedPoints)
+        .enter()
+        .append('circle')
+        .attr('class', `dot-${windData.windSpeed}`)
+        .attr('cx', d => xScale(d.angle))
+        .attr('cy', d => yScale(d.boatSpeed))
+        .attr('r', isBeingEdited ? 5 : 3)
+        .attr('fill', color)
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1)
+        .on('mouseover', function(event, d) {
+          d3.select(this).attr('r', isBeingEdited ? 7 : 5);
+          
+          tooltip
+            .style('visibility', 'visible')
+            .html(`<strong>Angle:</strong> ${d.angle}°<br>
+                   <strong>Boat Speed:</strong> ${d.boatSpeed.toFixed(2)} knots<br>
+                   <strong>Wind Speed:</strong> ${windData.windSpeed} knots${isBeingEdited ? ' (editing)' : ''}`)
+            .style('left', `${event.pageX + 10}px`)
+            .style('top', `${event.pageY - 28}px`);
+        })
+        .on('mouseout', function() {
+          d3.select(this).attr('r', isBeingEdited ? 5 : 3);
+          tooltip.style('visibility', 'hidden');
+        });
+    });
+    
+  }, [selectedData, editingWindSpeed]);
+
+  // Create an interactive legend for all wind speeds
+  const renderLegend = () => {
+    return (
+      <div className="chart-legend" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', marginTop: '10px' }}>
+        {polarData.map((windData, index) => {
+          const isBeingEdited = windData.windSpeed === editingWindSpeed;
+          const isSelected = selectedWindSpeeds.includes(windData.windSpeed);
+          const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
+          
+          return (
+            <div 
+              key={windData.windSpeed} 
+              className="legend-item"
+              style={{ 
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: '2px solid transparent',
+                transition: 'border-color 0.2s ease',
+                margin: '2px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = isSelected ? color : '#ccc';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+              onClick={() => {
+                if (isSelected) {
+                  // Don't allow deselecting if it's the only selected wind speed
+                  if (selectedWindSpeeds.length > 1) {
+                    onSelectWindSpeed(selectedWindSpeeds.filter(ws => ws !== windData.windSpeed));
+                  }
+                } else {
+                  onSelectWindSpeed([...selectedWindSpeeds, windData.windSpeed]);
+                }
+              }}
+            >
+              <span 
+                className="legend-color" 
+                style={{ 
+                  display: 'inline-block',
+                  width: '12px',
+                  height: '12px',
+                  backgroundColor: isSelected ? color : '#ccc',
+                  opacity: isSelected ? 1 : 0.5,
+                  marginRight: '6px',
+                  borderRadius: '2px'
+                }}
+              ></span>
+              <span 
+                className="legend-label"
+                style={{ 
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  color: isSelected ? 'inherit' : '#999',
+                  fontSize: '12px'
+                }}
+              >
+                {windData.windSpeed} knots{isBeingEdited ? ' (editing)' : ''}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="polar-analysis-chart" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+      <h3 style={{ margin: '10px 0' }}>Polar Analysis Chart</h3>
+      <div className="chart-container" style={{ width: '90%', height: '300px', position: 'relative' }}>
+        <svg ref={svgRef} width="100%" height="100%"></svg>
+        <div ref={tooltipRef} className="tooltip"></div>
+      </div>
+      {renderLegend()}
+    </div>
+  );
+};
+
+export default PolarAnalysisChart;

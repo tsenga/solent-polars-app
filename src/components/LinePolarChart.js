@@ -4,6 +4,7 @@ import { selectSelectedWindSpeeds, selectPolarData } from '../store/polarDataSli
 import * as d3 from 'd3';
 import './LinePolarChart.css';
 import ViewSettings from './ViewSettings';
+import PolarAnalysisChart from './PolarAnalysisChart';
 
 // Define colors array outside the component for consistency
 const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F', '#FFBB28'];
@@ -581,6 +582,15 @@ const LinePolarChart = ({
       {renderLegend()}
       <div className="chart-footer">
         <p>Angle (degrees) vs Boat Speed (knots)</p>
+      </div>
+      
+      {/* Polar Analysis Chart */}
+      <div style={{ width: '100%', marginTop: '20px' }}>
+        <PolarAnalysisChart 
+          editingWindSpeed={editingWindSpeed}
+          selectedWindSpeeds={selectedWindSpeeds}
+          onSelectWindSpeed={onSelectWindSpeed}
+        />
       </div>
     </div>
   );
