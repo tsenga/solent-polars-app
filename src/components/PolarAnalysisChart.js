@@ -26,10 +26,10 @@ const PolarAnalysisChart = ({
     // Clear previous chart
     d3.select(svgRef.current).selectAll('*').remove();
 
-    // Set up dimensions
+    // Set up dimensions (increased right margin for second derivative axis)
     const width = svgRef.current.clientWidth;
     const height = svgRef.current.clientHeight;
-    const margin = { top: 20, right: 50, bottom: 50, left: 60 };
+    const margin = { top: 20, right: 100, bottom: 50, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -161,15 +161,38 @@ const PolarAnalysisChart = ({
         });
       }
       
+      // Calculate second derivative (rate of change of first derivative)
+      const secondDerivativePoints = [];
+      for (let i = 1; i < derivativePoints.length; i++) {
+        const prevDerivPoint = derivativePoints[i - 1];
+        const currDerivPoint = derivativePoints[i];
+        const deltaDerivative = currDerivPoint.derivative - prevDerivPoint.derivative;
+        const deltaAngle = currDerivPoint.angle - prevDerivPoint.angle;
+        const secondDerivative = deltaAngle !== 0 ? deltaDerivative / deltaAngle : 0;
+        
+        // Use the midpoint angle for the second derivative point
+        const midAngle = (prevDerivPoint.angle + currDerivPoint.angle) / 2;
+        secondDerivativePoints.push({
+          angle: midAngle,
+          secondDerivative: secondDerivative
+        });
+      }
+      
       // Find max absolute derivative for scaling
       const maxDerivative = Math.max(...derivativePoints.map(d => Math.abs(d.derivative)));
+      const maxSecondDerivative = secondDerivativePoints.length > 0 ? 
+        Math.max(...secondDerivativePoints.map(d => Math.abs(d.secondDerivative))) : 0;
       
-      // Create a separate scale for the derivative (right y-axis)
+      // Create separate scales for derivatives (right y-axis)
       const derivativeScale = d3.scaleLinear()
         .domain([-maxDerivative, maxDerivative])
         .range([innerHeight, 0]);
       
-      // Add right y-axis for derivative
+      const secondDerivativeScale = d3.scaleLinear()
+        .domain([-maxSecondDerivative, maxSecondDerivative])
+        .range([innerHeight, 0]);
+      
+      // Add right y-axis for first derivative
       const rightAxis = d3.axisRight(derivativeScale)
         .tickFormat(d => `${d.toFixed(2)}`);
       
@@ -178,7 +201,29 @@ const PolarAnalysisChart = ({
         .attr('transform', `translate(${innerWidth}, 0)`)
         .call(rightAxis);
       
-      // Add right y-axis label
+      // Add far-right y-axis for second derivative
+      if (secondDerivativePoints.length > 0) {
+        const farRightAxis = d3.axisRight(secondDerivativeScale)
+          .tickFormat(d => `${d.toFixed(3)}`);
+        
+        g.append('g')
+          .attr('class', 'second-derivative-y-axis')
+          .attr('transform', `translate(${innerWidth + 50}, 0)`)
+          .call(farRightAxis);
+        
+        // Add far-right y-axis label
+        g.append('text')
+          .attr('class', 'second-derivative-y-axis-label')
+          .attr('transform', 'rotate(-90)')
+          .attr('x', -innerHeight / 2)
+          .attr('y', innerWidth + 90)
+          .attr('text-anchor', 'middle')
+          .style('font-size', '12px')
+          .style('fill', '#cc6600')
+          .text('d²BSP/dAngle² (knots/degree²)');
+      }
+      
+      // Add right y-axis label for first derivative
       g.append('text')
         .attr('class', 'derivative-y-axis-label')
         .attr('transform', 'rotate(-90)')
@@ -189,10 +234,15 @@ const PolarAnalysisChart = ({
         .style('fill', '#0066cc')
         .text('dBSP/dAngle (knots/degree)');
       
-      // Create line generator for derivative
+      // Create line generators for derivatives
       const derivativeLineGenerator = d3.line()
         .x(d => xScale(d.angle))
         .y(d => derivativeScale(d.derivative))
+        .curve(d3.curveCardinal);
+      
+      const secondDerivativeLineGenerator = d3.line()
+        .x(d => xScale(d.angle))
+        .y(d => secondDerivativeScale(d.secondDerivative))
         .curve(d3.curveCardinal);
       
       // Draw the main polar line
@@ -204,7 +254,7 @@ const PolarAnalysisChart = ({
         .attr('stroke', color)
         .attr('stroke-width', 3);
       
-      // Draw the derivative line
+      // Draw the first derivative line
       if (derivativePoints.length > 0) {
         g.append('path')
           .datum(derivativePoints)
@@ -215,7 +265,7 @@ const PolarAnalysisChart = ({
           .attr('stroke-width', 2)
           .attr('stroke-dasharray', '5,5');
         
-        // Add dots for derivative points
+        // Add dots for first derivative points
         g.selectAll('.derivative-dot')
           .data(derivativePoints)
           .enter()
@@ -233,8 +283,48 @@ const PolarAnalysisChart = ({
             tooltip
               .style('visibility', 'visible')
               .html(`<strong>Angle:</strong> ${d.angle.toFixed(1)}°<br>
-                     <strong>Derivative:</strong> ${d.derivative.toFixed(3)} knots/degree<br>
-                     <strong>Wind Speed:</strong> ${windData.windSpeed} knots (derivative)`)
+                     <strong>1st Derivative:</strong> ${d.derivative.toFixed(3)} knots/degree<br>
+                     <strong>Wind Speed:</strong> ${windData.windSpeed} knots`)
+              .style('left', `${event.pageX + 10}px`)
+              .style('top', `${event.pageY - 28}px`);
+          })
+          .on('mouseout', function() {
+            d3.select(this).attr('r', 3);
+            tooltip.style('visibility', 'hidden');
+          });
+      }
+      
+      // Draw the second derivative line
+      if (secondDerivativePoints.length > 0) {
+        g.append('path')
+          .datum(secondDerivativePoints)
+          .attr('class', 'second-derivative-line')
+          .attr('d', secondDerivativeLineGenerator)
+          .attr('fill', 'none')
+          .attr('stroke', '#cc6600')
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', '10,5');
+        
+        // Add dots for second derivative points
+        g.selectAll('.second-derivative-dot')
+          .data(secondDerivativePoints)
+          .enter()
+          .append('circle')
+          .attr('class', 'second-derivative-dot')
+          .attr('cx', d => xScale(d.angle))
+          .attr('cy', d => secondDerivativeScale(d.secondDerivative))
+          .attr('r', 3)
+          .attr('fill', '#cc6600')
+          .attr('stroke', 'white')
+          .attr('stroke-width', 1)
+          .on('mouseover', function(event, d) {
+            d3.select(this).attr('r', 5);
+            
+            tooltip
+              .style('visibility', 'visible')
+              .html(`<strong>Angle:</strong> ${d.angle.toFixed(1)}°<br>
+                     <strong>2nd Derivative:</strong> ${d.secondDerivative.toFixed(4)} knots/degree²<br>
+                     <strong>Wind Speed:</strong> ${windData.windSpeed} knots`)
               .style('left', `${event.pageX + 10}px`)
               .style('top', `${event.pageY - 28}px`);
           })
@@ -275,7 +365,7 @@ const PolarAnalysisChart = ({
     
   }, [selectedData, editingWindSpeed]);
 
-  // Simple legend showing only the editing wind speed and derivative
+  // Simple legend showing only the editing wind speed and derivatives
   const renderLegend = () => {
     if (!editingWindSpeed) return null;
     
@@ -343,7 +433,40 @@ const PolarAnalysisChart = ({
               fontSize: '12px'
             }}
           >
-            Derivative (dBSP/dAngle)
+            1st Derivative (dBSP/dAngle)
+          </span>
+        </div>
+        
+        <div 
+          className="legend-item"
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '2px solid #cc6600',
+            margin: '2px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <span 
+            className="legend-color" 
+            style={{ 
+              display: 'inline-block',
+              width: '12px',
+              height: '2px',
+              backgroundColor: '#cc6600',
+              marginRight: '6px',
+              borderRadius: '1px'
+            }}
+          ></span>
+          <span 
+            className="legend-label"
+            style={{ 
+              fontWeight: 'bold',
+              fontSize: '12px'
+            }}
+          >
+            2nd Derivative (d²BSP/dAngle²)
           </span>
         </div>
       </div>
