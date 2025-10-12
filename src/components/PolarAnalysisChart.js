@@ -234,6 +234,32 @@ const PolarAnalysisChart = ({
         .style('fill', '#0066cc')
         .text('dBSP/dAngle (knots/degree)');
       
+      // Add zero line for first derivative
+      g.append('line')
+        .attr('class', 'derivative-zero-line')
+        .attr('x1', 0)
+        .attr('x2', innerWidth)
+        .attr('y1', derivativeScale(0))
+        .attr('y2', derivativeScale(0))
+        .attr('stroke', '#0066cc')
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '2,2')
+        .attr('opacity', 0.7);
+      
+      // Add zero line for second derivative if it exists
+      if (secondDerivativePoints.length > 0) {
+        g.append('line')
+          .attr('class', 'second-derivative-zero-line')
+          .attr('x1', 0)
+          .attr('x2', innerWidth)
+          .attr('y1', secondDerivativeScale(0))
+          .attr('y2', secondDerivativeScale(0))
+          .attr('stroke', '#cc6600')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '2,2')
+          .attr('opacity', 0.7);
+      }
+      
       // Create line generators for derivatives
       const derivativeLineGenerator = d3.line()
         .x(d => xScale(d.angle))
