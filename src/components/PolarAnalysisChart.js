@@ -15,9 +15,9 @@ const PolarAnalysisChart = ({
   const svgRef = useRef(null);
   const tooltipRef = useRef(null);
 
-  // Find all data for selected wind speeds
+  // Find data for the editing wind speed only
   const selectedData = polarData.filter(data => 
-    selectedWindSpeeds.includes(data.windSpeed)
+    data.windSpeed === editingWindSpeed
   );
 
   useEffect(() => {
@@ -139,7 +139,7 @@ const PolarAnalysisChart = ({
     // Draw lines for each wind speed
     selectedData.forEach((windData, index) => {
       const isBeingEdited = windData.windSpeed === editingWindSpeed;
-      const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
+      const color = '#ff0000'; // Always red since we're only showing the editing wind speed
       
       // Sort anchor points by angle
       const sortedPoints = [...windData.anchorPoints].sort((a, b) => a.angle - b.angle);
@@ -151,7 +151,7 @@ const PolarAnalysisChart = ({
         .attr('d', lineGenerator)
         .attr('fill', 'none')
         .attr('stroke', color)
-        .attr('stroke-width', isBeingEdited ? 3 : 2);
+        .attr('stroke-width', 3);
       
       // Add dots for anchor points
       g.selectAll(`.dot-${windData.windSpeed}`)
@@ -161,94 +161,67 @@ const PolarAnalysisChart = ({
         .attr('class', `dot-${windData.windSpeed}`)
         .attr('cx', d => xScale(d.angle))
         .attr('cy', d => yScale(d.boatSpeed))
-        .attr('r', isBeingEdited ? 5 : 3)
+        .attr('r', 5)
         .attr('fill', color)
         .attr('stroke', 'white')
         .attr('stroke-width', 1)
         .on('mouseover', function(event, d) {
-          d3.select(this).attr('r', isBeingEdited ? 7 : 5);
+          d3.select(this).attr('r', 7);
           
           tooltip
             .style('visibility', 'visible')
             .html(`<strong>Angle:</strong> ${d.angle}°<br>
                    <strong>Boat Speed:</strong> ${d.boatSpeed.toFixed(2)} knots<br>
-                   <strong>Wind Speed:</strong> ${windData.windSpeed} knots${isBeingEdited ? ' (editing)' : ''}`)
+                   <strong>Wind Speed:</strong> ${windData.windSpeed} knots (editing)`)
             .style('left', `${event.pageX + 10}px`)
             .style('top', `${event.pageY - 28}px`);
         })
         .on('mouseout', function() {
-          d3.select(this).attr('r', isBeingEdited ? 5 : 3);
+          d3.select(this).attr('r', 5);
           tooltip.style('visibility', 'hidden');
         });
     });
     
   }, [selectedData, editingWindSpeed]);
 
-  // Create an interactive legend for all wind speeds
+  // Simple legend showing only the editing wind speed
   const renderLegend = () => {
+    if (!editingWindSpeed) return null;
+    
     return (
-      <div className="chart-legend" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', marginTop: '10px' }}>
-        {polarData.map((windData, index) => {
-          const isBeingEdited = windData.windSpeed === editingWindSpeed;
-          const isSelected = selectedWindSpeeds.includes(windData.windSpeed);
-          const color = isBeingEdited ? '#ff0000' : colors[index % colors.length];
-          
-          return (
-            <div 
-              key={windData.windSpeed} 
-              className="legend-item"
-              style={{ 
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                border: '2px solid transparent',
-                transition: 'border-color 0.2s ease',
-                margin: '2px',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = isSelected ? color : '#ccc';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'transparent';
-              }}
-              onClick={() => {
-                if (isSelected) {
-                  // Don't allow deselecting if it's the only selected wind speed
-                  if (selectedWindSpeeds.length > 1) {
-                    onSelectWindSpeed(selectedWindSpeeds.filter(ws => ws !== windData.windSpeed));
-                  }
-                } else {
-                  onSelectWindSpeed([...selectedWindSpeeds, windData.windSpeed]);
-                }
-              }}
-            >
-              <span 
-                className="legend-color" 
-                style={{ 
-                  display: 'inline-block',
-                  width: '12px',
-                  height: '12px',
-                  backgroundColor: isSelected ? color : '#ccc',
-                  opacity: isSelected ? 1 : 0.5,
-                  marginRight: '6px',
-                  borderRadius: '2px'
-                }}
-              ></span>
-              <span 
-                className="legend-label"
-                style={{ 
-                  fontWeight: isSelected ? 'bold' : 'normal',
-                  color: isSelected ? 'inherit' : '#999',
-                  fontSize: '12px'
-                }}
-              >
-                {windData.windSpeed} knots{isBeingEdited ? ' (editing)' : ''}
-              </span>
-            </div>
-          );
-        })}
+      <div className="chart-legend" style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+        <div 
+          className="legend-item"
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '2px solid #ff0000',
+            margin: '2px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <span 
+            className="legend-color" 
+            style={{ 
+              display: 'inline-block',
+              width: '12px',
+              height: '12px',
+              backgroundColor: '#ff0000',
+              marginRight: '6px',
+              borderRadius: '2px'
+            }}
+          ></span>
+          <span 
+            className="legend-label"
+            style={{ 
+              fontWeight: 'bold',
+              fontSize: '12px'
+            }}
+          >
+            {editingWindSpeed} knots (editing)
+          </span>
+        </div>
       </div>
     );
   };
