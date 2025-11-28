@@ -10,8 +10,8 @@ const DataSourceSelection = ({ editingWindSpeed, polarData }) => {
         {/* Left Column - Filters */}
         <Grid item xs={12} md={4}>
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Data Filters
+            <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+              Filter Settings
             </Typography>
             <DataFilter />
           </Box>

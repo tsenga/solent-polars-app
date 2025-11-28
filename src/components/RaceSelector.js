@@ -48,12 +48,24 @@ const RaceSelector = () => {
     }
   };
 
+  // not used
   const handleClearRaceSelection = () => {
     dispatch(selectRace(null));
     dispatch(setTimeFilterMode('none'));
     dispatch(setStartTime(''));
     dispatch(setEndTime(''));
   };
+
+  /*
+                <Button 
+                variant="outlined" 
+                size="small" 
+                onClick={handleClearRaceSelection}
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                Clear Race Selection
+              </Button>
+  */
 
   const formatDateTime = (dateTimeString) => {
     return new Date(dateTimeString).toLocaleString();
@@ -108,14 +120,6 @@ const RaceSelector = () => {
               <Typography variant="body2" color="text.secondary">
                 <strong>Finish:</strong> {formatDateTime(selectedRace.finishDateTime)}
               </Typography>
-              <Button 
-                variant="outlined" 
-                size="small" 
-                onClick={handleClearRaceSelection}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                Clear Race Selection
-              </Button>
             </Box>
           )}
         </Box>
